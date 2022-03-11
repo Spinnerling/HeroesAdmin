@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">HeroAdmin</string>
+    <string-array name="venues">
+        <item>Stockholm</item>
+        <item>Visby</item>
+    </string-array>
+</resources>
