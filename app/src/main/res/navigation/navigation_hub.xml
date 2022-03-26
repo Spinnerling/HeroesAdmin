@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/navigation_hub"
+    app:startDestination="@id/eventList"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <fragment
+        android:id="@+id/eventList"
+        android:name="com.example.heroadmin.EventList"
+        android:label="EventList"
+        tools:layout="@layout/fragment_event_list">
+        <action
+            android:id="@+id/action_eventList_to_eventView"
+            app:destination="@id/eventView"
+            app:enterAnim="@anim/in_from_right"
+            app:exitAnim="@anim/out_to_left"
+            app:popEnterAnim="@anim/in_from_left"
+            app:popExitAnim="@anim/out_to_right" />
+    </fragment>
+    <fragment
+        android:id="@+id/eventView"
+        android:name="com.example.heroadmin.EventView"
+        android:label="fragment_event_view"
+        tools:layout="@layout/fragment_event_view" />
+</navigation>

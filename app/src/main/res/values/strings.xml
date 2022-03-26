@@ -1,7 +1,13 @@
 <resources>
     <string name="app_name">HeroAdmin</string>
+    <string name="button_coming_events_text">COMING</string>
+    <string name="button_past_events_text">PAST</string>
+    <string name="venue_spinner_text">VENUE</string>
+    <string name="main_activity_event_list_text">No events to show</string>
     <string-array name="venues">
         <item>Stockholm</item>
         <item>Visby</item>
     </string-array>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

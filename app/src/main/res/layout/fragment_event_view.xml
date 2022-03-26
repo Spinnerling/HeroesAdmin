@@ -1,0 +1,629 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+    </data>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#BD9E5E"
+        android:orientation="vertical"
+        android:padding="10dp"
+        tools:context=".EventView">
+
+        <LinearLayout
+            android:id="@+id/top_panel"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="7.7"
+            android:background="#E4CB98"
+            android:backgroundTintMode="add"
+            android:orientation="horizontal"
+            android:padding="10dp">
+
+            <TextView
+                android:id="@+id/event_info_text"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1.7"
+                android:background="#FFE5AF"
+                android:lineSpacingExtra="5sp"
+                android:padding="5dp"
+                android:text="Date: 22/03 -22\nVenue: Stockholm\nEvent: 10:00\nParticipants: 100"
+                android:textAlignment="textStart"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="2"
+                android:orientation="vertical"
+                android:paddingLeft="50dp">
+
+                <TextView
+                    android:id="@+id/power1"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_margin="1dp"
+                    android:layout_weight="1"
+                    android:background="#2B80FF"
+                    android:gravity="center"
+                    android:hint="asdasd"
+                    android:text="67"
+                    android:textAlignment="center"
+                    android:textColor="#FFFFFF"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/amount1"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_margin="1dp"
+                    android:layout_weight="1"
+                    android:background="#2B80FF"
+                    android:gravity="center"
+                    android:hint="asdasd"
+                    android:text="32"
+                    android:textAlignment="center"
+                    android:textColor="#FFFFFF"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/youngs1"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_margin="1dp"
+                    android:layout_weight="1"
+                    android:background="#2B80FF"
+                    android:gravity="center"
+                    android:hint="asdasd"
+                    android:text="4"
+                    android:textAlignment="center"
+                    android:textColor="#FFFFFF"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/teens1"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_margin="1dp"
+                    android:layout_weight="1"
+                    android:background="#2B80FF"
+                    android:gravity="center"
+                    android:hint="asdasd"
+                    android:text="5"
+                    android:textAlignment="center"
+                    android:textColor="#FFFFFF"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="2"
+                android:orientation="vertical"
+                android:paddingRight="50dp">
+
+                <TextView
+                    android:id="@+id/power2"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_margin="1dp"
+                    android:layout_weight="1"
+                    android:background="#ED6363"
+                    android:gravity="center"
+                    android:hint="asdasd"
+                    android:text="67"
+                    android:textAlignment="center"
+                    android:textColor="#FFFFFF"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/amount2"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_margin="1dp"
+                    android:layout_weight="1"
+                    android:background="#ED6363"
+                    android:gravity="center"
+                    android:hint="asdasd"
+                    android:text="32"
+                    android:textAlignment="center"
+                    android:textColor="#FFFFFF"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/youngs2"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_margin="1dp"
+                    android:layout_weight="1"
+                    android:background="#ED6363"
+                    android:gravity="center"
+                    android:hint="asdasd"
+                    android:text="4"
+                    android:textAlignment="center"
+                    android:textColor="#FFFFFF"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/teens2"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_margin="1dp"
+                    android:layout_weight="1"
+                    android:background="#ED6363"
+                    android:gravity="center"
+                    android:hint="asdasd"
+                    android:text="5"
+                    android:textAlignment="center"
+                    android:textColor="#FFFFFF"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/top_buttons_left"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginRight="5dp"
+                android:layout_weight="2"
+                android:orientation="vertical">
+
+                <Button
+                    android:id="@+id/add_player_button"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:backgroundTint="#FFFFFF"
+                    android:text="Add Player"
+                    android:textColor="#000000"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    app:strokeColor="#000000"
+                    app:strokeWidth="1dp" />
+
+                <Button
+                    android:id="@+id/auto_assign_button"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:backgroundTint="#FFFFFF"
+                    android:text="Auto-\nAssign"
+                    android:textColor="#000000"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    app:strokeColor="#000000"
+                    app:strokeWidth="1dp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/top_buttons_right"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="2"
+                android:orientation="vertical">
+
+                <Button
+                    android:id="@+id/end_event_button"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:backgroundTint="#FFFFFF"
+                    android:text="End Event"
+                    android:textColor="#000000"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    app:strokeColor="#000000"
+                    app:strokeWidth="1dp" />
+
+                <Button
+                    android:id="@+id/history_button"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:backgroundTint="#FFFFFF"
+                    android:text="History"
+                    android:textColor="#000000"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    app:strokeColor="#000000"
+                    app:strokeWidth="1dp" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <ScrollView
+            android:id="@+id/scrolling_panel"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="10dp"
+            android:layout_weight="2.5"
+            android:background="#E4CB98">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:id="@+id/assign_team_panel"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="10dp"
+                    android:orientation="vertical">
+
+                    <Button
+                        android:id="@+id/assign_team_panel_button"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:backgroundTint="#FFFFFF"
+                        android:text="Assign Team"
+                        android:textAlignment="viewStart"
+                        android:textColor="#000000"
+                        android:textSize="20sp"
+                        app:icon="@drawable/ic_list_open"
+                        app:iconTint="#808080"
+                        app:strokeColor="#000000"
+                        app:strokeWidth="2dp" />
+
+                    <LinearLayout
+                        android:id="@+id/assign_team_list"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical"
+                        android:padding="10dp">
+
+                        <LinearLayout
+                            android:id="@+id/assign_team_org_buttons"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:orientation="horizontal">
+
+                            <Button
+                                android:id="@+id/assign_team_orgBy_UserID_button"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="0.1"
+                                android:backgroundTint="#FFFFFF"
+                                android:text="UserID"
+                                android:textAlignment="viewStart"
+                                android:textColor="#000000"
+                                android:textSize="12sp"
+                                app:strokeColor="#000000"
+                                app:strokeWidth="1dp" />
+
+                            <Button
+                                android:id="@+id/assign_team_orgBy_Name_button"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1.9"
+                                android:backgroundTint="#FFFFFF"
+                                android:text="Name"
+                                android:textAlignment="viewStart"
+                                android:textColor="#000000"
+                                android:textSize="12sp"
+                                app:strokeColor="#000000"
+                                app:strokeWidth="1dp" />
+
+                            <Button
+                                android:id="@+id/assign_team_orgBy_Age_button"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="0.1"
+                                android:backgroundTint="#FFFFFF"
+                                android:text="Age"
+                                android:textAlignment="viewStart"
+                                android:textColor="#000000"
+                                android:textSize="12sp"
+                                app:strokeColor="#000000"
+                                app:strokeWidth="1dp" />
+
+                            <Button
+                                android:id="@+id/assign_team_orgBy_email_button"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="5"
+                                android:backgroundTint="#FFFFFF"
+                                android:text="Booking Email"
+                                android:textAlignment="viewStart"
+                                android:textColor="#000000"
+                                android:textSize="12sp"
+                                app:strokeColor="#000000"
+                                app:strokeWidth="1dp" />
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/check_in_panel"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="10dp"
+                    android:orientation="vertical">
+
+                    <Button
+                        android:id="@+id/check_in_panel_button"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:backgroundTint="#FFFFFF"
+                        android:text="Check In"
+                        android:textAlignment="viewStart"
+                        android:textColor="#000000"
+                        android:textSize="20sp"
+                        app:icon="@drawable/ic_list_open"
+                        app:iconTint="#808080"
+                        app:strokeColor="#000000"
+                        app:strokeWidth="2dp" />
+
+                    <LinearLayout
+                        android:id="@+id/check_in_list"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical"
+                        android:padding="10dp">
+
+                        <LinearLayout
+                            android:id="@+id/check_in_org_buttons"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:orientation="horizontal">
+
+                            <Button
+                                android:id="@+id/check_in_orgBy_name_button"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:backgroundTint="#FFFFFF"
+                                android:text="Name"
+                                android:textAlignment="viewStart"
+                                android:textColor="#000000"
+                                android:textSize="12sp"
+                                app:strokeColor="#000000"
+                                app:strokeWidth="1dp" />
+
+                            <Button
+                                android:id="@+id/check_in_orgBy_age"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:backgroundTint="#FFFFFF"
+                                android:text="Age"
+                                android:textAlignment="viewStart"
+                                android:textColor="#000000"
+                                android:textSize="12sp"
+                                app:strokeColor="#000000"
+                                app:strokeWidth="1dp" />
+
+                            <Button
+                                android:id="@+id/check_in_orgBy_note"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="8"
+                                android:backgroundTint="#FFFFFF"
+                                android:text="Note"
+                                android:textAlignment="viewStart"
+                                android:textColor="#000000"
+                                android:textSize="12sp"
+                                app:strokeColor="#000000"
+                                app:strokeWidth="1dp" />
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/teams_panel"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal">
+
+                    <LinearLayout
+                        android:id="@+id/team_panel1"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/team_text1"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:background="#2B80FF"
+                            android:gravity="center"
+                            android:text="Blue"
+                            android:textAlignment="center"
+                            android:textColor="#FFFFFF"
+                            android:textSize="20sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/round_text1"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:background="#2B80FF"
+                            android:gravity="center"
+                            android:text="Round #"
+                            android:textAlignment="center"
+                            android:textColor="#FFFFFF"
+                            android:textStyle="bold" />
+
+                        <LinearLayout
+                            android:id="@+id/team_list1"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:orientation="horizontal">
+
+                            <LinearLayout
+                                android:id="@+id/team_name_list1"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:layout_weight="1"
+                                android:orientation="vertical">
+
+                                <Button
+                                    android:id="@+id/team_name_button1"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:backgroundTint="#FFFFFF"
+                                    android:text="Name"
+                                    android:textAlignment="viewStart"
+                                    android:textColor="#000000"
+                                    android:textSize="12sp"
+                                    app:strokeColor="#000000"
+                                    app:strokeWidth="1dp" />
+
+                                <ImageView
+                                    android:id="@+id/name_list_separator1"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="1dp"
+                                    android:background="#808080"
+                                    android:paddingTop="2dp"
+                                    tools:src="@tools:sample/avatars" />
+
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:id="@+id/team_role_list1"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:layout_weight="2"
+                                android:orientation="vertical">
+
+                                <Button
+                                    android:id="@+id/team_role_button1"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:backgroundTint="#FFFFFF"
+                                    android:text="Role"
+                                    android:textAlignment="viewStart"
+                                    android:textColor="#000000"
+                                    android:textSize="12sp"
+                                    app:strokeColor="#000000"
+                                    app:strokeWidth="1dp" />
+
+                                <ImageView
+                                    android:id="@+id/role_list_separator1"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="1dp"
+                                    android:background="#808080"
+                                    android:paddingTop="2dp"
+                                    tools:src="@tools:sample/avatars" />
+                            </LinearLayout>
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/team_panel2"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/team_text2"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:background="#ED6363"
+                            android:gravity="center"
+                            android:text="Red"
+                            android:textAlignment="center"
+                            android:textColor="#FFFFFF"
+                            android:textSize="20sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/round_text2"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:background="#ED6363"
+                            android:gravity="center"
+                            android:text="Round #"
+                            android:textAlignment="center"
+                            android:textColor="#FFFFFF"
+                            android:textStyle="bold" />
+
+                        <LinearLayout
+                            android:id="@+id/team_list2"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:orientation="horizontal">
+
+                            <LinearLayout
+                                android:id="@+id/team_name_list2"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:layout_weight="1"
+                                android:orientation="vertical">
+
+                                <Button
+                                    android:id="@+id/team_name_button2"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:backgroundTint="#FFFFFF"
+                                    android:text="Name"
+                                    android:textAlignment="viewStart"
+                                    android:textColor="#000000"
+                                    android:textSize="12sp"
+                                    app:strokeColor="#000000"
+                                    app:strokeWidth="1dp" />
+
+                                <ImageView
+                                    android:id="@+id/name_list_separator2"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="1dp"
+                                    android:background="#808080"
+                                    android:paddingTop="2dp"
+                                    tools:src="@tools:sample/avatars" />
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:id="@+id/team_role_list2"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:layout_weight="2"
+                                android:orientation="vertical">
+
+                                <Button
+                                    android:id="@+id/team_role_button2"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:backgroundTint="#FFFFFF"
+                                    android:text="Role"
+                                    android:textAlignment="viewStart"
+                                    android:textColor="#000000"
+                                    android:textSize="12sp"
+                                    app:strokeColor="#000000"
+                                    app:strokeWidth="1dp" />
+
+                                <ImageView
+                                    android:id="@+id/role_list_separator2"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="1dp"
+                                    android:background="#808080"
+                                    android:paddingTop="2dp"
+                                    tools:src="@tools:sample/avatars" />
+                            </LinearLayout>
+                        </LinearLayout>
+                    </LinearLayout>
+                </LinearLayout>
+            </LinearLayout>
+        </ScrollView>
+
+        <LinearLayout
+            android:id="@+id/bottom_panel"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="7"
+            android:background="#E4CB98"
+            android:orientation="horizontal"></LinearLayout>
+
+    </LinearLayout>
+</layout>
