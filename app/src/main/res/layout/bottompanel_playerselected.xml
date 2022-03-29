@@ -15,27 +15,25 @@
         android:gravity="center"
         android:orientation="horizontal">
 
-        <Button
-            android:id="@+id/onOffButton"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
+        <Switch
+            android:id="@+id/switch1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:backgroundTint="#FFFFFF"
-            android:gravity="center"
-            android:text="Off"
-            android:textColor="#000000"
-            android:textSize="16sp"
-            app:strokeColor="#000000"
-            app:strokeWidth="2dp" />
+            android:checked="true"
+            android:text="Playing"
+            android:textAlignment="textStart"
+            android:textAppearance="@style/TextAppearance.AppCompat.Display2"
+            android:textSize="16sp" />
 
         <Space
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1" />
+            android:layout_weight="0.5" />
 
         <Button
             android:id="@+id/pickPlayerLeftButton"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:backgroundTint="#FFFFFF"
@@ -50,11 +48,11 @@
 
         <TextView
             android:id="@+id/playerNameText"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_marginLeft="10dp"
             android:layout_marginRight="10dp"
-            android:layout_weight="0.75"
+            android:layout_weight="2.5"
             android:background="#FFA0A0"
             android:gravity="center"
             android:text="Peter Losonci"
@@ -64,7 +62,7 @@
 
         <Button
             android:id="@+id/pickPlayerRightButton"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:backgroundTint="#FFFFFF"
@@ -78,19 +76,19 @@
             app:strokeWidth="2dp" />
 
         <Space
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1" />
+            android:layout_weight="0.5" />
 
         <Button
             android:id="@+id/playerCloseButton"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:backgroundTint="#FFFFFF"
             android:gravity="center"
+            android:text="Close"
             android:textColor="#000000"
-            app:icon="@android:drawable/ic_delete"
             app:iconGravity="textStart"
             app:iconSize="30dp"
             app:iconTint="#000000"
@@ -107,7 +105,7 @@
         android:orientation="horizontal">
 
         <LinearLayout
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:background="#D5D5D5"
@@ -156,13 +154,24 @@
         </LinearLayout>
 
         <LinearLayout
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_marginLeft="10dp"
             android:layout_marginRight="10dp"
             android:layout_weight="1"
             android:gravity="center"
             android:orientation="vertical">
+
+            <Button
+                android:id="@+id/ticketInfoButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:backgroundTint="#FFFFFF"
+                android:text="Info"
+                android:textColor="#000000"
+                app:strokeColor="#000000"
+                app:strokeWidth="2dp" />
 
             <Button
                 android:id="@+id/setRoleButton"
@@ -186,21 +195,10 @@
                 app:strokeColor="#000000"
                 app:strokeWidth="2dp" />
 
-            <Button
-                android:id="@+id/contactInfoButton"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:backgroundTint="#FFFFFF"
-                android:text="Contact Info"
-                android:textColor="#000000"
-                app:strokeColor="#000000"
-                app:strokeWidth="2dp" />
-
         </LinearLayout>
 
         <LinearLayout
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:gravity="center"

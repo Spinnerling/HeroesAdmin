@@ -10,38 +10,46 @@
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_marginRight="15dp"
-        android:layout_weight="1"
+        android:layout_weight="1.5"
         android:background="#F8E9D0"
         android:orientation="vertical"
         android:padding="10dp">
 
         <TextView
-            android:id="@+id/dateText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Date: 28/03 - 22" />
-
-        <TextView
             android:id="@+id/venueText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Venue: Visby" />
+            android:layout_marginBottom="5dp"
+            android:text="@string/eventVenue"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/dateText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="5dp"
+            android:text="@string/eventDate"
+            android:textSize="20sp"
+            android:textStyle="bold" />
 
         <TextView
             android:id="@+id/timeText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Start: 13:00" />
+            android:layout_marginBottom="5dp"
+            android:text="@string/eventStartTime"
+            android:textSize="20sp"
+            android:textStyle="bold" />
 
         <TextView
             android:id="@+id/participantAmountText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Participants: 43" />
+            android:layout_marginBottom="5dp"
+            android:text="@string/eventParticipants"
+            android:textSize="20sp"
+            android:textStyle="bold" />
     </LinearLayout>
 
     <LinearLayout
@@ -77,38 +85,6 @@
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:layout_marginLeft="5dp"
-        android:layout_marginRight="5dp"
-        android:layout_weight="1"
-        android:orientation="vertical">
-
-        <Button
-            android:id="@+id/addPlayerButton"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:backgroundTint="#FFFFFF"
-            android:text="Add Player"
-            android:textColor="#000000"
-            app:strokeColor="#000000"
-            app:strokeWidth="2dp" />
-
-        <Button
-            android:id="@+id/autoAssignButton"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:backgroundTint="#FFFFFF"
-            android:text="Auto-\nAssign"
-            android:textColor="#000000"
-            app:strokeColor="#000000"
-            app:strokeWidth="2dp" />
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
         android:layout_marginLeft="10dp"
         android:layout_weight="3"
         android:orientation="vertical">
@@ -116,7 +92,7 @@
         <Button
             android:id="@+id/newRoundButton"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="100dp"
             android:layout_weight="1"
             android:backgroundTint="#FFFFFF"
             android:text="New Round"
@@ -127,7 +103,7 @@
         <Button
             android:id="@+id/rerollTeamButton"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="100dp"
             android:layout_weight="1"
             android:backgroundTint="#FFFFFF"
             android:text="Reroll Team"

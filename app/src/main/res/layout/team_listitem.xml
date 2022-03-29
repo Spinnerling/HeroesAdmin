@@ -7,32 +7,52 @@
 
     <TextView
         android:id="@+id/nameText"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginLeft="10dp"
         android:layout_marginTop="5dp"
         android:layout_marginRight="10dp"
         android:layout_marginBottom="5dp"
-        android:layout_weight="2"
+        android:layout_weight="5"
         android:text="Name Nameson" />
 
     <ImageView
         android:id="@+id/divider"
-        android:layout_width="1dp"
-        android:layout_height="25dp"
-        android:layout_weight="0.005"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="0.03"
         android:background="#989898"
-        android:paddingTop="25dp"
+        android:paddingTop="50dp"
         app:srcCompat="@drawable/ic_launcher_background" />
 
     <TextView
-        android:id="@+id/roleText"
-        android:layout_width="wrap_content"
+        android:id="@+id/tabardNr"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginLeft="10dp"
         android:layout_marginTop="5dp"
         android:layout_marginRight="10dp"
         android:layout_marginBottom="5dp"
         android:layout_weight="1"
+        android:text="#16" />
+
+    <ImageView
+        android:id="@+id/divider2"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="0.03"
+        android:background="#989898"
+        android:paddingTop="50dp"
+        app:srcCompat="@drawable/ic_launcher_background" />
+
+    <TextView
+        android:id="@+id/roleText"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="10dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginBottom="5dp"
+        android:layout_weight="3"
         android:text="Role" />
 </LinearLayout>

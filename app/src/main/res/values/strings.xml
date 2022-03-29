@@ -1,5 +1,9 @@
 <resources>
     <string name="app_name">HeroAdmin</string>
+    <string name="eventDate">28/03 - 22</string>
+    <string name="eventVenue">Stockholm</string>
+    <string name="eventStartTime">13:00</string>
+    <string name="eventParticipants">42 / 72 players</string>
     <string-array name="venues">
         <item>Stockholm</item>
         <item>Visby</item>
