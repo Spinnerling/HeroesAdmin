@@ -125,7 +125,7 @@ class MockFragment : Fragment() {
             }
 
             // Set Name
-            val name = currTicket.firstName + " " + currTicket.lastName
+            val name = currTicket.fullName
             // Set Numbers
             val number = currTicket.tabardNr
             // Set Roles
@@ -149,7 +149,7 @@ class MockFragment : Fragment() {
             val currTicket = blueTeam!![i]
 
             // Set Name
-            val name = currTicket.firstName + " " + currTicket.lastName
+            val name = currTicket.fullName
             // Set Numbers
             val number = currTicket.tabardNr
             // Set Roles
@@ -175,42 +175,42 @@ class MockFragment : Fragment() {
 
     // SORTING FUNCTIONS
 
-    private fun sortAssignByUserId() {
-
+    private fun sortAssignByTicketId() {
+        assignList?.sortBy { it.ticketId }
     }
 
     private fun sortAssignByName() {
-
+        assignList?.sortBy { it.fullName }
     }
 
     private fun sortAssignByAge() {
-
+        assignList?.sortBy { it.age }
     }
 
     private fun sortAssignByEmail() {
-
+        assignList?.sortBy { it.bookingEmail }
     }
 
 
-    private fun sortCheckInByUserId() {
-
+    private fun sortCheckInByTicketId() {
+        checkInList?.sortBy { it.ticketId }
     }
 
     private fun sortCheckInByName() {
-
+        checkInList?.sortBy { it.fullName }
     }
 
     private fun sortCheckInByAge() {
-
+        checkInList?.sortBy { it.age }
     }
 
     private fun sortCheckInByEmail() {
-
+        checkInList?.sortBy { it.bookingEmail }
     }
 
 
     private fun sortBlueByName() {
-        blueTeam?.sortBy { it.firstName }
+        blueTeam?.sortBy { it.fullName }
         updateTeamLists()
     }
 
@@ -225,7 +225,7 @@ class MockFragment : Fragment() {
     }
 
     private fun sortRedByName() {
-        redTeam?.sortBy { it.firstName }
+        redTeam?.sortBy { it.fullName }
         updateTeamLists()
     }
 

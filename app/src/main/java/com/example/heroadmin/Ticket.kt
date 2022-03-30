@@ -32,4 +32,5 @@ class Ticket(
     var expPersonal: Int,
     var tabardNr : Int,
 ) {
+    var fullName = "$firstName $lastName"
 }
