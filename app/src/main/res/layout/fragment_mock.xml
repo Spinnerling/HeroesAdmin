@@ -9,15 +9,10 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:background="#FFFFFF"
+        android:backgroundTint="#FFFFFF"
         android:orientation="vertical"
         tools:context=".MockFragment">
-
-        <ViewStub
-            android:id="@+id/bottomPanelViewStub"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="5"
-            android:layout="@layout/bottompanel" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -39,6 +34,13 @@
 
             </androidx.recyclerview.widget.RecyclerView>
         </LinearLayout>
+
+        <include
+            android:id="@+id/bottonPanelInclude"
+            layout="@layout/bottompanel"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
 
 
     </LinearLayout>

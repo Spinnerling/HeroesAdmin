@@ -1,28 +1,23 @@
 package com.example.heroadmin
 
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.ViewStub
-import android.widget.LinearLayout
 import androidx.databinding.DataBindingUtil
-import androidx.databinding.ViewStubProxy
+import com.example.heroadmin.databinding.BottompanelBinding
 import com.example.heroadmin.databinding.FragmentMockBinding
 
 class MockFragment : Fragment() {
 
-    private lateinit var bottomPanelLayout : ViewStubProxy
+    private lateinit var bottomPanelLayout: BottompanelBinding
     private lateinit var binding : FragmentMockBinding
 
-    val players = List(20) {
-        Ticket(
-            "123", "Bob", "Polo", 16, 0, false, "None", false, 0, false, "None", "Lena", "Fagerlös", "070 123 45 67", "asdasdasd@email.com", "Booker", "Person", "elmailo@adress.end", "498 456 12 12", 0, 0, 0 ,0, 0, 0, 0, "None", "12345"
-        )
-        Ticket(
-            "123", "Naito", "Mare", 13, 0, false, "None", false, 0, false, "None", "Pitch", "Black", "070 666 66 66", "123123@email.com", "Free", "Man", "ndkanjsd@asad.eee", "927 12 45 34", 0, 0, 0 ,0, 0, 0, 0, "None", "54321"
-        )
+    private val players = List(20) {
+        var asd = getTicket("123")
+        Log.i("123123", asd.ticketId)
     }
 
     override fun onCreateView(
@@ -31,10 +26,8 @@ class MockFragment : Fragment() {
     ): View? {
 
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_mock, container, false)
-
-        bottomPanelLayout = binding.bottomPanelViewStub
-        //bottomPanelLayout.viewStub?.layoutResource = R.layout.bottompanel_newround
-
+        bottomPanelLayout = binding.bottonPanelInclude
+        //bottomPanelLayout.
 
 
         // Inflate the layout for this fragment
