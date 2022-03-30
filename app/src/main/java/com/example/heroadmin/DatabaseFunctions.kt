@@ -6,7 +6,7 @@ fun getTicket(ticketId: String): Ticket {
     // val arrayContents = [insert code here]
 
     // Placeholder "found" ticket
-    val arrayContents = listOf(
+    val arrayContents = mutableListOf(
         "ticket123",
         "12345",
         "Bob",
@@ -50,24 +50,26 @@ fun getTicket(ticketId: String): Ticket {
         arrayContents[7] as Boolean,   // Costume
         arrayContents[8] as Int,       // Recruits
         arrayContents[9] as Boolean,   // Benched
-        arrayContents[10] as String,   // Last Role
-        arrayContents[11] as String,   // Contact First name
-        arrayContents[12] as String,   // Contact Last Name
-        arrayContents[13] as String,   // Contact Phone
-        arrayContents[14] as String,   // Contact Email
-        arrayContents[15] as String,   // Booker First Name
-        arrayContents[16] as String,   // Booker Last Name
-        arrayContents[17] as String,   // Booker Phone
-        arrayContents[18] as String,   // Booker Email
-        arrayContents[19] as Int,      // Rounds as Healer
-        arrayContents[20] as Int,      // Rounds as Mage
-        arrayContents[21] as Int,      // Rounds as Rogue
-        arrayContents[22] as Int,      // Rounds as Knight
-        arrayContents[23] as Int,      // Rounds as Warrior
-        arrayContents[24] as Int,      // Rounds as Special
-        arrayContents[25] as Int,      // Respawns left
-        arrayContents[26] as String,   // Guaranteed Role
-        arrayContents[27] as Int,      // EXP personal
+        arrayContents[10] as Int,      // Current Role
+        arrayContents[11] as Int,      // Last Role
+        arrayContents[12] as String,   // Contact First name
+        arrayContents[13] as String,   // Contact Last Name
+        arrayContents[14] as String,   // Contact Phone
+        arrayContents[15] as String,   // Contact Email
+        arrayContents[16] as String,   // Booker First Name
+        arrayContents[17] as String,   // Booker Last Name
+        arrayContents[18] as String,   // Booker Phone
+        arrayContents[19] as String,   // Booker Email
+        arrayContents[20] as Int,      // Rounds as Healer
+        arrayContents[21] as Int,      // Rounds as Mage
+        arrayContents[22] as Int,      // Rounds as Rogue
+        arrayContents[23] as Int,      // Rounds as Knight
+        arrayContents[24] as Int,      // Rounds as Warrior
+        arrayContents[25] as Int,      // Rounds as Special
+        arrayContents[26] as Int,      // Respawns left
+        arrayContents[27] as String,   // Guaranteed Role
+        arrayContents[28] as Int,      // EXP personal
+        arrayContents[29] as Int,      // Tabard number
     )
 }
 
@@ -86,7 +88,7 @@ fun getEvent(eventId: String): Event {
     // var arrayContents = [insert code here]
 
     // Placeholder "found" event
-    val arrayContents = listOf(
+    val arrayContents = mutableListOf(
         "event123",
         "13:00",
         "14:30",
@@ -119,13 +121,45 @@ fun getEvent(eventId: String): Event {
     )
 }
 
-fun getPlayer(playerId : String) : Player {
+fun getAllTickets(eventId: String) : MutableList<Ticket> {
+    // Get the event's tickets
+    val event = getEvent(eventId)
+    val allTicketIds = event.tickets
+
+    // Create an array of the players connected to the tickets
+    var allTickets : MutableList<Ticket> = mutableListOf()
+    for (i in allTicketIds.indices) {
+        val ticket : Ticket = getTicket(allTicketIds[i])
+        val currTicket : Ticket = getTicket(ticket.playerId)
+        allTickets.add(currTicket)
+    }
+
+    return allTickets
+}
+
+fun getAllPlayers(eventId : String) : MutableList<Player> {
+    // Get the event's tickets
+    val event = getEvent(eventId)
+    val allTicketIds = event.tickets
+
+    // Create an array of the players connected to the tickets
+    var allPlayers : MutableList<Player> = mutableListOf()
+    for (i in allTicketIds.indices) {
+        val ticket : Ticket = getTicket(allTicketIds[i])
+        val currPlayer : Player = getPlayer(ticket.playerId, ticket.teamColor)
+        allPlayers += currPlayer
+    }
+
+    return allPlayers
+}
+
+fun getPlayer(playerId : String, teamColor : String) : Player {
 
     // Find player in database by playerId, return an array of its contents
     // val arrayContents = [insert code here]
 
     // Placeholder "found" player
-    val arrayContents = listOf(
+    val arrayContents = mutableListOf(
         "player123",
         "Bobb",
         "Polo",
@@ -136,23 +170,96 @@ fun getPlayer(playerId : String) : Player {
         listOf(1, 0, 0),
         listOf(1, 0, 0),
         listOf(1, 0, 0),
-        listOf("0767667090", "+46738255553"),
+        mutableListOf("0767667090", "+46738255553"),
+
     )
 
     return Player(
         arrayContents[0] as String,         // playerId
-        arrayContents[0] as String,         // first name
-        arrayContents[0] as String,         // last name
-        arrayContents[0] as Int,            // age
-        arrayContents[0] as Int,            // total exp
-        arrayContents[0] as List<Int>,      // healer levels
-        arrayContents[0] as List<Int>,      // mage levels
-        arrayContents[0] as List<Int>,      // rogue levels
-        arrayContents[0] as List<Int>,      // knight levels
-        arrayContents[0] as List<Int>,      // warrior levels
-        arrayContents[0] as List<String>,   // guardian phone numbers
+        arrayContents[1] as String,         // first name
+        arrayContents[2] as String,         // last name
+        arrayContents[3] as Int,            // age
+        arrayContents[4] as Int,            // total exp
+        arrayContents[5] as List<Int>,      // healer levels
+        arrayContents[6] as List<Int>,      // mage levels
+        arrayContents[7] as List<Int>,      // rogue levels
+        arrayContents[8] as List<Int>,      // knight levels
+        arrayContents[9] as List<Int>,      // warrior levels
+        arrayContents[10] as MutableList<String>,  // guardian phone numbers
     )
 }
+
+fun getTeamPlayers(tickets : MutableList<Ticket>, getBlue : Boolean) : MutableList<Ticket>? {
+    // Specify which team you're getting
+    var team = "red"
+    if (getBlue) {
+        team = "blue"
+    }
+
+    // Go through each player
+    var teamList : MutableList<Ticket> = mutableListOf()
+    for (i in tickets.indices) {
+
+        // Add correct players to a new teamList array
+        val currTicket = tickets[i]
+        if (currTicket.teamColor == team){
+            teamList.add(tickets[i])
+        }
+    }
+
+    // Check if you got any
+    if (teamList.isEmpty()){
+        return null
+    }
+
+    return teamList
+}
+
+fun getPlayerEXP(playerId : String) : Int {
+    // Find all tickets tied to the player, and add their total exp together
+    // val exp = [insert code here]
+
+    // Placeholder "found" exp
+    val exp = 123
+
+    return exp
+}
+
+fun getRoleByNumber(number : Int) : String {
+    var role = ""
+
+    when (number) {
+        0 -> {
+            role = "Undecided"
+        }
+        1 -> {
+            role = "Helare"
+        }
+        2 -> {
+            role = "Magiker"
+        }
+        3 -> {
+            role = "Odåga"
+        }
+        4 -> {
+            role = "Riddare"
+        }
+        5 -> {
+            role = "Special A"
+        }
+        6 -> {
+            role = "Special B"
+        }
+        7 -> {
+            role = "Krigare"
+        }
+    }
+
+    return role
+}
+
+
+
 
 fun mergeTicketAndPlayer(player : Player, ticket : Ticket) {
     player.age = ticket.age
