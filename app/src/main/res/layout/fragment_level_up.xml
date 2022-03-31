@@ -33,20 +33,39 @@
                 android:text="Back"
                 android:textColor="#000000"
                 app:strokeColor="#000000"
-                app:strokeWidth="2dp" />
+                app:strokeWidth="2dp"
+                android:contentDescription="button"/>
 
-            <TextView
-                android:id="@+id/levelUpPlayerNameText"
+            <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_marginLeft="50dp"
-                android:layout_marginRight="50dp"
-                android:layout_weight="3"
+                android:layout_weight="5"
                 android:gravity="center"
-                android:text="Player Name"
-                android:textAlignment="center"
-                android:textSize="20sp"
-                android:textStyle="bold" />
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/levelUpPlayerNameText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="50dp"
+                    android:layout_marginRight="50dp"
+                    android:layout_weight="3"
+                    android:gravity="center"
+                    android:text="Player Name"
+                    android:textAlignment="center"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/levelUpExpRemText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:text="325 EXP"
+                    android:textAlignment="center"
+                    android:textSize="30sp" />
+            </LinearLayout>
 
             <Button
                 android:id="@+id/levelUpApplyButton"
@@ -57,7 +76,8 @@
                 android:text="Apply"
                 android:textColor="#000000"
                 app:strokeColor="#000000"
-                app:strokeWidth="2dp" />
+                app:strokeWidth="2dp"
+                android:contentDescription="button"/>
         </LinearLayout>
 
         <LinearLayout
@@ -83,24 +103,32 @@
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
                     android:layout_weight="1"
+                    android:background="#77000000"
                     android:gravity="center"
                     android:text="EXTRALIV"
-                    android:textAlignment="center" />
+                    android:textAlignment="center"
+                    android:textColor="#FFFFFF"
+                    android:textSize="16sp" />
 
                 <Button
                     android:id="@+id/extraLifeButton"
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
-                    android:layout_weight="3" />
+                    android:layout_weight="3"
+                    tools:ignore="SpeakableTextPresentCheck"
+                    android:contentDescription="button"/>
 
                 <TextView
                     android:id="@+id/extraLifeCostText"
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
                     android:layout_weight="1"
+                    android:background="#77000000"
                     android:gravity="center"
                     android:text="10 EXP"
-                    android:textAlignment="center" />
+                    android:textAlignment="center"
+                    android:textColor="#FFFFFF"
+                    android:textSize="16sp" />
             </LinearLayout>
 
             <LinearLayout
@@ -116,24 +144,32 @@
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
                     android:layout_weight="1"
+                    android:background="#77000000"
                     android:gravity="center"
                     android:text="GARANTI"
-                    android:textAlignment="center" />
+                    android:textAlignment="center"
+                    android:textColor="#FFFFFF"
+                    android:textSize="16sp" />
 
                 <Button
                     android:id="@+id/guaranteeButton"
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
-                    android:layout_weight="3" />
+                    android:layout_weight="3"
+                    tools:ignore="SpeakableTextPresentCheck"
+                    android:contentDescription="button"/>
 
                 <TextView
                     android:id="@+id/guaranteeCostText"
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
                     android:layout_weight="1"
+                    android:background="#77000000"
                     android:gravity="center"
                     android:text="50 EXP"
-                    android:textAlignment="center" />
+                    android:textAlignment="center"
+                    android:textColor="#FFFFFF"
+                    android:textSize="16sp" />
             </LinearLayout>
 
             <LinearLayout
@@ -148,9 +184,12 @@
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
                     android:layout_weight="1"
+                    android:background="#77000000"
                     android:gravity="center"
                     android:text="ANNAT"
-                    android:textAlignment="center" />
+                    android:textAlignment="center"
+                    android:textColor="#FFFFFF"
+                    android:textSize="16sp" />
 
                 <EditText
                     android:id="@+id/otherExpSinkEditText"
@@ -167,36 +206,6 @@
         </LinearLayout>
 
         <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="0dp"
-            android:layout_marginBottom="20dp"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:orientation="vertical"
-            android:paddingLeft="20dp"
-            android:paddingRight="20dp">
-
-            <TextView
-                android:id="@+id/levelUpExpTitle"
-                android:layout_width="wrap_content"
-                android:layout_height="0dp"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:text="EXP Kvar"
-                android:textSize="20sp" />
-
-            <TextView
-                android:id="@+id/levelUpExpRemText"
-                android:layout_width="wrap_content"
-                android:layout_height="0dp"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:text="325"
-                android:textAlignment="center"
-                android:textSize="30sp" />
-        </LinearLayout>
-
-        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="0.75"
@@ -209,7 +218,8 @@
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:backgroundTint="#0FBA98"
-                android:text="Helare" />
+                android:text="Helare"
+                android:contentDescription="button"/>
 
             <Button
                 android:id="@+id/levelUpMageButton"
@@ -217,7 +227,8 @@
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:backgroundTint="#6C3CD8"
-                android:text="Magiker" />
+                android:text="Magiker"
+                android:contentDescription="button"/>
 
             <Button
                 android:id="@+id/levelUpRogueButton"
@@ -225,7 +236,8 @@
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:backgroundTint="#683D20"
-                android:text="Odåga" />
+                android:text="Odåga"
+                android:contentDescription="button"/>
 
             <Button
                 android:id="@+id/levelUpKnightButton"
@@ -233,10 +245,12 @@
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:backgroundTint="#D88E0E"
-                android:text="Riddare" />
+                android:text="Riddare"
+                android:contentDescription="button"/>
         </LinearLayout>
 
         <LinearLayout
+            android:id="@+id/subclassListBackground"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="8"
@@ -244,204 +258,324 @@
             android:orientation="horizontal">
 
             <LinearLayout
-                android:layout_width="0dp"
+                android:id="@+id/subclassList1"
+                android:layout_width="wrap_content"
                 android:layout_height="match_parent"
-                android:layout_marginLeft="25dp"
-                android:layout_marginRight="50dp"
+                android:layout_marginRight="5dp"
                 android:layout_weight="1"
+                android:gravity="center_horizontal|top"
                 android:orientation="vertical">
 
                 <TextView
                     android:id="@+id/subclassTitle1"
                     android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:background="#A8FFFFFF"
                     android:gravity="center"
+                    android:paddingTop="5dp"
+                    android:paddingBottom="5dp"
                     android:text="Subclass 1"
                     android:textAlignment="center"
-                    android:textSize="20sp"
-                    android:textStyle="bold" />
+                    android:textColor="#292929"
+                    android:textSize="20sp" />
 
                 <Button
                     android:id="@+id/subclass1button1"
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_weight="6" />
+                    android:layout_width="130dp"
+                    android:layout_height="130dp"
+                    android:backgroundTint="#202020"
+                    android:contentDescription="button"
+                    app:strokeColor="#FFFFFF"
+                    app:strokeWidth="10dp"
+                    tools:ignore="SpeakableTextPresentCheck" />
 
                 <TextView
                     android:id="@+id/subclass1Exp1"
-                    android:layout_width="match_parent"
+                    android:layout_width="130dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="20dp"
+                    android:layout_marginBottom="10dp"
+                    android:background="#77FFFFFF"
                     android:gravity="center"
-                    android:text="exp cost"
+                    android:padding="5dp"
+                    android:text="Owned"
                     android:textAlignment="center"
+                    android:textColor="#191919"
                     android:textSize="16sp" />
 
                 <Button
                     android:id="@+id/subclass1button2"
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_weight="6" />
+                    android:layout_width="130dp"
+                    android:layout_height="130dp"
+                    android:backgroundTint="#202020"
+                    android:contentDescription="button"
+                    tools:ignore="SpeakableTextPresentCheck" />
 
                 <TextView
                     android:id="@+id/subclass1Exp2"
-                    android:layout_width="match_parent"
+                    android:layout_width="130dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="20dp"
+                    android:layout_marginBottom="10dp"
+                    android:background="#77FFFFFF"
                     android:gravity="center"
-                    android:text="exp cost"
+                    android:padding="5dp"
+                    android:text="50 EXP"
                     android:textAlignment="center"
+                    android:textColor="#191919"
                     android:textSize="16sp" />
 
                 <Button
                     android:id="@+id/subclass1button3"
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_weight="6" />
+                    android:layout_width="130dp"
+                    android:layout_height="130dp"
+                    android:backgroundTint="#202020"
+                    android:contentDescription="button"
+                    tools:ignore="SpeakableTextPresentCheck" />
 
                 <TextView
                     android:id="@+id/subclass1Exp3"
-                    android:layout_width="match_parent"
+                    android:layout_width="130dp"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="10dp"
+                    android:background="#77FFFFFF"
                     android:gravity="center"
-                    android:text="exp cost"
+                    android:padding="5dp"
+                    android:text="100 EXP"
                     android:textAlignment="center"
+                    android:textColor="#191919"
+                    android:textSize="16sp" />
+
+                <Button
+                    android:id="@+id/subclass1button4"
+                    android:layout_width="130dp"
+                    android:layout_height="130dp"
+                    android:backgroundTint="#202020"
+                    android:contentDescription="button"
+                    tools:ignore="SpeakableTextPresentCheck" />
+
+                <TextView
+                    android:id="@+id/subclass1Exp4"
+                    android:layout_width="130dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="10dp"
+                    android:background="#77FFFFFF"
+                    android:gravity="center"
+                    android:padding="5dp"
+                    android:text="100 EXP"
+                    android:textAlignment="center"
+                    android:textColor="#191919"
                     android:textSize="16sp" />
             </LinearLayout>
 
             <LinearLayout
-                android:layout_width="0dp"
+                android:id="@+id/subclassList2"
+                android:layout_width="wrap_content"
                 android:layout_height="match_parent"
-                android:layout_marginRight="50dp"
+                android:layout_marginRight="5dp"
                 android:layout_weight="1"
+                android:gravity="center_horizontal|top"
                 android:orientation="vertical">
 
                 <TextView
                     android:id="@+id/subclassTitle2"
                     android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:background="#A8FFFFFF"
                     android:gravity="center"
+                    android:paddingTop="5dp"
+                    android:paddingBottom="5dp"
                     android:text="Subclass 2"
                     android:textAlignment="center"
-                    android:textSize="20sp"
-                    android:textStyle="bold" />
+                    android:textColor="#292929"
+                    android:textSize="20sp" />
 
                 <Button
                     android:id="@+id/subclass2button1"
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_weight="6" />
+                    android:layout_width="130dp"
+                    android:layout_height="130dp"
+                    android:backgroundTint="#202020"
+                    android:contentDescription="button"
+                    tools:ignore="SpeakableTextPresentCheck" />
 
                 <TextView
                     android:id="@+id/subclass2Exp1"
-                    android:layout_width="match_parent"
+                    android:layout_width="130dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="20dp"
+                    android:layout_marginBottom="10dp"
+                    android:background="#77FFFFFF"
                     android:gravity="center"
-                    android:text="exp cost"
+                    android:padding="5dp"
+                    android:text="100 EXP"
                     android:textAlignment="center"
+                    android:textColor="#191919"
                     android:textSize="16sp" />
 
                 <Button
                     android:id="@+id/subclass2button2"
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_weight="6" />
+                    android:layout_width="130dp"
+                    android:layout_height="130dp"
+                    android:backgroundTint="#202020"
+                    android:contentDescription="button"
+                    tools:ignore="SpeakableTextPresentCheck" />
 
                 <TextView
                     android:id="@+id/subclass2Exp2"
-                    android:layout_width="match_parent"
+                    android:layout_width="130dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="20dp"
+                    android:layout_marginBottom="10dp"
+                    android:background="#77FFFFFF"
                     android:gravity="center"
-                    android:text="exp cost"
+                    android:padding="5dp"
+                    android:text="50 EXP"
                     android:textAlignment="center"
+                    android:textColor="#191919"
                     android:textSize="16sp" />
 
                 <Button
                     android:id="@+id/subclass2button3"
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_weight="6" />
+                    android:layout_width="130dp"
+                    android:layout_height="130dp"
+                    android:backgroundTint="#202020"
+                    android:contentDescription="button"
+                    tools:ignore="SpeakableTextPresentCheck" />
 
                 <TextView
                     android:id="@+id/subclass2Exp3"
-                    android:layout_width="match_parent"
+                    android:layout_width="130dp"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="10dp"
+                    android:background="#77FFFFFF"
                     android:gravity="center"
-                    android:text="exp cost"
+                    android:padding="5dp"
+                    android:text="100 EXP"
                     android:textAlignment="center"
+                    android:textColor="#191919"
+                    android:textSize="16sp" />
+
+                <Button
+                    android:id="@+id/subclass2button4"
+                    android:layout_width="130dp"
+                    android:layout_height="130dp"
+                    android:backgroundTint="#202020"
+                    android:contentDescription="button"
+                    tools:ignore="SpeakableTextPresentCheck" />
+
+                <TextView
+                    android:id="@+id/subclass2Exp4"
+                    android:layout_width="130dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="10dp"
+                    android:background="#77FFFFFF"
+                    android:gravity="center"
+                    android:padding="5dp"
+                    android:text="100 EXP"
+                    android:textAlignment="center"
+                    android:textColor="#191919"
                     android:textSize="16sp" />
             </LinearLayout>
 
             <LinearLayout
-                android:layout_width="0dp"
+                android:id="@+id/subclassList3"
+                android:layout_width="wrap_content"
                 android:layout_height="match_parent"
-                android:layout_marginRight="25dp"
                 android:layout_weight="1"
+                android:gravity="center_horizontal|top"
                 android:orientation="vertical">
 
                 <TextView
                     android:id="@+id/subclassTitle3"
                     android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:background="#A8FFFFFF"
                     android:gravity="center"
+                    android:paddingTop="5dp"
+                    android:paddingBottom="5dp"
                     android:text="Subclass 3"
                     android:textAlignment="center"
-                    android:textSize="20sp"
-                    android:textStyle="bold" />
+                    android:textColor="#292929"
+                    android:textSize="20sp" />
 
                 <Button
                     android:id="@+id/subclass3button1"
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_weight="6" />
+                    android:layout_width="130dp"
+                    android:layout_height="130dp"
+                    android:backgroundTint="#202020"
+                    android:contentDescription="button"
+                    tools:ignore="SpeakableTextPresentCheck" />
 
                 <TextView
                     android:id="@+id/subclass3Exp1"
-                    android:layout_width="match_parent"
+                    android:layout_width="130dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="20dp"
+                    android:layout_marginBottom="10dp"
+                    android:background="#77FFFFFF"
                     android:gravity="center"
-                    android:text="exp cost"
+                    android:padding="5dp"
+                    android:text="100 EXP"
                     android:textAlignment="center"
+                    android:textColor="#191919"
                     android:textSize="16sp" />
 
                 <Button
                     android:id="@+id/subclass3button2"
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_weight="6" />
+                    android:layout_width="130dp"
+                    android:layout_height="130dp"
+                    android:backgroundTint="#202020"
+                    android:contentDescription="button"
+                    tools:ignore="SpeakableTextPresentCheck" />
 
                 <TextView
                     android:id="@+id/subclass3Exp2"
-                    android:layout_width="match_parent"
+                    android:layout_width="130dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="20dp"
+                    android:layout_marginBottom="10dp"
+                    android:background="#77FFFFFF"
                     android:gravity="center"
-                    android:text="exp cost"
+                    android:padding="5dp"
+                    android:text="50 EXP"
                     android:textAlignment="center"
+                    android:textColor="#191919"
                     android:textSize="16sp" />
 
                 <Button
                     android:id="@+id/subclass3button3"
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_weight="6" />
+                    android:layout_width="130dp"
+                    android:layout_height="130dp"
+                    android:backgroundTint="#202020"
+                    android:contentDescription="button"
+                    tools:ignore="SpeakableTextPresentCheck" />
 
                 <TextView
                     android:id="@+id/subclass3Exp3"
-                    android:layout_width="match_parent"
+                    android:layout_width="130dp"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="10dp"
+                    android:background="#77FFFFFF"
                     android:gravity="center"
-                    android:text="exp cost"
+                    android:padding="5dp"
+                    android:text="100 EXP"
                     android:textAlignment="center"
+                    android:textColor="#191919"
+                    android:textSize="16sp" />
+
+                <Button
+                    android:id="@+id/subclass3button4"
+                    android:layout_width="130dp"
+                    android:layout_height="130dp"
+                    android:backgroundTint="#202020"
+                    android:contentDescription="button"
+                    tools:ignore="SpeakableTextPresentCheck" />
+
+                <TextView
+                    android:id="@+id/subclass3Exp4"
+                    android:layout_width="130dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="10dp"
+                    android:background="#77FFFFFF"
+                    android:gravity="center"
+                    android:padding="5dp"
+                    android:text="100 EXP"
+                    android:textAlignment="center"
+                    android:textColor="#191919"
                     android:textSize="16sp" />
             </LinearLayout>
         </LinearLayout>

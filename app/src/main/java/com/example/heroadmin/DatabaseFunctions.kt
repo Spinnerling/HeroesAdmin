@@ -146,14 +146,14 @@ fun getAllPlayers(eventId : String) : MutableList<Player> {
     var allPlayers : MutableList<Player> = mutableListOf()
     for (i in allTicketIds.indices) {
         val ticket : Ticket = getTicket(allTicketIds[i])
-        val currPlayer : Player = getPlayer(ticket.playerId, ticket.teamColor)
+        val currPlayer : Player = getPlayer(ticket.playerId)
         allPlayers += currPlayer
     }
 
     return allPlayers
 }
 
-fun getPlayer(playerId : String, teamColor : String) : Player {
+fun getPlayer(playerId : String) : Player {
 
     // Find player in database by playerId, return an array of its contents
     // val arrayContents = [insert code here]
