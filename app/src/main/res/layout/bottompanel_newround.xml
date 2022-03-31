@@ -61,16 +61,6 @@
                 android:textSize="20sp" />
 
             <TextView
-                android:id="@+id/warriorAmountText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:text="Krigare"
-                android:textAlignment="center"
-                android:textSize="20sp" />
-
-            <TextView
                 android:id="@+id/specialAAmountText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -135,15 +125,6 @@
                 android:textAlignment="center" />
 
             <EditText
-                android:id="@+id/warriorAmountValue"
-                android:layout_width="wrap_content"
-                android:layout_height="48dp"
-                android:ems="10"
-                android:inputType="number"
-                android:text="3"
-                android:textAlignment="center" />
-
-            <EditText
                 android:id="@+id/specialAAmountValue"
                 android:layout_width="wrap_content"
                 android:layout_height="48dp"
@@ -180,7 +161,7 @@
 
             <Button
                 android:id="@+id/healerButton"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_marginRight="5dp"
                 android:layout_weight="1"
@@ -192,7 +173,7 @@
 
             <Button
                 android:id="@+id/mageButton"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:backgroundTint="#FFFFFF"
@@ -212,7 +193,7 @@
 
             <Button
                 android:id="@+id/rogueButton"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_marginRight="5dp"
                 android:layout_weight="1"
@@ -224,7 +205,7 @@
 
             <Button
                 android:id="@+id/knightButton"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:backgroundTint="#FFFFFF"
@@ -233,17 +214,6 @@
                 app:strokeColor="#000000"
                 app:strokeWidth="2dp" />
         </LinearLayout>
-
-        <Button
-            android:id="@+id/warriorButton"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:backgroundTint="#FFFFFF"
-            android:text="Krigare"
-            android:textColor="#000000"
-            app:strokeColor="#000000"
-            app:strokeWidth="2dp" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -255,7 +225,7 @@
 
             <Button
                 android:id="@+id/specialAButton"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_marginRight="5dp"
                 android:layout_weight="1"
@@ -267,7 +237,7 @@
 
             <Button
                 android:id="@+id/specialBButton"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:backgroundTint="#FFFFFF"
@@ -276,6 +246,40 @@
                 app:strokeColor="#000000"
                 app:strokeWidth="2dp" />
         </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginTop="5dp"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/warriorButton"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginRight="5dp"
+                android:layout_weight="1"
+                android:backgroundTint="#FFFFFF"
+                android:text="Warrior"
+                android:textColor="#000000"
+                app:strokeColor="#000000"
+                app:strokeWidth="2dp" />
+
+            <Button
+                android:id="@+id/switchTeamButton2"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:backgroundTint="#FFFFFF"
+                android:text="Switch Team"
+                android:textColor="#000000"
+                app:strokeColor="#000000"
+                app:strokeWidth="2dp" />
+        </LinearLayout>
+
+
     </LinearLayout>
 
     <Button

@@ -174,17 +174,6 @@
                 app:strokeWidth="2dp" />
 
             <Button
-                android:id="@+id/setRoleButton"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:backgroundTint="#FFFFFF"
-                android:text="Set Role"
-                android:textColor="#000000"
-                app:strokeColor="#000000"
-                app:strokeWidth="2dp" />
-
-            <Button
                 android:id="@+id/switchTeamButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -207,9 +196,7 @@
             <TextView
                 android:id="@+id/remExpText"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:layout_marginBottom="16dp"
+                android:layout_height="0dp"
                 android:layout_weight="1"
                 android:gravity="center"
                 android:text="30 exp remaining"
@@ -217,27 +204,37 @@
                 android:textSize="16sp"
                 android:textStyle="bold" />
 
-            <Button
-                android:id="@+id/awardExpButton"
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="0dp"
                 android:layout_weight="1"
-                android:backgroundTint="#FFFFFF"
-                android:text="Award Exp"
-                android:textColor="#000000"
-                app:strokeColor="#000000"
-                app:strokeWidth="2dp" />
+                android:orientation="horizontal">
 
-            <Button
-                android:id="@+id/spendExpButton"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:backgroundTint="#FFFFFF"
-                android:text="Spend Exp"
-                android:textColor="#000000"
-                app:strokeColor="#000000"
-                app:strokeWidth="2dp" />
+                <Button
+                    android:id="@+id/awardExpButton"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginRight="5dp"
+                    android:layout_weight="1"
+                    android:backgroundTint="#D7FFCF"
+                    android:text="Award Exp"
+                    android:textColor="#000000"
+                    app:strokeColor="#000000"
+                    app:strokeWidth="2dp" />
+
+                <Button
+                    android:id="@+id/spendExpButton"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:backgroundTint="#FFFFFF"
+                    android:text="Spend Exp"
+                    android:textColor="#000000"
+                    app:strokeColor="#000000"
+                    app:strokeWidth="2dp" />
+
+            </LinearLayout>
+
         </LinearLayout>
     </LinearLayout>
 </LinearLayout>

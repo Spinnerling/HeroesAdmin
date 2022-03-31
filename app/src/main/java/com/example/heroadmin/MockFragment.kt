@@ -107,7 +107,7 @@ class MockFragment : Fragment() {
         // Pass along eventId
     }
 
-    private fun updateTeamLists() {
+    fun updateTeamLists() {
         // Empty old lists
         redTeamNames = mutableListOf()
         redTeamNumbers = mutableListOf()

@@ -265,3 +265,16 @@ fun mergeTicketAndPlayer(player : Player, ticket : Ticket) {
     player.age = ticket.age
     // Add guardian to player
 }
+
+fun switchTeam(ticket : Ticket){
+    if (ticket.teamColor == "red") {
+        ticket.teamColor = "blue"
+    }
+    else {
+        ticket.teamColor = "red"
+    }
+
+    // [Send to database]
+
+    // [Update team lists]
+}
