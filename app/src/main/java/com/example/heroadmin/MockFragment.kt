@@ -14,8 +14,8 @@ class MockFragment : Fragment() {
     private var currEvent: String = "event123"
     private var allPlayers: MutableList<Player> = getAllPlayers(currEvent)
     private var allTickets: MutableList<Ticket> = getAllTickets(currEvent)
-    private var redTeam: MutableList<Ticket>? = getTeamPlayers(allTickets, false)
-    private var blueTeam: MutableList<Ticket>? = getTeamPlayers(allTickets, true)
+    private var redTeam: MutableList<Ticket>? = getTeamTickets(allTickets, false)
+    private var blueTeam: MutableList<Ticket>? = getTeamTickets(allTickets, true)
     private lateinit var redTeamNames : MutableList<String>
     private lateinit var blueTeamNames : MutableList<String>
     private lateinit var redTeamNumbers : MutableList<Int>

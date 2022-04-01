@@ -189,7 +189,7 @@ fun getPlayer(playerId : String) : Player {
     )
 }
 
-fun getTeamPlayers(tickets : MutableList<Ticket>, getBlue : Boolean) : MutableList<Ticket>? {
+fun getTeamTickets(tickets : MutableList<Ticket>, getBlue : Boolean) : MutableList<Ticket>? {
     // Specify which team you're getting
     var team = "red"
     if (getBlue) {
@@ -277,4 +277,15 @@ fun switchTeam(ticket : Ticket){
     // [Send to database]
 
     // [Update team lists]
+}
+
+fun getPlayerSubclasses() : MutableList<Int> {
+    // Find array of owned Upgrade Levels in database
+    //val subclassArray : MutableList<Int> =
+
+    //Placeholder "found" array
+    val subclassArray : MutableList<Int> = mutableListOf(1, 2, 1, 1, 2, 1, 2)
+
+    return subclassArray
+
 }

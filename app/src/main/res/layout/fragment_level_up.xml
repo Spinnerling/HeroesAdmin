@@ -110,13 +110,14 @@
                     android:textColor="#FFFFFF"
                     android:textSize="16sp" />
 
-                <Button
+                <ImageButton
                     android:id="@+id/extraLifeButton"
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
                     android:layout_weight="3"
                     tools:ignore="SpeakableTextPresentCheck"
-                    android:contentDescription="button"/>
+                    android:contentDescription="button"
+                    android:src="@mipmap/ic_tiger_foreground" />
 
                 <TextView
                     android:id="@+id/extraLifeCostText"
@@ -151,13 +152,14 @@
                     android:textColor="#FFFFFF"
                     android:textSize="16sp" />
 
-                <Button
+                <ImageButton
                     android:id="@+id/guaranteeButton"
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
                     android:layout_weight="3"
                     tools:ignore="SpeakableTextPresentCheck"
-                    android:contentDescription="button"/>
+                    android:contentDescription="button"
+                    android:src="@mipmap/ic_tiger_foreground" />
 
                 <TextView
                     android:id="@+id/guaranteeCostText"
@@ -279,14 +281,13 @@
                     android:textColor="#292929"
                     android:textSize="20sp" />
 
-                <Button
+                <ImageButton
                     android:id="@+id/subclass1button1"
                     android:layout_width="130dp"
                     android:layout_height="130dp"
-                    android:backgroundTint="#202020"
+                    android:backgroundTint="#93844E"
                     android:contentDescription="button"
-                    app:strokeColor="#FFFFFF"
-                    app:strokeWidth="10dp"
+                    android:src="@mipmap/ic_tiger_foreground"
                     tools:ignore="SpeakableTextPresentCheck" />
 
                 <TextView
@@ -302,12 +303,13 @@
                     android:textColor="#191919"
                     android:textSize="16sp" />
 
-                <Button
+                <ImageButton
                     android:id="@+id/subclass1button2"
                     android:layout_width="130dp"
                     android:layout_height="130dp"
-                    android:backgroundTint="#202020"
+                    android:backgroundTint="#FFFFFF"
                     android:contentDescription="button"
+                    android:src="@mipmap/ic_tiger_foreground"
                     tools:ignore="SpeakableTextPresentCheck" />
 
                 <TextView
@@ -323,13 +325,14 @@
                     android:textColor="#191919"
                     android:textSize="16sp" />
 
-                <Button
+                <ImageButton
                     android:id="@+id/subclass1button3"
                     android:layout_width="130dp"
                     android:layout_height="130dp"
-                    android:backgroundTint="#202020"
+                    android:backgroundTint="#FFFFFF"
                     android:contentDescription="button"
-                    tools:ignore="SpeakableTextPresentCheck" />
+                    tools:ignore="SpeakableTextPresentCheck"
+                    android:src="@mipmap/ic_tiger_foreground" />
 
                 <TextView
                     android:id="@+id/subclass1Exp3"
@@ -339,18 +342,19 @@
                     android:background="#77FFFFFF"
                     android:gravity="center"
                     android:padding="5dp"
-                    android:text="100 EXP"
+                    android:text="75 EXP"
                     android:textAlignment="center"
                     android:textColor="#191919"
                     android:textSize="16sp" />
 
-                <Button
+                <ImageButton
                     android:id="@+id/subclass1button4"
                     android:layout_width="130dp"
                     android:layout_height="130dp"
-                    android:backgroundTint="#202020"
+                    android:backgroundTint="#FFFFFF"
                     android:contentDescription="button"
-                    tools:ignore="SpeakableTextPresentCheck" />
+                    tools:ignore="SpeakableTextPresentCheck"
+                    android:src="@mipmap/ic_tiger_foreground" />
 
                 <TextView
                     android:id="@+id/subclass1Exp4"
@@ -388,13 +392,14 @@
                     android:textColor="#292929"
                     android:textSize="20sp" />
 
-                <Button
+                <ImageButton
                     android:id="@+id/subclass2button1"
                     android:layout_width="130dp"
                     android:layout_height="130dp"
-                    android:backgroundTint="#202020"
+                    android:backgroundTint="#FFFFFF"
                     android:contentDescription="button"
-                    tools:ignore="SpeakableTextPresentCheck" />
+                    tools:ignore="SpeakableTextPresentCheck"
+                    android:src="@mipmap/ic_tiger_foreground"/>
 
                 <TextView
                     android:id="@+id/subclass2Exp1"
@@ -409,13 +414,14 @@
                     android:textColor="#191919"
                     android:textSize="16sp" />
 
-                <Button
+                <ImageButton
                     android:id="@+id/subclass2button2"
                     android:layout_width="130dp"
                     android:layout_height="130dp"
-                    android:backgroundTint="#202020"
+                    android:backgroundTint="#FFFFFF"
                     android:contentDescription="button"
-                    tools:ignore="SpeakableTextPresentCheck" />
+                    tools:ignore="SpeakableTextPresentCheck"
+                    android:src="@mipmap/ic_tiger_foreground" />
 
                 <TextView
                     android:id="@+id/subclass2Exp2"
@@ -430,13 +436,14 @@
                     android:textColor="#191919"
                     android:textSize="16sp" />
 
-                <Button
+                <ImageButton
                     android:id="@+id/subclass2button3"
                     android:layout_width="130dp"
                     android:layout_height="130dp"
-                    android:backgroundTint="#202020"
+                    android:backgroundTint="#FFFFFF"
                     android:contentDescription="button"
-                    tools:ignore="SpeakableTextPresentCheck" />
+                    tools:ignore="SpeakableTextPresentCheck"
+                    android:src="@mipmap/ic_tiger_foreground" />
 
                 <TextView
                     android:id="@+id/subclass2Exp3"
@@ -446,18 +453,19 @@
                     android:background="#77FFFFFF"
                     android:gravity="center"
                     android:padding="5dp"
-                    android:text="100 EXP"
+                    android:text="75 EXP"
                     android:textAlignment="center"
                     android:textColor="#191919"
                     android:textSize="16sp" />
 
-                <Button
+                <ImageButton
                     android:id="@+id/subclass2button4"
                     android:layout_width="130dp"
                     android:layout_height="130dp"
-                    android:backgroundTint="#202020"
+                    android:backgroundTint="#FFFFFF"
                     android:contentDescription="button"
-                    tools:ignore="SpeakableTextPresentCheck" />
+                    tools:ignore="SpeakableTextPresentCheck"
+                    android:src="@mipmap/ic_tiger_foreground" />
 
                 <TextView
                     android:id="@+id/subclass2Exp4"
@@ -494,13 +502,14 @@
                     android:textColor="#292929"
                     android:textSize="20sp" />
 
-                <Button
+                <ImageButton
                     android:id="@+id/subclass3button1"
                     android:layout_width="130dp"
                     android:layout_height="130dp"
-                    android:backgroundTint="#202020"
+                    android:backgroundTint="#FFFFFF"
                     android:contentDescription="button"
-                    tools:ignore="SpeakableTextPresentCheck" />
+                    tools:ignore="SpeakableTextPresentCheck"
+                    android:src="@mipmap/ic_tiger_foreground" />
 
                 <TextView
                     android:id="@+id/subclass3Exp1"
@@ -515,13 +524,14 @@
                     android:textColor="#191919"
                     android:textSize="16sp" />
 
-                <Button
+                <ImageButton
                     android:id="@+id/subclass3button2"
                     android:layout_width="130dp"
                     android:layout_height="130dp"
-                    android:backgroundTint="#202020"
+                    android:backgroundTint="#FFFFFF"
                     android:contentDescription="button"
-                    tools:ignore="SpeakableTextPresentCheck" />
+                    tools:ignore="SpeakableTextPresentCheck"
+                    android:src="@mipmap/ic_tiger_foreground" />
 
                 <TextView
                     android:id="@+id/subclass3Exp2"
@@ -536,13 +546,14 @@
                     android:textColor="#191919"
                     android:textSize="16sp" />
 
-                <Button
+                <ImageButton
                     android:id="@+id/subclass3button3"
                     android:layout_width="130dp"
                     android:layout_height="130dp"
-                    android:backgroundTint="#202020"
+                    android:backgroundTint="#FFFFFF"
                     android:contentDescription="button"
-                    tools:ignore="SpeakableTextPresentCheck" />
+                    tools:ignore="SpeakableTextPresentCheck"
+                    android:src="@mipmap/ic_tiger_foreground" />
 
                 <TextView
                     android:id="@+id/subclass3Exp3"
@@ -552,18 +563,19 @@
                     android:background="#77FFFFFF"
                     android:gravity="center"
                     android:padding="5dp"
-                    android:text="100 EXP"
+                    android:text="75 EXP"
                     android:textAlignment="center"
                     android:textColor="#191919"
                     android:textSize="16sp" />
 
-                <Button
+                <ImageButton
                     android:id="@+id/subclass3button4"
                     android:layout_width="130dp"
                     android:layout_height="130dp"
-                    android:backgroundTint="#202020"
+                    android:backgroundTint="#FFFFFF"
                     android:contentDescription="button"
-                    tools:ignore="SpeakableTextPresentCheck" />
+                    tools:ignore="SpeakableTextPresentCheck"
+                    android:src="@mipmap/ic_tiger_foreground" />
 
                 <TextView
                     android:id="@+id/subclass3Exp4"
