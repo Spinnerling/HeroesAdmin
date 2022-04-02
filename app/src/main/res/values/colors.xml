@@ -7,4 +7,8 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="healerColor">#0FBA98</color>
+    <color name="mageColor">#6C3CD8</color>
+    <color name="rogueColor">#683D20</color>
+    <color name="knightColor">#D88E0E</color>
 </resources>
