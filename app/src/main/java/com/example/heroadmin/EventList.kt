@@ -18,7 +18,6 @@ class EventList : Fragment() {
     private lateinit var v : View
     private lateinit var eventAdapter : EventRecyclerAdapterKt
     private lateinit var eventArray : MutableList<Event?>
-    private lateinit var listener : eventRecyclerAdapter.eventClickListener
 
 
     override fun onResume() {
