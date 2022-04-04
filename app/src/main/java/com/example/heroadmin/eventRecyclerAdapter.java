@@ -51,15 +51,15 @@ public class eventRecyclerAdapter extends RecyclerView.Adapter<eventRecyclerAdap
     @Override
     public void onBindViewHolder(@NonNull eventRecyclerAdapter.MyViewHolder holder, int position) {
 
-        String date = eventArray.get(position).getActualDate();
+        Event event = eventArray.get(position);
+        String date = event.getActualDate();
         holder.dateText.setText(date);
-        String time = eventArray.get(position).getActualStartTime();
+        String time = event.getActualStartTime();
         holder.timeText.setText(time);
-        String playerAmount = eventArray.get(position).getPlayerAmount().toString();
-        holder.playerAmountText.setText(playerAmount);
-        String status = eventArray.get(position).getStatus();
+        int playerAmount = event.getPlayerAmount();
+        holder.playerAmountText.setText(Integer.toString(playerAmount));
+        String status = event.getStatus();
         holder.statusText.setText(status);
-
     }
 
     @Override

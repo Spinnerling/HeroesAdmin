@@ -88,36 +88,28 @@ fun getEvent(eventId: String): Event {
     // var arrayContents = [insert code here]
 
     // Placeholder "found" event
-    val arrayContents = mutableListOf(
-        "event123",
-        "13:00",
-        "14:30",
-        "this here event is much fun for everyhopa",
-        "vanligt event",
-        "",
-        48,
-        listOf("ticket123"),
-        0,
-        0,
-        10,
-        5,
-        5,
-    )
+    val arrayContents = mutableListOf("A123", "Stockholm", "24/3 -22", "2020", "2021", "15:09", "IN PLAY", "", "Torsdagsspel", "Kom och programmera, din blötvattensfisk!", listOf("ticket123"),0, 32,35,0, 0,10,2,5 )
 
     return Event(
         arrayContents[0] as String,         // eventId
-        arrayContents[1] as String,         // startTime
-        arrayContents[2] as String,         // endTime
-        arrayContents[3] as String,         // description
-        arrayContents[4] as String,         // title
-        arrayContents[5] as String,         // reportText
-        arrayContents[6] as Int,            // player max amount
-        arrayContents[7] as List<String>,   // ticketId array
-        arrayContents[8] as Int,            // Blue team EXP
-        arrayContents[9] as Int,            // Red team EXP
-        arrayContents[10] as Int,           // EXP for Attendance
-        arrayContents[11] as Int,           // EXP for Costume
-        arrayContents[12] as Int,           // EXP for Recruitment
+        arrayContents[1] as String,         // venue
+        arrayContents[2] as String,         // actualDate
+        arrayContents[3] as String,         // startTime
+        arrayContents[4] as String,         // endTime
+        arrayContents[5] as String,         // actualStartTime
+        arrayContents[6] as String,         // status
+        arrayContents[7] as String,         // reportText
+        arrayContents[8] as String,         // title
+        arrayContents[9] as String,         // description
+        arrayContents[10] as List<String>,   // ticketId array
+        arrayContents[11] as Int,            // round
+        arrayContents[12] as Int,            // player amount
+        arrayContents[13] as Int,            // player max amount
+        arrayContents[14] as Int,            // Blue team EXP
+        arrayContents[15] as Int,            // Red team EXP
+        arrayContents[16] as Int,           // EXP for Attendance
+        arrayContents[17] as Int,           // EXP for Costume
+        arrayContents[18] as Int,           // EXP for Recruitment
     )
 }
 
@@ -180,11 +172,11 @@ fun getPlayer(playerId : String) : Player {
         arrayContents[2] as String,         // last name
         arrayContents[3] as Int,            // age
         arrayContents[4] as Int,            // total exp
-        arrayContents[5] as List<Int>,      // healer levels
-        arrayContents[6] as List<Int>,      // mage levels
-        arrayContents[7] as List<Int>,      // rogue levels
-        arrayContents[8] as List<Int>,      // knight levels
-        arrayContents[9] as List<Int>,      // warrior levels
+        arrayContents[5] as MutableList<Int>,      // healer levels
+        arrayContents[6] as MutableList<Int>,      // mage levels
+        arrayContents[7] as MutableList<Int>,      // rogue levels
+        arrayContents[8] as MutableList<Int>,      // knight levels
+        arrayContents[9] as MutableList<Int>,      // warrior levels
         arrayContents[10] as MutableList<String>,  // guardian phone numbers
     )
 }

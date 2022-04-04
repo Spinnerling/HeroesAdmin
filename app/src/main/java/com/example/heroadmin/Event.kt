@@ -1,18 +1,25 @@
 package com.example.heroadmin
 
-class Event(
-    val eventId : String,
-    var startTime : String,
-    var endTime : String,
-    var description : String,
-    var title : String,
-    var reportText : String,
-    var playerMax : Int,
-    var tickets : List<String>, // list of ticketIds
-    var EXPBlueTeamTotal : Int,
-    var EXPRedTeamTotal : Int,
-    var EXPAttendanceValue : Int,
-    var EXPCostumeValue : Int,
-    var EXPRecruitValue : Int,
-) {
+public class Event (
+
+    public val eventId: String,
+    public val venue: String,
+    public val actualDate: String,
+    private val startTime: String,
+    private val endTime: String,
+    public val actualStartTime: String,
+    public val status: String,
+    public val reportText: String,
+    public var title: String,
+    public val description: String,
+    public val tickets: List<String>,
+    public val round: Int,
+    public val playerAmount: Int,
+    public val playerMax: Int,
+    public val ExpBlueTeamTotal: Int,
+    public val ExpRedTeamTotal: Int,
+    public val ExpAttendanceValue: Int,
+    public val ExpCostumeValue: Int,
+    public val ExpRecruitValue: Int,
+        ) {
 }

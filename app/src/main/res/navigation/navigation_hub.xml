@@ -17,10 +17,18 @@
             app:exitAnim="@anim/out_to_left"
             app:popEnterAnim="@anim/in_from_left"
             app:popExitAnim="@anim/out_to_right" />
+        <argument
+            android:name="messageEventId"
+            app:argType="string" />
+        <argument android:name="messageEvent" />
     </fragment>
     <fragment
         android:id="@+id/eventView"
         android:name="com.example.heroadmin.EventView"
         android:label="fragment_event_view"
-        tools:layout="@layout/fragment_event_view" />
+        tools:layout="@layout/fragment_event_view" >
+        <argument
+            android:name="passedEventId"
+            app:argType="string" />
+    </fragment>
 </navigation>

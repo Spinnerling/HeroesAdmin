@@ -1,39 +1,78 @@
 package com.example.heroadmin
 
-import android.content.Intent.getIntent
+import android.annotation.SuppressLint
 import android.os.Bundle
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.LinearLayout
-import androidx.core.app.NotificationCompat.getExtras
 import androidx.databinding.DataBindingUtil
 import com.example.heroadmin.databinding.FragmentEventViewBinding
 
 class EventView : Fragment() {
     private lateinit var binding : FragmentEventViewBinding
     private lateinit var v : View
-    private lateinit var eventId : String
+    private val args = EventViewArgs.fromBundle(requireArguments())
+    private val currEventId : String = args.passedEventId
+    private val event : Event = getEvent(currEventId)
+    private var allPlayers: MutableList<Player> = getAllPlayers(currEventId)
+    private var allTickets: MutableList<Ticket> = getAllTickets(currEventId)
+    private var redTeam: MutableList<Ticket>? = getTeamTickets(allTickets, false)
+    private var blueTeam: MutableList<Ticket>? = getTeamTickets(allTickets, true)
+    private lateinit var redTeamNames : MutableList<String>
+    private lateinit var blueTeamNames : MutableList<String>
+    private lateinit var redTeamNumbers : MutableList<Int>
+    private lateinit var blueTeamNumbers : MutableList<Int>
+    private lateinit var redTeamRoles : MutableList<String>
+    private lateinit var blueTeamRoles : MutableList<String>
+    private lateinit var redBenchedNames : MutableList<String>
+    private lateinit var blueBenchedNames : MutableList<String>
+    private lateinit var redBenchedNumbers : MutableList<Int>
+    private lateinit var blueBenchedNumbers : MutableList<Int>
+    private lateinit var redBenchedRoles : MutableList<String>
+    private lateinit var blueBenchedRoles : MutableList<String>
+    private lateinit var assignList : MutableList<Ticket>
+    private lateinit var checkInList : MutableList<Ticket>
 
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        // Inflate the layout for this fragment
+        binding = DataBindingUtil.inflate(inflater, R.layout.fragment_event_view, container, false)
+        v = inflater.inflate(R.layout.fragment_event_view, container, false)
+
+        return binding.root
+    }
+
+    @SuppressLint("SetTextI18n")
     override fun onResume() {
+
         super.onResume()
 
+        // Find elements
         val assignTeamPanelButton : Button = binding.assignTeamPanelButton
         val assignTeamList : LinearLayout = binding.assignTeamList
-
         val checkInPanelButton : Button = binding.checkInPanelButton
         val checkInList : LinearLayout = binding.checkInList
+        val eventInfoDate = binding.dateText
+        val eventInfoTime = binding.timeText
+        val eventInfoVenue = binding.venueText
+        val eventInfoPlayerAmount = binding.playerAmountText
+
+        // Set variables
+        eventInfoDate.text = "Date: ${event.actualDate}"
+        eventInfoTime.text = "Start: ${event.actualStartTime}"
+        eventInfoVenue.text = "Venue: ${event.venue}"
+        eventInfoPlayerAmount.text = "Tickets: ${event.playerAmount.toString()} / ${event.playerMax}"
 
         assignTeamPanelButton.setOnClickListener {
             if (assignTeamList.layoutParams.height == 0) {
-                assignTeamList.setLayoutParams(
-                    LinearLayout.LayoutParams(
-                        LinearLayout.LayoutParams.WRAP_CONTENT,
-                        LinearLayout.LayoutParams.WRAP_CONTENT
-                    )
+                assignTeamList.layoutParams = LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
                 )
                 assignTeamPanelButton.setCompoundDrawablesRelativeWithIntrinsicBounds(R.drawable.ic_list_open, 0, 0, 0)
             }
@@ -45,11 +84,9 @@ class EventView : Fragment() {
 
         checkInPanelButton.setOnClickListener {
             if (checkInList.layoutParams.height == 0) {
-                checkInList.setLayoutParams(
-                    LinearLayout.LayoutParams(
-                        LinearLayout.LayoutParams.WRAP_CONTENT,
-                        LinearLayout.LayoutParams.WRAP_CONTENT
-                    )
+                checkInList.layoutParams = LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
                 )
                 checkInPanelButton.setCompoundDrawablesRelativeWithIntrinsicBounds(R.drawable.ic_list_open, 0, 0, 0)
             }
@@ -60,18 +97,202 @@ class EventView : Fragment() {
         }
 
     }
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        // Inflate the layout for this fragment
-        binding = DataBindingUtil.inflate(inflater, R.layout.fragment_event_view, container, false)
-        v = inflater.inflate(R.layout.fragment_event_view, container, false)
-        eventId = "not found"
 
-        val extras : Bundle? = getIntent().getExtras("Sdasd")
+    private fun updateAssignTeamList(){
+        // Empty list
+        assignList = mutableListOf()
 
-        return binding.root
+        // Go through all the event's tickets
+        val eventObject = getEvent(currEventId)
+        for(i in eventObject.tickets.indices) {
+
+            // Find the ones who don't have a team yet
+            val currTicket = getTicket(eventObject.tickets[i])
+            if (currTicket.teamColor == "None"){
+                assignList.add(currTicket)
+            }
+        }
     }
+
+    private fun updateCheckInList(){
+        // Empty list
+        checkInList = mutableListOf()
+
+        // Go through all the event's tickets
+        val eventObject = getEvent(currEventId)
+        for(i in eventObject.tickets.indices) {
+
+            // Find the ones who haven't checked in yet
+            val currTicket = getTicket(eventObject.tickets[i])
+            if (!currTicket.checkedIn){
+                checkInList.add(currTicket)
+            }
+        }
+    }
+
+    private fun setTicketPlayer(ticket: Ticket) {
+        if (ticket.playerId == "") {
+            // Search for player
+
+            // If player doesn't exist, create a new userId?
+        } else {
+            // See if userId exists
+
+            // Otherwise, search for player
+        }
+
+        // Transfer ticket info to player
+    }
+
+    private fun autoSetRoleAmounts() {
+        if (allPlayers.isEmpty()) {
+            return
+        }
+
+        var healers = allPlayers.size / 16
+        var mages = (allPlayers.size + 4) / 16
+        var rogues = (allPlayers.size + 12) / 16
+        var knights = (allPlayers.size + 8) / 16
+
+    }
+
+    private fun endEvent() {
+        // Find eventId
+        // Go to report screen
+        // Pass along eventId
+    }
+
+    fun updateTeamLists() {
+        // Empty old lists
+        redTeamNames = mutableListOf()
+        redTeamNumbers = mutableListOf()
+        redTeamRoles = mutableListOf()
+        blueTeamNames = mutableListOf()
+        blueTeamNumbers = mutableListOf()
+        blueTeamRoles = mutableListOf()
+
+        for (i in redTeam?.indices!!){
+            val currTicket = redTeam!![i]
+
+            // Skip benched players
+            if (currTicket.benched) {
+                continue
+            }
+
+            // Set Name
+            val name = currTicket.fullName
+            // Set Numbers
+            val number = currTicket.tabardNr
+            // Set Roles
+            val role = getRoleByNumber(currTicket.currentRole)
+
+            // Pick out benched players
+            if (currTicket.benched) {
+                redBenchedNames.add(name)
+                redBenchedNumbers.add(number)
+                redBenchedRoles.add("Undecided")
+                continue
+            }
+
+            // Set players in field
+            redTeamNames.add(name)
+            redTeamNumbers.add(number)
+            redTeamRoles.add(role)
+        }
+
+        for (i in blueTeam?.indices!!) {
+            val currTicket = blueTeam!![i]
+
+            // Set Name
+            val name = currTicket.fullName
+            // Set Numbers
+            val number = currTicket.tabardNr
+            // Set Roles
+            val role = getRoleByNumber(currTicket.currentRole)
+
+            // Pick out benched players
+            if (currTicket.benched) {
+                blueBenchedNames.add(name)
+                blueBenchedNumbers.add(number)
+                blueBenchedRoles.add("Undecided")
+                continue
+            }
+
+            // Set players in field
+            blueTeamNames.add(name)
+            blueTeamNumbers.add(number)
+            blueTeamRoles.add(role)
+        }
+
+    }
+
+
+
+    // SORTING FUNCTIONS
+
+    private fun sortAssignByTicketId() {
+        assignList.sortBy { it.ticketId }
+    }
+
+    private fun sortAssignByName() {
+        assignList.sortBy { it.fullName }
+    }
+
+    private fun sortAssignByAge() {
+        assignList.sortBy { it.age }
+    }
+
+    private fun sortAssignByEmail() {
+        assignList.sortBy { it.bookingEmail }
+    }
+
+
+    private fun sortCheckInByTicketId() {
+        checkInList.sortBy { it.ticketId }
+    }
+
+    private fun sortCheckInByName() {
+        checkInList.sortBy { it.fullName }
+    }
+
+    private fun sortCheckInByAge() {
+        checkInList.sortBy { it.age }
+    }
+
+    private fun sortCheckInByEmail() {
+        checkInList.sortBy { it.bookingEmail }
+    }
+
+
+    private fun sortBlueByName() {
+        blueTeam?.sortBy { it.fullName }
+        updateTeamLists()
+    }
+
+    private fun sortBlueByNumber() {
+        blueTeam?.sortBy { it.tabardNr }
+        updateTeamLists()
+    }
+
+    private fun sortBlueByRole() {
+        blueTeam?.sortBy { it.currentRole }
+        updateTeamLists()
+    }
+
+    private fun sortRedByName() {
+        redTeam?.sortBy { it.fullName }
+        updateTeamLists()
+    }
+
+    private fun sortRedByNumber() {
+        redTeam?.sortBy { it.tabardNr }
+        updateTeamLists()
+    }
+
+    private fun sortRedByRole() {
+        redTeam?.sortBy { it.currentRole }
+        updateTeamLists()
+    }
+
 
 }
