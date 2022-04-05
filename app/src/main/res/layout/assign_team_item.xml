@@ -18,7 +18,7 @@
             android:id="@+id/assignTeam_nameText"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="10dp"
+            android:layout_marginLeft="5dp"
             android:layout_marginRight="5dp"
             android:layout_weight="6"
             android:text="Name Namesson"
@@ -31,6 +31,7 @@
             android:layout_marginRight="5dp"
             android:layout_weight="2.5"
             android:text="32"
+            android:textAlignment="center"
             android:textColor="#000000" />
 
         <Button
@@ -40,6 +41,7 @@
             android:layout_marginRight="5dp"
             android:layout_weight="3"
             android:backgroundTint="#FFFFFF"
+            android:contentDescription="Check Id Button"
             android:text="Check Id"
             android:textColor="#000000"
             android:textSize="10sp"
@@ -55,6 +57,7 @@
             android:layout_marginRight="5dp"
             android:layout_weight="3"
             android:text="UA2141"
+            android:textAlignment="center"
             android:textColor="#000000"
             android:visibility="visible" />
 
@@ -74,6 +77,7 @@
             android:layout_marginRight="5dp"
             android:layout_weight="2"
             android:backgroundTint="#FFFFFF"
+            android:contentDescription="Info button"
             android:textColor="#000000"
             app:icon="@drawable/ic_warning"
             app:iconGravity="textStart"
@@ -89,7 +93,8 @@
             android:layout_height="wrap_content"
             android:layout_marginRight="5dp"
             android:layout_weight="3"
-            android:backgroundTint="#1482E3" />
+            android:backgroundTint="#1482E3"
+            android:contentDescription="Blue team button" />
 
         <Button
             android:id="@+id/assignTeam_redTeamButton"
@@ -97,11 +102,12 @@
             android:layout_height="wrap_content"
             android:layout_marginRight="5dp"
             android:layout_weight="3"
-            android:backgroundTint="#EF5156" />
+            android:backgroundTint="#EF5156"
+            android:contentDescription="red team button" />
     </LinearLayout>
 
     <LinearLayout
-        android:id="@+id/assignTeam_itemInfoHeaders"
+        android:id="@+id/checkIn_itemInfoHeaders"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="#B3B3B3"
@@ -172,7 +178,7 @@
     </LinearLayout>
 
     <LinearLayout
-        android:id="@+id/assignTeam_itemInfoTexts"
+        android:id="@+id/checkIn_itemInfoTexts"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="#B3B3B3"
@@ -245,6 +251,7 @@
             android:layout_marginRight="5dp"
             android:layout_weight="0.3"
             android:backgroundTint="#F64E4E"
+            android:contentDescription="remove player button"
             android:textColor="#000000"
             app:icon="@drawable/ic_baseline_delete_24"
             app:iconGravity="textStart"

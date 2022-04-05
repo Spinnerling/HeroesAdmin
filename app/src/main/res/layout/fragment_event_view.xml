@@ -121,7 +121,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_weight="8"
                                 android:backgroundTint="#FFFFFF"
-                                android:contentDescription="asd"
+                                android:contentDescription="empty"
                                 android:textAlignment="viewStart"
                                 android:textColor="#000000"
                                 android:textSize="12sp"
@@ -174,9 +174,9 @@
 
                             <Button
                                 android:id="@+id/check_in_orgBy_name_button"
-                                android:layout_width="wrap_content"
+                                android:layout_width="0dp"
                                 android:layout_height="wrap_content"
-                                android:layout_weight="1"
+                                android:layout_weight="6"
                                 android:backgroundTint="#FFFFFF"
                                 android:text="Name"
                                 android:textAlignment="viewStart"
@@ -187,9 +187,9 @@
 
                             <Button
                                 android:id="@+id/check_in_orgBy_age"
-                                android:layout_width="wrap_content"
+                                android:layout_width="0dp"
                                 android:layout_height="wrap_content"
-                                android:layout_weight="1"
+                                android:layout_weight="2.5"
                                 android:backgroundTint="#FFFFFF"
                                 android:text="Age"
                                 android:textAlignment="viewStart"
@@ -200,9 +200,9 @@
 
                             <Button
                                 android:id="@+id/check_in_orgBy_note"
-                                android:layout_width="wrap_content"
+                                android:layout_width="0dp"
                                 android:layout_height="wrap_content"
-                                android:layout_weight="8"
+                                android:layout_weight="11"
                                 android:backgroundTint="#FFFFFF"
                                 android:text="Note"
                                 android:textAlignment="viewStart"
@@ -211,7 +211,24 @@
                                 app:strokeColor="#000000"
                                 app:strokeWidth="1dp" />
 
+                            <Button
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="8"
+                                android:backgroundTint="#FFFFFF"
+                                android:contentDescription="empty"
+                                android:textAlignment="viewStart"
+                                android:textColor="#000000"
+                                android:textSize="12sp"
+                                app:strokeColor="#000000"
+                                app:strokeWidth="1dp" />
+
                         </LinearLayout>
+
+                        <androidx.recyclerview.widget.RecyclerView
+                            android:id="@+id/checkInRecycler"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent" />
 
                     </LinearLayout>
 
@@ -299,6 +316,11 @@
                                 app:strokeWidth="1dp" />
 
                         </LinearLayout>
+
+                        <androidx.recyclerview.widget.RecyclerView
+                            android:id="@+id/BlueTeamRecycler"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent" />
 
                         <ImageView
                             android:id="@+id/role_list_separator1"
@@ -394,6 +416,11 @@
                                 app:strokeWidth="1dp" />
 
                         </LinearLayout>
+
+                        <androidx.recyclerview.widget.RecyclerView
+                            android:id="@+id/redTeamRecycler"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent" />
 
                         <ImageView
                             android:id="@+id/name_list_separator2"

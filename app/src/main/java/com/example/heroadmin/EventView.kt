@@ -39,6 +39,7 @@ class EventView : Fragment() {
     private lateinit var assignList : MutableList<Ticket>
     private lateinit var checkInList : MutableList<Ticket>
     private lateinit var assignTeamAdapter : AssignTeamRecyclerAdapter
+    private lateinit var checkInAdapter : CheckInRecyclerAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -87,6 +88,7 @@ class EventView : Fragment() {
         eventInfoPlayerAmount.text = "Tickets: ${event.playerAmount.toString()} / ${event.playerMax}"
 
         setAssignTeamAdapter()
+        setCheckInAdapter()
 
         assignTeamPanelButton.setOnClickListener {
             if (assignTeamList.layoutParams.height == 0) {
@@ -125,6 +127,15 @@ class EventView : Fragment() {
         ticketList.layoutManager = layoutManager
         ticketList.itemAnimator = DefaultItemAnimator()
         ticketList.adapter = assignTeamAdapter
+    }
+
+    private fun setCheckInAdapter() {
+        checkInAdapter = CheckInRecyclerAdapter(allTickets)
+        val layoutManager = LinearLayoutManager(v.context)
+        val ticketList = binding.checkInRecycler
+        ticketList.layoutManager = layoutManager
+        ticketList.itemAnimator = DefaultItemAnimator()
+        ticketList.adapter = checkInAdapter
     }
 
     private fun updateAssignTeamList(){

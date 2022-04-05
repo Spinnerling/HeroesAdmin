@@ -13,26 +13,11 @@
         android:gravity="center"
         android:orientation="horizontal">
 
-        <Button
-            android:id="@+id/checkin_removeButton"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginRight="5dp"
-            android:layout_weight="1"
-            android:backgroundTint="#FFFFFF"
-            android:textColor="#000000"
-            app:icon="@android:drawable/ic_delete"
-            app:iconGravity="textStart"
-            app:iconPadding="0dp"
-            app:iconSize="20dp"
-            app:iconTint="#000000"
-            app:strokeColor="#000000"
-            app:strokeWidth="2dp" />
-
         <TextView
             android:id="@+id/checkin_nameText"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginLeft="5dp"
             android:layout_marginRight="5dp"
             android:layout_weight="6"
             android:text="Name Namesson"
@@ -43,8 +28,9 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginRight="5dp"
-            android:layout_weight="1"
+            android:layout_weight="2.5"
             android:text="32"
+            android:textAlignment="center"
             android:textColor="#000000" />
 
         <TextView
@@ -52,7 +38,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginRight="5dp"
-            android:layout_weight="6"
+            android:layout_weight="11"
             android:text="Very much info text to note"
             android:textColor="#000000" />
 
@@ -63,6 +49,7 @@
             android:layout_marginRight="5dp"
             android:layout_weight="2"
             android:backgroundTint="#FFFFFF"
+            android:contentDescription="info button"
             android:textColor="#000000"
             app:icon="@drawable/ic_warning"
             app:iconGravity="textStart"
@@ -88,15 +75,16 @@
             android:layout_marginRight="5dp"
             android:layout_weight="3"
             android:backgroundTint="#FFFFFF"
-            android:text="Check In"
+            android:text="Check\nIn"
             android:textColor="#000000"
+            android:textSize="12sp"
             app:strokeColor="#000000"
             app:strokeWidth="2dp" />
 
     </LinearLayout>
 
     <LinearLayout
-        android:id="@+id/assignTeam_itemInfoHeaders"
+        android:id="@+id/checkIn_itemInfoHeaders"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="#B3B3B3"
@@ -108,53 +96,55 @@
             android:id="@+id/assignTeam_ContactNameHeader"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginRight="5dp"
             android:layout_weight="1"
-            android:text="Guardian Name"
+            android:text="Guardian\nName"
             android:textStyle="bold" />
 
         <TextView
             android:id="@+id/assignTeam_ContactPhoneHeader"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginRight="5dp"
             android:layout_weight="1"
-            android:text="Guardian Phone Nr"
+            android:text="Guardian\nPhone Nr"
             android:textStyle="bold" />
 
         <TextView
             android:id="@+id/assignTeam_ContactEmailHeader"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginRight="5dp"
             android:layout_weight="1"
-            android:text="Guardian Email"
+            android:text="Guardian\nEmail"
             android:textStyle="bold" />
 
         <TextView
             android:id="@+id/assignTeam_BookingNameHeader"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginRight="5dp"
             android:layout_weight="1"
-            android:text="Booker Name"
+            android:text="Booker\nName"
             android:textStyle="bold" />
 
         <TextView
             android:id="@+id/assignTeam_BookingPhoneHeader"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginRight="5dp"
             android:layout_weight="1"
-            android:text="Booker Phone Nr"
+            android:text="Booker\nPhone Nr"
             android:textStyle="bold" />
 
-        <TextView
-            android:id="@+id/assignTeam_NoteHeader"
+        <Space
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Note"
-            android:textStyle="bold" />
+            android:layout_weight="0.3" />
     </LinearLayout>
 
     <LinearLayout
-        android:id="@+id/assignTeam_itemInfoTexts"
+        android:id="@+id/checkIn_itemInfoTexts"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="#B3B3B3"
@@ -166,6 +156,7 @@
             android:id="@+id/assignTeam_ContactName"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginRight="5dp"
             android:layout_weight="1"
             android:text="Nameo Parentson"
             android:textColor="#000000" />
@@ -174,6 +165,7 @@
             android:id="@+id/assignTeam_ContactPhone"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginRight="5dp"
             android:layout_weight="1"
             android:text="070 123 45 67"
             android:textColor="#000000" />
@@ -182,6 +174,7 @@
             android:id="@+id/assignTeam_ContactEmail"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginRight="5dp"
             android:layout_weight="1"
             android:text="nameo_parentson_also_long_embarrassing_adress@email.com"
             android:textColor="#000000" />
@@ -190,6 +183,7 @@
             android:id="@+id/assignTeam_BookingName"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginRight="5dp"
             android:layout_weight="1"
             android:text="Nameson Booker"
             android:textColor="#000000" />
@@ -198,17 +192,26 @@
             android:id="@+id/assignTeam_BookingPhone"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginRight="5dp"
             android:layout_weight="1"
             android:text="073 987 65 43"
             android:textColor="#000000" />
 
-        <TextView
-            android:id="@+id/assignTeam_Note"
+        <Button
+            android:id="@+id/checkin_removeButton"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Massive noting notington with words and info that's probably important"
-            android:textColor="#000000" />
+            android:layout_gravity="bottom"
+            android:layout_weight="0.3"
+            android:backgroundTint="#E12727"
+            android:textColor="#000000"
+            app:icon="@drawable/ic_baseline_delete_24"
+            app:iconGravity="textStart"
+            app:iconPadding="0dp"
+            app:iconSize="20dp"
+            app:iconTint="#000000"
+            app:strokeColor="#000000"
+            app:strokeWidth="2dp" />
     </LinearLayout>
 
 </LinearLayout>
