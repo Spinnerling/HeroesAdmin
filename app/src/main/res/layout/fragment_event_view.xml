@@ -280,7 +280,7 @@
                                 android:id="@+id/team_name_button1"
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
-                                android:layout_weight="5"
+                                android:layout_weight="4.5"
                                 android:backgroundTint="#FFFFFF"
                                 android:text="Name"
                                 android:textAlignment="viewStart"
@@ -293,7 +293,7 @@
                                 android:id="@+id/team_number_button1"
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
-                                android:layout_weight="1"
+                                android:layout_weight="1.5"
                                 android:backgroundTint="#FFFFFF"
                                 android:text="#"
                                 android:textAlignment="viewStart"
@@ -318,9 +318,10 @@
                         </LinearLayout>
 
                         <androidx.recyclerview.widget.RecyclerView
-                            android:id="@+id/BlueTeamRecycler"
+                            android:id="@+id/blueTeamRecycler"
                             android:layout_width="match_parent"
-                            android:layout_height="match_parent" />
+                            android:layout_height="match_parent"
+                            />
 
                         <ImageView
                             android:id="@+id/role_list_separator1"
@@ -330,15 +331,16 @@
                             android:paddingTop="2dp"
                             tools:src="@tools:sample/avatars" />
 
+                        <androidx.recyclerview.widget.RecyclerView
+                            android:id="@+id/blueBenchedRecycler"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent" />
+
                     </LinearLayout>
 
-                    <ImageView
-                        android:id="@+id/name_list_separator"
-                        android:layout_width="2dp"
-                        android:layout_height="match_parent"
-                        android:background="#808080"
-                        android:paddingTop="2dp"
-                        tools:src="@tools:sample/avatars" />
+                    <Space
+                        android:layout_width="5dp"
+                        android:layout_height="wrap_content" />
 
                     <LinearLayout
                         android:id="@+id/team_panel2"
@@ -380,7 +382,7 @@
                                 android:id="@+id/team_name_button2"
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
-                                android:layout_weight="5"
+                                android:layout_weight="4.5"
                                 android:backgroundTint="#FFFFFF"
                                 android:text="Name"
                                 android:textAlignment="viewStart"
@@ -393,7 +395,7 @@
                                 android:id="@+id/team_number_button2"
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
-                                android:layout_weight="1"
+                                android:layout_weight="1.5"
                                 android:backgroundTint="#FFFFFF"
                                 android:text="#"
                                 android:textAlignment="viewStart"
@@ -420,7 +422,8 @@
                         <androidx.recyclerview.widget.RecyclerView
                             android:id="@+id/redTeamRecycler"
                             android:layout_width="match_parent"
-                            android:layout_height="match_parent" />
+                            android:layout_height="match_parent"
+                            />
 
                         <ImageView
                             android:id="@+id/name_list_separator2"
@@ -429,6 +432,11 @@
                             android:background="#808080"
                             android:paddingTop="2dp"
                             tools:src="@tools:sample/avatars" />
+
+                        <androidx.recyclerview.widget.RecyclerView
+                            android:id="@+id/redBenchedRecycler"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent" />
 
                     </LinearLayout>
                 </LinearLayout>

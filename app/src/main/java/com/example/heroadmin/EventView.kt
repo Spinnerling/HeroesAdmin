@@ -10,6 +10,7 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.LinearLayout
 import androidx.databinding.DataBindingUtil
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.heroadmin.databinding.FragmentEventViewBinding
@@ -24,22 +25,16 @@ class EventView : Fragment() {
     private lateinit var allTickets: MutableList<Ticket>
     private lateinit var redTeam: MutableList<Ticket>
     private lateinit var blueTeam: MutableList<Ticket>
-    private lateinit var redTeamNames : MutableList<String>
-    private lateinit var blueTeamNames : MutableList<String>
-    private lateinit var redTeamNumbers : MutableList<Int>
-    private lateinit var blueTeamNumbers : MutableList<Int>
-    private lateinit var redTeamRoles : MutableList<String>
-    private lateinit var blueTeamRoles : MutableList<String>
-    private lateinit var redBenchedNames : MutableList<String>
-    private lateinit var blueBenchedNames : MutableList<String>
-    private lateinit var redBenchedNumbers : MutableList<Int>
-    private lateinit var blueBenchedNumbers : MutableList<Int>
-    private lateinit var redBenchedRoles : MutableList<String>
-    private lateinit var blueBenchedRoles : MutableList<String>
+    private var redBench: MutableList<Ticket> = mutableListOf()
+    private var blueBench: MutableList<Ticket> = mutableListOf()
     private lateinit var assignList : MutableList<Ticket>
     private lateinit var checkInList : MutableList<Ticket>
     private lateinit var assignTeamAdapter : AssignTeamRecyclerAdapter
     private lateinit var checkInAdapter : CheckInRecyclerAdapter
+    private lateinit var redTeamAdapter : TeamRecyclerAdapter
+    private lateinit var blueTeamAdapter : TeamRecyclerAdapter
+    private lateinit var redBenchAdapter : TeamRecyclerAdapter
+    private lateinit var blueBenchAdapter : TeamRecyclerAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -56,8 +51,10 @@ class EventView : Fragment() {
         allTickets = getAllTickets(currEventId)
 
         if (allTickets.isNotEmpty()){
+            Log.i("test", allTickets[0].teamColor)
             redTeam = getTeamTickets(allTickets, false)
-            blueTeam = getTeamTickets(allTickets, true)!!
+            blueTeam = getTeamTickets(allTickets, true)
+            Log.i("test", redTeam.size.toString() + " of red team")
         }
         else {
             Log.i("test", "no tickets found in event")
@@ -89,6 +86,7 @@ class EventView : Fragment() {
 
         setAssignTeamAdapter()
         setCheckInAdapter()
+        setTeamAdapters()
 
         assignTeamPanelButton.setOnClickListener {
             if (assignTeamList.layoutParams.height == 0) {
@@ -136,6 +134,44 @@ class EventView : Fragment() {
         ticketList.layoutManager = layoutManager
         ticketList.itemAnimator = DefaultItemAnimator()
         ticketList.adapter = checkInAdapter
+    }
+
+    private fun setTeamAdapters() {
+        redTeamAdapter = TeamRecyclerAdapter(redTeam) { position -> onTeamItemClick(position)}
+        blueTeamAdapter = TeamRecyclerAdapter(blueTeam) { position -> onTeamItemClick(position)}
+        redBenchAdapter = TeamRecyclerAdapter(redBench) { position -> onTeamItemClick(position)}
+        blueBenchAdapter = TeamRecyclerAdapter(blueBench) { position -> onTeamItemClick(position)}
+
+        val layoutManagerR = LinearLayoutManager(v.context)
+        val layoutManagerRB = LinearLayoutManager(v.context)
+        val layoutManagerB = LinearLayoutManager(v.context)
+        val layoutManagerBB = LinearLayoutManager(v.context)
+
+        val ticketListR = binding.redTeamRecycler
+        val ticketListRB = binding.redBenchedRecycler
+        val ticketListB = binding.blueTeamRecycler
+        val ticketListBB = binding.blueBenchedRecycler
+
+        ticketListR.layoutManager = layoutManagerR
+        ticketListR.itemAnimator = DefaultItemAnimator()
+        ticketListR.adapter = redTeamAdapter
+
+        ticketListB.layoutManager = layoutManagerB
+        ticketListB.itemAnimator = DefaultItemAnimator()
+        ticketListB.adapter = blueTeamAdapter
+
+        ticketListRB.layoutManager = layoutManagerRB
+        ticketListRB.itemAnimator = DefaultItemAnimator()
+        ticketListRB.adapter = redBenchAdapter
+
+        ticketListBB.layoutManager = layoutManagerBB
+        ticketListBB.itemAnimator = DefaultItemAnimator()
+        ticketListBB.adapter = blueBenchAdapter
+    }
+
+    private fun onTeamItemClick(position : Int) {
+        //val args =  EventListArgs.fromBundle(requireArguments())
+        val ticket = allTickets[position]
     }
 
     private fun updateAssignTeamList(){
@@ -204,15 +240,9 @@ class EventView : Fragment() {
 
     fun updateTeamLists() {
         // Empty old lists
-        redTeamNames = mutableListOf()
-        redTeamNumbers = mutableListOf()
-        redTeamRoles = mutableListOf()
-        blueTeamNames = mutableListOf()
-        blueTeamNumbers = mutableListOf()
-        blueTeamRoles = mutableListOf()
 
-        for (i in redTeam?.indices!!){
-            val currTicket = redTeam!![i]
+        for (i in redTeam.indices){
+            val currTicket = redTeam[i]
 
             // Skip benched players
             if (currTicket.benched) {
@@ -228,20 +258,12 @@ class EventView : Fragment() {
 
             // Pick out benched players
             if (currTicket.benched) {
-                redBenchedNames.add(name)
-                redBenchedNumbers.add(number)
-                redBenchedRoles.add("Undecided")
                 continue
             }
-
-            // Set players in field
-            redTeamNames.add(name)
-            redTeamNumbers.add(number)
-            redTeamRoles.add(role)
         }
 
-        for (i in blueTeam?.indices!!) {
-            val currTicket = blueTeam!![i]
+        for (i in blueTeam.indices) {
+            val currTicket = blueTeam[i]
 
             // Set Name
             val name = currTicket.fullName
@@ -252,16 +274,10 @@ class EventView : Fragment() {
 
             // Pick out benched players
             if (currTicket.benched) {
-                blueBenchedNames.add(name)
-                blueBenchedNumbers.add(number)
-                blueBenchedRoles.add("Undecided")
                 continue
             }
 
             // Set players in field
-            blueTeamNames.add(name)
-            blueTeamNumbers.add(number)
-            blueTeamRoles.add(role)
         }
 
     }
@@ -305,32 +321,32 @@ class EventView : Fragment() {
 
 
     private fun sortBlueByName() {
-        blueTeam?.sortBy { it.fullName }
+        blueTeam.sortBy { it.fullName }
         updateTeamLists()
     }
 
     private fun sortBlueByNumber() {
-        blueTeam?.sortBy { it.tabardNr }
+        blueTeam.sortBy { it.tabardNr }
         updateTeamLists()
     }
 
     private fun sortBlueByRole() {
-        blueTeam?.sortBy { it.currentRole }
+        blueTeam.sortBy { it.currentRole }
         updateTeamLists()
     }
 
     private fun sortRedByName() {
-        redTeam?.sortBy { it.fullName }
+        redTeam.sortBy { it.fullName }
         updateTeamLists()
     }
 
     private fun sortRedByNumber() {
-        redTeam?.sortBy { it.tabardNr }
+        redTeam.sortBy { it.tabardNr }
         updateTeamLists()
     }
 
     private fun sortRedByRole() {
-        redTeam?.sortBy { it.currentRole }
+        redTeam.sortBy { it.currentRole }
         updateTeamLists()
     }
 

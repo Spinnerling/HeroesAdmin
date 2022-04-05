@@ -8,7 +8,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 
-class AssignTeamRecyclerAdapter (private val ticketArray: MutableList<Ticket>) : RecyclerView.Adapter<AssignTeamViewHolder>()  {
+class AssignTeamRecyclerAdapter (private val ticketArray: MutableList<Ticket>) : RecyclerView.Adapter<AssignTeamViewHolder>() {
 
     override fun getItemCount(): Int {
         return if (ticketArray.isEmpty()) 0 else ticketArray!!.size

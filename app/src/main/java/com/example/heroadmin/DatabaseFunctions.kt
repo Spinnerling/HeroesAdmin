@@ -13,7 +13,7 @@ fun getTicket(ticketId: String): Ticket {
         "Polo",
         16,
         false,
-        "None",
+        "Red",
         false,
         0,
         false,
@@ -187,9 +187,9 @@ fun getPlayer(playerId : String) : Player {
 
 fun getTeamTickets(tickets : MutableList<Ticket>, getBlue : Boolean) : MutableList<Ticket> {
     // Specify which team you're getting
-    var team = "red"
+    var team = "Red"
     if (getBlue) {
-        team = "blue"
+        team = "Blue"
     }
 
     // Go through each player
