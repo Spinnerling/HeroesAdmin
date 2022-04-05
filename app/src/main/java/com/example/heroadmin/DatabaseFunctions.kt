@@ -17,7 +17,8 @@ fun getTicket(ticketId: String): Ticket {
         false,
         0,
         false,
-        "None",
+        0,
+        0,
         "Lena",
         "Fagerlös",
         "070 123 45 67",
@@ -33,8 +34,10 @@ fun getTicket(ticketId: String): Ticket {
         0,
         0,
         0,
-        "None",
         0,
+        0,
+        0,
+        ""
     )
 
     // Place the contents of array into a Ticket class
@@ -67,9 +70,10 @@ fun getTicket(ticketId: String): Ticket {
         arrayContents[24] as Int,      // Rounds as Warrior
         arrayContents[25] as Int,      // Rounds as Special
         arrayContents[26] as Int,      // Respawns left
-        arrayContents[27] as String,   // Guaranteed Role
+        arrayContents[27] as Int,      // Guaranteed Role
         arrayContents[28] as Int,      // EXP personal
         arrayContents[29] as Int,      // Tabard number
+        arrayContents[30] as String,   // Note
     )
 }
 
@@ -181,7 +185,7 @@ fun getPlayer(playerId : String) : Player {
     )
 }
 
-fun getTeamTickets(tickets : MutableList<Ticket>, getBlue : Boolean) : MutableList<Ticket>? {
+fun getTeamTickets(tickets : MutableList<Ticket>, getBlue : Boolean) : MutableList<Ticket> {
     // Specify which team you're getting
     var team = "red"
     if (getBlue) {
@@ -197,11 +201,6 @@ fun getTeamTickets(tickets : MutableList<Ticket>, getBlue : Boolean) : MutableLi
         if (currTicket.teamColor == team){
             teamList.add(tickets[i])
         }
-    }
-
-    // Check if you got any
-    if (teamList.isEmpty()){
-        return null
     }
 
     return teamList

@@ -64,23 +64,10 @@
                             android:orientation="horizontal">
 
                             <Button
-                                android:id="@+id/assign_team_orgBy_UserID_button"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="0.1"
-                                android:backgroundTint="#FFFFFF"
-                                android:text="UserID"
-                                android:textAlignment="viewStart"
-                                android:textColor="#000000"
-                                android:textSize="12sp"
-                                app:strokeColor="#000000"
-                                app:strokeWidth="1dp" />
-
-                            <Button
                                 android:id="@+id/assign_team_orgBy_Name_button"
-                                android:layout_width="wrap_content"
+                                android:layout_width="0dp"
                                 android:layout_height="wrap_content"
-                                android:layout_weight="1.9"
+                                android:layout_weight="6"
                                 android:backgroundTint="#FFFFFF"
                                 android:text="Name"
                                 android:textAlignment="viewStart"
@@ -91,9 +78,9 @@
 
                             <Button
                                 android:id="@+id/assign_team_orgBy_Age_button"
-                                android:layout_width="wrap_content"
+                                android:layout_width="0dp"
                                 android:layout_height="wrap_content"
-                                android:layout_weight="0.1"
+                                android:layout_weight="2.5"
                                 android:backgroundTint="#FFFFFF"
                                 android:text="Age"
                                 android:textAlignment="viewStart"
@@ -103,10 +90,23 @@
                                 app:strokeWidth="1dp" />
 
                             <Button
-                                android:id="@+id/assign_team_orgBy_email_button"
-                                android:layout_width="wrap_content"
+                                android:id="@+id/assign_team_orgBy_UserID_button"
+                                android:layout_width="0dp"
                                 android:layout_height="wrap_content"
-                                android:layout_weight="5"
+                                android:layout_weight="3"
+                                android:backgroundTint="#FFFFFF"
+                                android:text="UserID"
+                                android:textAlignment="viewStart"
+                                android:textColor="#000000"
+                                android:textSize="12sp"
+                                app:strokeColor="#000000"
+                                app:strokeWidth="1dp" />
+
+                            <Button
+                                android:id="@+id/assign_team_orgBy_email_button"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="8"
                                 android:backgroundTint="#FFFFFF"
                                 android:text="Booking Email"
                                 android:textAlignment="viewStart"
@@ -114,7 +114,25 @@
                                 android:textSize="12sp"
                                 app:strokeColor="#000000"
                                 app:strokeWidth="1dp" />
+
+                            <Button
+                                android:id="@+id/button"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="8"
+                                android:backgroundTint="#FFFFFF"
+                                android:contentDescription="asd"
+                                android:textAlignment="viewStart"
+                                android:textColor="#000000"
+                                android:textSize="12sp"
+                                app:strokeColor="#000000"
+                                app:strokeWidth="1dp" />
                         </LinearLayout>
+
+                        <androidx.recyclerview.widget.RecyclerView
+                            android:id="@+id/assignTeamRecycler"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent" />
 
                     </LinearLayout>
 

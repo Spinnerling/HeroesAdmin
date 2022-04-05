@@ -2,6 +2,7 @@ package com.example.heroadmin
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -9,18 +10,20 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.LinearLayout
 import androidx.databinding.DataBindingUtil
+import androidx.recyclerview.widget.DefaultItemAnimator
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.heroadmin.databinding.FragmentEventViewBinding
 
 class EventView : Fragment() {
     private lateinit var binding : FragmentEventViewBinding
     private lateinit var v : View
-    private val args = EventViewArgs.fromBundle(requireArguments())
-    private val currEventId : String = args.passedEventId
-    private val event : Event = getEvent(currEventId)
-    private var allPlayers: MutableList<Player> = getAllPlayers(currEventId)
-    private var allTickets: MutableList<Ticket> = getAllTickets(currEventId)
-    private var redTeam: MutableList<Ticket>? = getTeamTickets(allTickets, false)
-    private var blueTeam: MutableList<Ticket>? = getTeamTickets(allTickets, true)
+    private lateinit var args : EventViewArgs
+    private lateinit var currEventId : String
+    private lateinit var event : Event
+    private lateinit var allPlayers: MutableList<Player>
+    private lateinit var allTickets: MutableList<Ticket>
+    private lateinit var redTeam: MutableList<Ticket>
+    private lateinit var blueTeam: MutableList<Ticket>
     private lateinit var redTeamNames : MutableList<String>
     private lateinit var blueTeamNames : MutableList<String>
     private lateinit var redTeamNumbers : MutableList<Int>
@@ -35,6 +38,7 @@ class EventView : Fragment() {
     private lateinit var blueBenchedRoles : MutableList<String>
     private lateinit var assignList : MutableList<Ticket>
     private lateinit var checkInList : MutableList<Ticket>
+    private lateinit var assignTeamAdapter : AssignTeamRecyclerAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -43,6 +47,20 @@ class EventView : Fragment() {
         // Inflate the layout for this fragment
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_event_view, container, false)
         v = inflater.inflate(R.layout.fragment_event_view, container, false)
+
+        args = EventViewArgs.fromBundle(requireArguments())
+        currEventId = args.passedEventId.toString()
+        event = getEvent(currEventId)
+        allPlayers = getAllPlayers(currEventId)
+        allTickets = getAllTickets(currEventId)
+
+        if (allTickets.isNotEmpty()){
+            redTeam = getTeamTickets(allTickets, false)
+            blueTeam = getTeamTickets(allTickets, true)!!
+        }
+        else {
+            Log.i("test", "no tickets found in event")
+        }
 
         return binding.root
     }
@@ -67,6 +85,8 @@ class EventView : Fragment() {
         eventInfoTime.text = "Start: ${event.actualStartTime}"
         eventInfoVenue.text = "Venue: ${event.venue}"
         eventInfoPlayerAmount.text = "Tickets: ${event.playerAmount.toString()} / ${event.playerMax}"
+
+        setAssignTeamAdapter()
 
         assignTeamPanelButton.setOnClickListener {
             if (assignTeamList.layoutParams.height == 0) {
@@ -96,6 +116,15 @@ class EventView : Fragment() {
             }
         }
 
+    }
+
+    private fun setAssignTeamAdapter() {
+        assignTeamAdapter = AssignTeamRecyclerAdapter(allTickets)
+        val layoutManager = LinearLayoutManager(v.context)
+        val ticketList = binding.assignTeamRecycler
+        ticketList.layoutManager = layoutManager
+        ticketList.itemAnimator = DefaultItemAnimator()
+        ticketList.adapter = assignTeamAdapter
     }
 
     private fun updateAssignTeamList(){
@@ -243,7 +272,7 @@ class EventView : Fragment() {
     }
 
     private fun sortAssignByEmail() {
-        assignList.sortBy { it.bookingEmail }
+        assignList.sortBy { it.bookerEmail }
     }
 
 
@@ -260,7 +289,7 @@ class EventView : Fragment() {
     }
 
     private fun sortCheckInByEmail() {
-        checkInList.sortBy { it.bookingEmail }
+        checkInList.sortBy { it.bookerEmail }
     }
 
 

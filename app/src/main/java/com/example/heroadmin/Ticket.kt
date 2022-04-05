@@ -17,10 +17,10 @@ class Ticket(
     val guardianLastName: String,
     val guardianPhoneNr: String,
     val guardianEmail: String,
-    val bookingFirstName: String,
-    val bookingLastName: String,
-    val bookingPhoneNr: String,
-    val bookingEmail: String,
+    val bookerFirstName: String,
+    val bookerLastName: String,
+    val bookerPhoneNr: String,
+    val bookerEmail: String,
     var roundsHealer: Int,
     var roundsMage: Int,
     var roundsRogue: Int,
@@ -28,9 +28,12 @@ class Ticket(
     var roundsWarrior: Int,
     var roundsSpecial: Int,
     var respawns: Int,
-    var guaranteedRole: String,
+    var guaranteedRole: Int,
     var expPersonal: Int,
     var tabardNr : Int,
+    var note : String
 ) {
     var fullName = "$firstName $lastName"
+    var guardianFullName = "$guardianFirstName $guardianLastName"
+    var bookerFullName = "$bookerFirstName $bookerLastName"
 }
