@@ -21,8 +21,9 @@
             android:orientation="horizontal">
 
             <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/venueChooser"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="5dp"
                 android:layout_weight="1"
@@ -33,9 +34,7 @@
                 <AutoCompleteTextView
                     android:id="@+id/dropDownMenu"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:layout_weight="1"
+                    android:layout_height="match_parent"
                     android:inputType="none"
                     android:text="Choose Venue" />
 
@@ -43,7 +42,7 @@
 
             <Button
                 android:id="@+id/create_event_button"
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_marginStart="5dp"
                 android:layout_weight="1"
@@ -66,7 +65,7 @@
             <Button
                 android:id="@+id/main_activity_bt_coming_events"
                 style="?android:attr/buttonBarButtonStyle"
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:backgroundTint="#FFFFFF"
@@ -79,7 +78,7 @@
             <Button
                 android:id="@+id/main_activity_bt_past_events"
                 style="?android:attr/buttonBarButtonStyle"
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:backgroundTint="#FFFFFF"
@@ -92,7 +91,7 @@
         <ScrollView
             android:id="@+id/main_activity_sv_events"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
             android:contentDescription="list of events">
 

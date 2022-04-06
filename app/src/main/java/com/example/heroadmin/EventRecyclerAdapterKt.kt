@@ -4,7 +4,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 
-class EventRecyclerAdapterKt(private val eventArray: MutableList<Event?>, private val onItemClicked: (position: Int) -> Unit) : RecyclerView.Adapter<EventListViewHolder>()  {
+class EventRecyclerAdapterKt(private val eventArray: MutableList<Event>, private val onItemClicked: (position: Int) -> Unit) : RecyclerView.Adapter<EventListViewHolder>()  {
 
     override fun getItemCount(): Int {
         return if (eventArray.isEmpty()) 0 else eventArray!!.size
