@@ -8,8 +8,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.LinearLayout
+import android.widget.*
 import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -35,6 +34,16 @@ class EventView : Fragment() {
     private lateinit var blueTeamAdapter : TeamRecyclerAdapter
     private lateinit var redBenchAdapter : TeamRecyclerAdapter
     private lateinit var blueBenchAdapter : TeamRecyclerAdapter
+    private lateinit var redTeamPowerText : TextView
+    private lateinit var blueTeamPowerText : TextView
+    private lateinit var redTeamAmountText : TextView
+    private lateinit var blueTeamAmountText : TextView
+    private lateinit var redTeamTeensText : TextView
+    private lateinit var blueTeamTeensText : TextView
+    private lateinit var redTeamTiniesText : TextView
+    private lateinit var blueTeamTiniesText : TextView
+    private lateinit var selectedTicket : Ticket
+    private lateinit var playerOnOffSwitch : Switch
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -51,13 +60,8 @@ class EventView : Fragment() {
         allTickets = getAllTickets(currEventId)
 
         if (allTickets.isNotEmpty()){
-            Log.i("test", allTickets[0].teamColor)
             redTeam = getTeamTickets(allTickets, false)
             blueTeam = getTeamTickets(allTickets, true)
-            Log.i("test", redTeam.size.toString() + " of red team")
-        }
-        else {
-            Log.i("test", "no tickets found in event")
         }
 
         return binding.root
@@ -77,12 +81,27 @@ class EventView : Fragment() {
         val eventInfoTime = binding.timeText
         val eventInfoVenue = binding.venueText
         val eventInfoPlayerAmount = binding.playerAmountText
+        val playerCloseButton = binding.playerCloseButton
+        val bottomPanel = binding.bottomPanel
+        val bottomPanelNewRound = binding.bottomPanelNewRound
+        val bottomPanelPlayer = binding.bottomPanelPlayer
+        val newRoundButton = binding.newRoundButton
+
+        redTeamPowerText = binding.redTeamPowerText
+        blueTeamPowerText = binding.blueTeamPowerText
+        redTeamAmountText = binding.redTeamAmountText
+        blueTeamAmountText = binding.blueTeamAmountText
+        redTeamTeensText = binding.redTeamTeensText
+        blueTeamTeensText = binding.blueTeamTeensText
+        redTeamTiniesText = binding.redTeamTiniesText
+        blueTeamTiniesText = binding.blueTeamTiniesText
+        playerOnOffSwitch = binding.playerOnOffSwitch
 
         // Set variables
         eventInfoDate.text = "Date: ${event.actualDate}"
         eventInfoTime.text = "Start: ${event.actualStartTime}"
         eventInfoVenue.text = "Venue: ${event.venue}"
-        eventInfoPlayerAmount.text = "Tickets: ${event.playerAmount} / ${event.playerMax}"
+        eventInfoPlayerAmount.text = "Tickets: ${allTickets.size} / ${event.playerMax}"
 
         updateTicketLists()
 
@@ -115,10 +134,24 @@ class EventView : Fragment() {
             }
         }
 
+        playerOnOffSwitch.setOnCheckedChangeListener{ _, isChecked ->
+            selectedTicket.benched = !isChecked
+            updateTicketLists()
+        }
+
+        playerCloseButton.setOnClickListener{
+            bottomPanel.visibility = View.VISIBLE
+            bottomPanelPlayer.visibility = View.GONE
+        }
+
+        newRoundButton.setOnClickListener{
+            bottomPanel.visibility = View.GONE
+            bottomPanelNewRound.visibility = View.VISIBLE
+        }
+
     }
 
     fun updateTicketLists() {
-        Log.i("test", "Updating ticket list")
         assignList = mutableListOf()
         checkInList = mutableListOf()
         redTeam = mutableListOf()
@@ -127,7 +160,6 @@ class EventView : Fragment() {
         blueBench = mutableListOf()
 
         for (ticket in allTickets){
-            Log.i("test", ticket.teamColor + " " + ticket.checkedIn.toString())
             if (ticket.teamColor == "None"){
                 assignList.add(ticket)
             }
@@ -156,6 +188,50 @@ class EventView : Fragment() {
         setCheckInAdapter()
         setTeamAdapters()
         checkListVisibilities()
+        updateTeamPower()
+    }
+
+    private fun updateTeamPower() {
+        var redPowerLevel = 0
+        var bluePowerLevel = 0
+        var redTeenAmount = 0
+        var blueTeenAmount = 0
+        var redTiniesAmount = 0
+        var blueTiniesAmount = 0
+
+
+        for (ticket in allTickets) {
+            if (ticket.teamColor == "Red" && !ticket.benched) {
+                redPowerLevel += ticket.age
+                if (ticket.age > 12){
+                    redTeenAmount++
+                }
+                else if (ticket.age < 8){
+                    redTiniesAmount++
+                }
+
+            } else if (ticket.teamColor == "Blue" && !ticket.benched) {
+                bluePowerLevel += ticket.age
+                if (ticket.age > 12){
+                    blueTeenAmount++
+                }
+                else if (ticket.age < 8){
+                    blueTiniesAmount++
+                }
+            }
+        }
+
+        redTeamPowerText.text = redPowerLevel.toString()
+        blueTeamPowerText.text = bluePowerLevel.toString()
+
+        redTeamAmountText.text = redTeam.size.toString()
+        blueTeamAmountText.text = blueTeam.size.toString()
+
+        redTeamTeensText.text = redTeenAmount.toString()
+        blueTeamTeensText.text = blueTeenAmount.toString()
+
+        redTeamTiniesText.text = redTiniesAmount.toString()
+        blueTeamTiniesText.text = blueTiniesAmount.toString()
     }
 
     private fun checkListVisibilities() {
@@ -227,7 +303,9 @@ class EventView : Fragment() {
 
     private fun onTeamItemClick(position : Int) {
         //val args =  EventListArgs.fromBundle(requireArguments())
-        val ticket = allTickets[position]
+        selectedTicket = allTickets[position]
+        binding.bottomPanel.visibility = View.GONE
+        binding.bottomPanelPlayer.visibility = View.VISIBLE
     }
 
     private fun setTicketPlayer(ticket: Ticket) {

@@ -76,9 +76,6 @@ class AssignTeamRecyclerAdapter (private val ticketArray: MutableList<Ticket>, p
         holder.redButton.setOnClickListener{
             ticket.teamColor = "Red"
             eventView.updateTicketLists()
-            notifyDataSetChanged()
-
-            Log.i("test", ticket.teamColor.toString())
         }
 
         if (note != "") {

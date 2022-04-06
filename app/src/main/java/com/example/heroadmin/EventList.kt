@@ -62,12 +62,6 @@ class EventList : Fragment() {
     private fun onEventItemClick(position : Int) {
         //val args =  EventListArgs.fromBundle(requireArguments())
         val event = eventArray[position]?.eventId.toString()
-        if (event != "") {
-            Log.i("test", event + " sent to next fragment")
-        }
-        else {
-            Log.i("test", "no event found")
-        }
         findNavController().navigate(EventListDirections.actionEventListToEventView(event))
     }
 
