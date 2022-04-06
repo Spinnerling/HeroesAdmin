@@ -1,12 +1,22 @@
 package com.example.heroadmin
 
-import android.util.Log
+import android.app.AlertDialog
+import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.InputMethodManager
+import android.widget.Button
+import android.widget.EditText
+import android.widget.TextView
+import android.widget.Toast
+import androidx.core.content.ContextCompat.getSystemService
 import androidx.recyclerview.widget.RecyclerView
 
+
 class CheckInRecyclerAdapter(private var ticketArray: MutableList<Ticket>, private val eventView : EventView) : RecyclerView.Adapter< CheckInViewHolder>(){
+    private lateinit var view : View
+
     override fun getItemCount(): Int {
         return if (ticketArray.isEmpty()) 0 else ticketArray.size
     }
@@ -14,7 +24,7 @@ class CheckInRecyclerAdapter(private var ticketArray: MutableList<Ticket>, priva
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CheckInViewHolder{
         val context = parent.context
         val inflater = LayoutInflater.from(context)
-        val view = inflater.inflate(R.layout.checkin_listitem, parent, false)
+        view = inflater.inflate(R.layout.checkin_listitem, parent, false)
         return CheckInViewHolder(view)
     }
 
@@ -54,8 +64,37 @@ class CheckInRecyclerAdapter(private var ticketArray: MutableList<Ticket>, priva
         }
 
         holder.checkInButton.setOnClickListener{
-            ticket.checkedIn = true;
-            eventView.updateTicketLists()
+            val dialogView = LayoutInflater.from(eventView.context).inflate(R.layout.checkin_popup,null)
+
+            val builder = AlertDialog.Builder(eventView.context)
+                .setView(dialogView)
+
+            val alertDialog = builder.show()
+            val name : TextView = dialogView.findViewById<TextView>(R.id.checkInPopupNameText)
+            name.text = ticket.fullName
+            val userNo = dialogView.findViewById<EditText>(R.id.checkInPopupEditText)
+            userNo.requestFocus()
+
+            dialogView.findViewById<Button>(R.id.checkinAcceptButton).setOnClickListener{
+                val number = userNo.text.toString().toInt()
+                ticket.tabardNr = number
+                ticket.checkedIn = true;
+                eventView.updateTicketLists()
+                Toast.makeText(eventView.context,"Checked in ${ticket.firstName}",Toast.LENGTH_SHORT).show()
+
+                alertDialog.dismiss()
+            }
+            dialogView.findViewById<Button>(R.id.checkinCancelButton).setOnClickListener{
+                Toast.makeText(eventView.context,"Cancelled",Toast.LENGTH_SHORT).show()
+                alertDialog.dismiss()
+            }
         }
+    }
+
+    fun openSoftKeyboard(context: Context, view: View) {
+        view.requestFocus()
+        // open the soft keyboard
+        val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        imm.showSoftInput(view, InputMethodManager.SHOW_IMPLICIT)
     }
 }
