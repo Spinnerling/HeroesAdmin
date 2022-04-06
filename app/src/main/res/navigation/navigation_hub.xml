@@ -30,5 +30,20 @@
             android:name="passedEventId"
             android:defaultValue="A234"
             app:argType="string" />
+        <action
+            android:id="@+id/action_eventView_to_levelUpFragment"
+            app:destination="@id/levelUpFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/levelUpFragment"
+        android:name="com.example.heroadmin.LevelUpFragment"
+        android:label="LevelUpFragment"
+        tools:layout="@layout/fragment_level_up" >
+        <argument
+            android:name="passedPlayerId"
+            app:argType="string" />
+        <action
+            android:id="@+id/action_levelUpFragment_to_eventView"
+            app:destination="@id/eventView" />
     </fragment>
 </navigation>

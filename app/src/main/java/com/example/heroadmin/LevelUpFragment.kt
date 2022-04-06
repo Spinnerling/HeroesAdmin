@@ -14,11 +14,13 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
+import androidx.navigation.fragment.findNavController
 import com.example.heroadmin.databinding.FragmentLevelUpBinding
 
 class LevelUpFragment : Fragment() {
     private lateinit var binding: FragmentLevelUpBinding
     lateinit var player: Player
+    lateinit var currPlayerId : String
     private var currClassName : String = "Healer"
     private var healerExpArray : Array<IntArray> = arrayOf(intArrayOf(0, 50, 75, 100), intArrayOf(100, 50, 75, 100), intArrayOf(100, 50, 75, 100))
     private var mageExpArray : Array<IntArray> = arrayOf(intArrayOf(0, 50, 75, 100), intArrayOf(100, 50, 75, 100))
@@ -26,6 +28,7 @@ class LevelUpFragment : Fragment() {
     private var knightExpArray : Array<IntArray> = arrayOf(intArrayOf(0, 50, 75, 100), intArrayOf(100, 50, 75, 100), intArrayOf(100, 50, 75, 100))
     private lateinit var expArray : Array<IntArray>
     private lateinit var expTextArray : Array<Array<TextView>>
+    private lateinit var args : LevelUpFragmentArgs
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -33,7 +36,10 @@ class LevelUpFragment : Fragment() {
     ): View? {
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_level_up, container, false)
 
-        player = getPlayer("player123")
+        args = LevelUpFragmentArgs.fromBundle(requireArguments())
+        currPlayerId = args.passedPlayerId
+        player = getPlayer(currPlayerId)
+
         binding.levelUpPlayerNameText.text = player.fullName
         binding.levelUpExpRemText.text = player.totalExp.toString() + " EXP"
 
@@ -56,6 +62,10 @@ class LevelUpFragment : Fragment() {
         }
         binding.levelUpKnightButton.setOnClickListener{
             knightSection()
+        }
+
+        binding.levelUpBackButton.setOnClickListener{
+            findNavController().navigate(LevelUpFragmentDirections.actionLevelUpFragmentToEventView())
         }
 
         // Inflate the layout for this fragment

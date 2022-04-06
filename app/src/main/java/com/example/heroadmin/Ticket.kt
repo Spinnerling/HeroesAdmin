@@ -36,4 +36,5 @@ class Ticket(
     var fullName = "$firstName $lastName"
     var guardianFullName = "$guardianFirstName $guardianLastName"
     var bookerFullName = "$bookerFirstName $bookerLastName"
+    var selected = false
 }

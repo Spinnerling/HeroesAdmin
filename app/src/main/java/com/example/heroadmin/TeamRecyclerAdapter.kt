@@ -27,5 +27,13 @@ class TeamRecyclerAdapter (private val ticketArray: MutableList<Ticket>, private
         val role = ticket.currentRole
         val roleInText = getRoleByNumber(role)
         holder.roleText.text = roleInText
+
+        if (ticket.selected){
+            holder.background.setBackgroundColor(Color.LTGRAY)
+            eventView.selectedTicketTVH = holder
+        }
+        else {
+            holder.background.setBackgroundColor(Color.WHITE)
+        }
     }
 }

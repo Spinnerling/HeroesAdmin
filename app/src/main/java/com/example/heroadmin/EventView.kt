@@ -10,6 +10,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import androidx.databinding.DataBindingUtil
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.heroadmin.databinding.FragmentEventViewBinding
@@ -43,8 +44,13 @@ class EventView : Fragment() {
     private lateinit var redTeamTiniesText : TextView
     private lateinit var blueTeamTiniesText : TextView
     private lateinit var selectedTicket : Ticket
+    private lateinit var selectedPlayer : Player
     private lateinit var playerOnOffSwitch : Switch
     lateinit var selectedTicketTVH : TeamViewHolder
+    private lateinit var playerExpText : TextView
+    private lateinit var bottomPanel : LinearLayout
+    private lateinit var bottomPanelPlayer : LinearLayout
+    private lateinit var bottomPanelNewRound : LinearLayout
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -83,12 +89,11 @@ class EventView : Fragment() {
         val eventInfoVenue = binding.venueText
         val eventInfoPlayerAmount = binding.playerAmountText
         val playerCloseButton = binding.playerCloseButton
-        val bottomPanel = binding.bottomPanel
-        val bottomPanelNewRound = binding.bottomPanelNewRound
-        val bottomPanelPlayer = binding.bottomPanelPlayer
         val newRoundButton = binding.newRoundButton
         val cancelNewRoundButton = binding.cancelNewRoundButton
         val switchTeamButton = binding.switchTeamButton
+        val spendExpButton = binding.spendExpButton
+        playerExpText = binding.playerExpText
 
         redTeamPowerText = binding.redTeamPowerText
         blueTeamPowerText = binding.blueTeamPowerText
@@ -99,12 +104,16 @@ class EventView : Fragment() {
         redTeamTiniesText = binding.redTeamTiniesText
         blueTeamTiniesText = binding.blueTeamTiniesText
         playerOnOffSwitch = binding.playerOnOffSwitch
+        bottomPanel = binding.bottomPanel
+        bottomPanelNewRound = binding.bottomPanelNewRound
+        bottomPanelPlayer = binding.bottomPanelPlayer
 
         // Set variables
         eventInfoDate.text = "Date: ${event.actualDate}"
         eventInfoTime.text = "Start: ${event.actualStartTime}"
         eventInfoVenue.text = "Venue: ${event.venue}"
         eventInfoPlayerAmount.text = "Tickets: ${allTickets.size} / ${event.playerMax}"
+
 
         updateTicketLists()
         autoSetRoleAmounts()
@@ -144,9 +153,7 @@ class EventView : Fragment() {
         }
 
         playerCloseButton.setOnClickListener{
-            bottomPanel.visibility = View.VISIBLE
-            bottomPanelPlayer.visibility = View.GONE
-            selectedTicketTVH.deselect()
+            deselectPlayer()
         }
 
         newRoundButton.setOnClickListener{
@@ -162,7 +169,19 @@ class EventView : Fragment() {
         switchTeamButton.setOnClickListener{
             selectedTicket.teamColor = "None"
             updateTicketLists()
+            deselectPlayer()
         }
+
+        spendExpButton.setOnClickListener{
+            findNavController().navigate(EventViewDirections.actionEventViewToLevelUpFragment(selectedTicket.playerId))
+        }
+    }
+
+    private fun deselectPlayer() {
+        bottomPanel.visibility = View.VISIBLE
+        bottomPanelPlayer.visibility = View.GONE
+        selectedTicketTVH.deselect()
+        selectedTicket.selected = false
     }
 
     fun updateTicketLists() {
@@ -318,11 +337,17 @@ class EventView : Fragment() {
     private fun onTeamItemClick(position : Int) {
         //val args =  EventListArgs.fromBundle(requireArguments())
         if (binding.bottomPanelPlayer.visibility == View.VISIBLE){
-            selectedTicketTVH.deselect()
+            deselectPlayer()
         }
         selectedTicket = allTickets[position]
+        selectedPlayer = getPlayer(selectedTicket.ticketId)
+        selectedTicket.selected = true
         binding.bottomPanel.visibility = View.GONE
         binding.bottomPanelPlayer.visibility = View.VISIBLE
+        binding.playerNameText.text = selectedTicket.fullName
+        playerExpText.text = "${selectedPlayer.totalExp} EXP kvar"
+        val roleInText = getRoleByNumber(selectedTicket.currentRole)
+        binding.ticketRoleText.text = roleInText
     }
 
     private fun setTicketPlayer(ticket: Ticket) {
@@ -352,13 +377,14 @@ class EventView : Fragment() {
         userNo.requestFocus()
 
         dialogView.findViewById<Button>(R.id.checkinAcceptButton).setOnClickListener{
-            val number = userNo.text.toString().toInt()
-            ticket.tabardNr = number
-            ticket.checkedIn = true;
-            updateTicketLists()
-            Toast.makeText(context,"Checked in ${ticket.firstName}",Toast.LENGTH_SHORT).show()
+            val number = userNo.text.toString()
+            if (number != ""){
+                ticket.tabardNr = number.toInt()
+                ticket.checkedIn = true;
+                updateTicketLists()
 
-            alertDialog.dismiss()
+                alertDialog.dismiss()
+            }
         }
         dialogView.findViewById<Button>(R.id.checkinCancelButton).setOnClickListener{
             Toast.makeText(context,"Cancelled",Toast.LENGTH_SHORT).show()

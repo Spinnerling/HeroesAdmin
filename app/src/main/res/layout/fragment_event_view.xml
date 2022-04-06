@@ -1161,7 +1161,7 @@
                     android:padding="5dp">
 
                     <TextView
-                        android:id="@+id/playerRoleText"
+                        android:id="@+id/ticketRoleText"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:layout_weight="3"
@@ -1241,7 +1241,7 @@
                     android:orientation="vertical">
 
                     <TextView
-                        android:id="@+id/remExpText"
+                        android:id="@+id/playerExpText"
                         android:layout_width="match_parent"
                         android:layout_height="0dp"
                         android:layout_weight="1"
