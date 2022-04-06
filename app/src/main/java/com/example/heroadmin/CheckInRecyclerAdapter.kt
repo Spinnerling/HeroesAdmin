@@ -1,13 +1,14 @@
 package com.example.heroadmin
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 
-class CheckInRecyclerAdapter(private val ticketArray: MutableList<Ticket>) : RecyclerView.Adapter< CheckInViewHolder>(){
+class CheckInRecyclerAdapter(private var ticketArray: MutableList<Ticket>, private val eventView : EventView) : RecyclerView.Adapter< CheckInViewHolder>(){
     override fun getItemCount(): Int {
-        return if (ticketArray.isEmpty()) 0 else ticketArray!!.size
+        return if (ticketArray.isEmpty()) 0 else ticketArray.size
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CheckInViewHolder{
@@ -19,7 +20,7 @@ class CheckInRecyclerAdapter(private val ticketArray: MutableList<Ticket>) : Rec
 
     override fun onBindViewHolder(holder: CheckInViewHolder, position: Int) {
         // is called to attach data to a ViewHolder. Here you change the text, color, whatever needs to be done to the list item views according to the data being displayed. I created a bind function in the ViewHolder earlier for convenience which I use here, if you want you could do everything in the bind function here instead.
-        val ticket = ticketArray[position]!!
+        val ticket = ticketArray[position]
 
         var name = ticket.fullName
         holder.nameText.text = name
@@ -50,6 +51,11 @@ class CheckInRecyclerAdapter(private val ticketArray: MutableList<Ticket>) : Rec
                 holder.itemInfoHeaders.visibility = View.VISIBLE
                 holder.itemInfoTexts.visibility = View.VISIBLE
             }
+        }
+
+        holder.checkInButton.setOnClickListener{
+            ticket.checkedIn = true;
+            eventView.updateTicketLists()
         }
     }
 }

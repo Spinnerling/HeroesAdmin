@@ -320,8 +320,7 @@
                         <androidx.recyclerview.widget.RecyclerView
                             android:id="@+id/blueTeamRecycler"
                             android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            />
+                            android:layout_height="match_parent" />
 
                         <ImageView
                             android:id="@+id/role_list_separator1"
@@ -422,8 +421,7 @@
                         <androidx.recyclerview.widget.RecyclerView
                             android:id="@+id/redTeamRecycler"
                             android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            />
+                            android:layout_height="match_parent" />
 
                         <ImageView
                             android:id="@+id/name_list_separator2"

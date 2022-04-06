@@ -1,17 +1,17 @@
 package com.example.heroadmin
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.LinearLayout
-import android.widget.TextView
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
 import androidx.recyclerview.widget.RecyclerView
 
-class AssignTeamRecyclerAdapter (private val ticketArray: MutableList<Ticket>) : RecyclerView.Adapter<AssignTeamViewHolder>() {
+class AssignTeamRecyclerAdapter (private val ticketArray: MutableList<Ticket>, private val eventView : EventView) : RecyclerView.Adapter<AssignTeamViewHolder>() {
 
     override fun getItemCount(): Int {
-        return if (ticketArray.isEmpty()) 0 else ticketArray!!.size
+        return if (ticketArray.isEmpty()) 0 else ticketArray.size
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AssignTeamViewHolder{
@@ -23,7 +23,7 @@ class AssignTeamRecyclerAdapter (private val ticketArray: MutableList<Ticket>) :
 
     override fun onBindViewHolder(holder: AssignTeamViewHolder, position: Int) {
         // is called to attach data to a ViewHolder. Here you change the text, color, whatever needs to be done to the list item views according to the data being displayed. I created a bind function in the ViewHolder earlier for convenience which I use here, if you want you could do everything in the bind function here instead.
-        val ticket = ticketArray[position]!!
+        val ticket = ticketArray[position]
 
         var name = ticket.fullName
         holder.nameText.text = name
@@ -69,10 +69,21 @@ class AssignTeamRecyclerAdapter (private val ticketArray: MutableList<Ticket>) :
 
         holder.blueButton.setOnClickListener{
             ticket.teamColor = "Blue"
+            eventView.updateTicketLists()
+
+            Log.i("test", ticket.teamColor.toString())
         }
         holder.redButton.setOnClickListener{
             ticket.teamColor = "Red"
+            eventView.updateTicketLists()
+            notifyDataSetChanged()
+
+            Log.i("test", ticket.teamColor.toString())
         }
 
+        if (note != "") {
+            holder.infoButton.setCompoundDrawablesRelativeWithIntrinsicBounds(R.drawable.ic_warning, 0, 0, 0)
+            // #E61F1F
+        }
     }
 }

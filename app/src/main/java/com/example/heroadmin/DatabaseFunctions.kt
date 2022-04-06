@@ -13,7 +13,7 @@ fun getTicket(ticketId: String): Ticket {
         "Polo",
         16,
         false,
-        "Red",
+        "None",
         false,
         0,
         false,
@@ -37,7 +37,7 @@ fun getTicket(ticketId: String): Ticket {
         0,
         0,
         0,
-        ""
+        "This is a note of much worthy notingness where you really should read the thing that is says."
     )
 
     // Place the contents of array into a Ticket class
