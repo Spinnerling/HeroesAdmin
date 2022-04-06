@@ -1,10 +1,11 @@
 package com.example.heroadmin
 
+import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 
-class TeamRecyclerAdapter (private val ticketArray: MutableList<Ticket>, private val onItemClicked: (position: Int) -> Unit) : RecyclerView.Adapter<TeamViewHolder>() {
+class TeamRecyclerAdapter (private val ticketArray: MutableList<Ticket>, private val onItemClicked: (position: Int) -> Unit, private val eventView : EventView) : RecyclerView.Adapter<TeamViewHolder>() {
     override fun getItemCount(): Int {
         return if (ticketArray.isEmpty()) 0 else ticketArray.size
     }
@@ -13,7 +14,7 @@ class TeamRecyclerAdapter (private val ticketArray: MutableList<Ticket>, private
         val context = parent.context
         val inflater = LayoutInflater.from(context)
         val view = inflater.inflate(R.layout.team_listitem, parent, false)
-        return TeamViewHolder(view, onItemClicked)
+        return TeamViewHolder(view, onItemClicked, eventView)
     }
 
     override fun onBindViewHolder(holder: TeamViewHolder, position: Int) {

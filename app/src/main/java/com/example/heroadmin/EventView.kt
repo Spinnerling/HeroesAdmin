@@ -1,9 +1,9 @@
 package com.example.heroadmin
 
 import android.annotation.SuppressLint
+import android.app.AlertDialog
 import android.graphics.Color
 import android.os.Bundle
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -44,6 +44,7 @@ class EventView : Fragment() {
     private lateinit var blueTeamTiniesText : TextView
     private lateinit var selectedTicket : Ticket
     private lateinit var playerOnOffSwitch : Switch
+    lateinit var selectedTicketTVH : TeamViewHolder
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -86,6 +87,8 @@ class EventView : Fragment() {
         val bottomPanelNewRound = binding.bottomPanelNewRound
         val bottomPanelPlayer = binding.bottomPanelPlayer
         val newRoundButton = binding.newRoundButton
+        val cancelNewRoundButton = binding.cancelNewRoundButton
+        val switchTeamButton = binding.switchTeamButton
 
         redTeamPowerText = binding.redTeamPowerText
         blueTeamPowerText = binding.blueTeamPowerText
@@ -104,6 +107,7 @@ class EventView : Fragment() {
         eventInfoPlayerAmount.text = "Tickets: ${allTickets.size} / ${event.playerMax}"
 
         updateTicketLists()
+        autoSetRoleAmounts()
 
         assignTeamPanelButton.setOnClickListener {
             if (assignTeamList.layoutParams.height == 0) {
@@ -142,6 +146,7 @@ class EventView : Fragment() {
         playerCloseButton.setOnClickListener{
             bottomPanel.visibility = View.VISIBLE
             bottomPanelPlayer.visibility = View.GONE
+            selectedTicketTVH.deselect()
         }
 
         newRoundButton.setOnClickListener{
@@ -149,6 +154,15 @@ class EventView : Fragment() {
             bottomPanelNewRound.visibility = View.VISIBLE
         }
 
+        cancelNewRoundButton.setOnClickListener{
+            bottomPanel.visibility = View.VISIBLE
+            bottomPanelNewRound.visibility = View.GONE
+        }
+
+        switchTeamButton.setOnClickListener{
+            selectedTicket.teamColor = "None"
+            updateTicketLists()
+        }
     }
 
     fun updateTicketLists() {
@@ -269,10 +283,10 @@ class EventView : Fragment() {
     }
 
     private fun setTeamAdapters() {
-        redTeamAdapter = TeamRecyclerAdapter(redTeam) { position -> onTeamItemClick(position)}
-        blueTeamAdapter = TeamRecyclerAdapter(blueTeam) { position -> onTeamItemClick(position)}
-        redBenchAdapter = TeamRecyclerAdapter(redBench) { position -> onTeamItemClick(position)}
-        blueBenchAdapter = TeamRecyclerAdapter(blueBench) { position -> onTeamItemClick(position)}
+        redTeamAdapter = TeamRecyclerAdapter(redTeam, { position -> onTeamItemClick(position)}, this)
+        blueTeamAdapter = TeamRecyclerAdapter(blueTeam, { position -> onTeamItemClick(position)}, this)
+        redBenchAdapter = TeamRecyclerAdapter(redBench, { position -> onTeamItemClick(position)}, this)
+        blueBenchAdapter = TeamRecyclerAdapter(blueBench, { position -> onTeamItemClick(position)}, this)
 
         val layoutManagerR = LinearLayoutManager(v.context)
         val layoutManagerRB = LinearLayoutManager(v.context)
@@ -303,6 +317,9 @@ class EventView : Fragment() {
 
     private fun onTeamItemClick(position : Int) {
         //val args =  EventListArgs.fromBundle(requireArguments())
+        if (binding.bottomPanelPlayer.visibility == View.VISIBLE){
+            selectedTicketTVH.deselect()
+        }
         selectedTicket = allTickets[position]
         binding.bottomPanel.visibility = View.GONE
         binding.bottomPanelPlayer.visibility = View.VISIBLE
@@ -320,6 +337,33 @@ class EventView : Fragment() {
         }
 
         // Transfer ticket info to player
+    }
+
+    fun setTicketTabardNumber(ticket : Ticket) {
+        val dialogView = LayoutInflater.from(context).inflate(R.layout.checkin_popup,null)
+
+        val builder = AlertDialog.Builder(context)
+            .setView(dialogView)
+
+        val alertDialog = builder.show()
+        val name : TextView = dialogView.findViewById<TextView>(R.id.checkInPopupNameText)
+        name.text = ticket.fullName
+        val userNo = dialogView.findViewById<EditText>(R.id.checkInPopupEditText)
+        userNo.requestFocus()
+
+        dialogView.findViewById<Button>(R.id.checkinAcceptButton).setOnClickListener{
+            val number = userNo.text.toString().toInt()
+            ticket.tabardNr = number
+            ticket.checkedIn = true;
+            updateTicketLists()
+            Toast.makeText(context,"Checked in ${ticket.firstName}",Toast.LENGTH_SHORT).show()
+
+            alertDialog.dismiss()
+        }
+        dialogView.findViewById<Button>(R.id.checkinCancelButton).setOnClickListener{
+            Toast.makeText(context,"Cancelled",Toast.LENGTH_SHORT).show()
+            alertDialog.dismiss()
+        }
     }
 
     private fun autoSetRoleAmounts() {

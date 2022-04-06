@@ -39,7 +39,6 @@ class CheckInRecyclerAdapter(private var ticketArray: MutableList<Ticket>, priva
         var note = ticket.note
         holder.note.text = note
 
-
         var contactName = ticket.guardianFullName
         holder.contactName.text = contactName
         var contactPhone = ticket.guardianPhoneNr
@@ -64,30 +63,7 @@ class CheckInRecyclerAdapter(private var ticketArray: MutableList<Ticket>, priva
         }
 
         holder.checkInButton.setOnClickListener{
-            val dialogView = LayoutInflater.from(eventView.context).inflate(R.layout.checkin_popup,null)
-
-            val builder = AlertDialog.Builder(eventView.context)
-                .setView(dialogView)
-
-            val alertDialog = builder.show()
-            val name : TextView = dialogView.findViewById<TextView>(R.id.checkInPopupNameText)
-            name.text = ticket.fullName
-            val userNo = dialogView.findViewById<EditText>(R.id.checkInPopupEditText)
-            userNo.requestFocus()
-
-            dialogView.findViewById<Button>(R.id.checkinAcceptButton).setOnClickListener{
-                val number = userNo.text.toString().toInt()
-                ticket.tabardNr = number
-                ticket.checkedIn = true;
-                eventView.updateTicketLists()
-                Toast.makeText(eventView.context,"Checked in ${ticket.firstName}",Toast.LENGTH_SHORT).show()
-
-                alertDialog.dismiss()
-            }
-            dialogView.findViewById<Button>(R.id.checkinCancelButton).setOnClickListener{
-                Toast.makeText(eventView.context,"Cancelled",Toast.LENGTH_SHORT).show()
-                alertDialog.dismiss()
-            }
+            eventView.setTicketTabardNumber(ticket)
         }
     }
 
