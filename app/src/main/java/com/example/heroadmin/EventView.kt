@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.graphics.Color
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -43,7 +44,7 @@ class EventView : Fragment() {
     private lateinit var blueTeamTeensText : TextView
     private lateinit var redTeamTiniesText : TextView
     private lateinit var blueTeamTiniesText : TextView
-    private lateinit var selectedTicket : Ticket
+    lateinit var selectedTicket : Ticket
     private lateinit var selectedPlayer : Player
     private lateinit var playerOnOffSwitch : Switch
     lateinit var selectedTicketTVH : TeamViewHolder
@@ -178,10 +179,11 @@ class EventView : Fragment() {
     }
 
     private fun deselectPlayer() {
+        if (bottomPanel.visibility == View.VISIBLE){return}
+
         bottomPanel.visibility = View.VISIBLE
         bottomPanelPlayer.visibility = View.GONE
         selectedTicketTVH.deselect()
-        selectedTicket.selected = false
     }
 
     fun updateTicketLists() {
@@ -335,19 +337,18 @@ class EventView : Fragment() {
     }
 
     private fun onTeamItemClick(position : Int) {
-        //val args =  EventListArgs.fromBundle(requireArguments())
         if (binding.bottomPanelPlayer.visibility == View.VISIBLE){
             deselectPlayer()
         }
-        selectedTicket = allTickets[position]
+        Log.i("test", "eventView")
         selectedPlayer = getPlayer(selectedTicket.ticketId)
-        selectedTicket.selected = true
         binding.bottomPanel.visibility = View.GONE
         binding.bottomPanelPlayer.visibility = View.VISIBLE
         binding.playerNameText.text = selectedTicket.fullName
         playerExpText.text = "${selectedPlayer.totalExp} EXP kvar"
         val roleInText = getRoleByNumber(selectedTicket.currentRole)
         binding.ticketRoleText.text = roleInText
+        playerOnOffSwitch.isChecked = !selectedTicket.benched
     }
 
     private fun setTicketPlayer(ticket: Ticket) {
@@ -402,6 +403,12 @@ class EventView : Fragment() {
         var rogues = (allPlayers.size + 12) / 16
         var knights = (allPlayers.size + 8) / 16
 
+    }
+
+    fun selectTicket(ticket : Ticket) {
+        deselectPlayer()
+        ticket.selected = true
+        selectedTicket = ticket
     }
 
     private fun endEvent() {

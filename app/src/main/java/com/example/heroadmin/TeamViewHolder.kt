@@ -1,6 +1,7 @@
 package com.example.heroadmin
 
 import android.graphics.Color
+import android.util.Log
 import android.view.View
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -15,12 +16,14 @@ class TeamViewHolder(
     var numberText: TextView = itemView.findViewById(R.id.team_tabardNr)
     var roleText: TextView = itemView.findViewById(R.id.team_roleText)
     var background : LinearLayout = itemView.findViewById(R.id.teamItemBackground)
+    lateinit var ticket : Ticket
 
     init {
         itemView.setOnClickListener(this)
     }
 
     override fun onClick(p0: View?) {
+        eventView.selectTicket(ticket)
         val position = adapterPosition
         onTeamItemClick(position)
         background.setBackgroundColor(Color.LTGRAY)
@@ -28,6 +31,7 @@ class TeamViewHolder(
     }
 
     fun deselect() {
+        ticket.selected = false
         background.setBackgroundColor(Color.WHITE)
     }
 }

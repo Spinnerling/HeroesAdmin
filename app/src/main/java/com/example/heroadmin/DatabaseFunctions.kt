@@ -92,7 +92,7 @@ fun getEvent(eventId: String): Event {
     // var arrayContents = [insert code here]
 
     // Placeholder "found" event
-    val arrayContents = mutableListOf("A123", "Stockholm", "24/3 -22", "2020", "2021", "15:09", "IN PLAY", "", "Torsdagsspel", "Kom och programmera, din blötvattensfisk!", listOf("ticket123"),0, 32,35,0, 0,10,2,5 )
+    val arrayContents = mutableListOf("A123", "Stockholm", "24/3 -22", "2020", "2021", "15:09", "IN PLAY", "", "Torsdagsspel", "Kom och programmera, din blötvattensfisk!", listOf("ticket123", "ticket234", "ticket345", "ticket567", "ticket678", "ticket789"),0, 32,35,0, 0,10,2,5 )
 
     return Event(
         arrayContents[0] as String,         // eventId
