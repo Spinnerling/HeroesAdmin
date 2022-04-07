@@ -2,6 +2,7 @@ package com.example.heroadmin
 
 import android.app.AlertDialog
 import android.content.Context
+import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -45,7 +46,7 @@ class CheckInRecyclerAdapter(private var ticketArray: MutableList<Ticket>, priva
         holder.contactPhone.text = contactPhone
         var contactEmail = ticket.guardianEmail
         holder.contactEmail.text = contactEmail
-        var bookerName = ticket.bookerEmail
+        var bookerName = ticket.bookerFullName
         holder.bookerName.text = bookerName
         var bookerPhone = ticket.bookerPhoneNr
         holder.bookerPhone.text = bookerPhone
@@ -64,13 +65,14 @@ class CheckInRecyclerAdapter(private var ticketArray: MutableList<Ticket>, priva
 
         holder.checkInButton.setOnClickListener{
             eventView.setTicketTabardNumber(ticket)
+            eventView.autoSetRoleAmounts()
         }
-    }
 
-    fun openSoftKeyboard(context: Context, view: View) {
-        view.requestFocus()
-        // open the soft keyboard
-        val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-        imm.showSoftInput(view, InputMethodManager.SHOW_IMPLICIT)
+        if (ticket.teamColor == "Blue"){
+            holder.teamButton.setBackgroundColor(Color.BLUE)
+        }
+        else if (ticket.teamColor == "Red"){
+            holder.teamButton.setBackgroundColor(Color.RED)
+        }
     }
 }

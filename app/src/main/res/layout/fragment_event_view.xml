@@ -735,15 +735,15 @@
         <LinearLayout
             android:id="@+id/bottom_panel_newRound"
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1.5"
+            android:layout_height="wrap_content"
             android:background="#E4CB98"
             android:orientation="horizontal"
+            android:paddingRight="5dp"
             android:visibility="gone">
 
             <LinearLayout
                 android:layout_width="0dp"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:layout_weight="1.2"
                 android:background="#DDDDDD"
                 android:orientation="horizontal">
@@ -767,22 +767,22 @@
                         android:textSize="20sp" />
 
                     <TextView
-                        android:id="@+id/mageAmountText"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:gravity="center"
-                        android:text="Magiker"
-                        android:textAlignment="center"
-                        android:textSize="20sp" />
-
-                    <TextView
                         android:id="@+id/rogueAmountText"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:gravity="center"
                         android:text="Odågor"
+                        android:textAlignment="center"
+                        android:textSize="20sp" />
+
+                    <TextView
+                        android:id="@+id/mageAmountText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:text="Magiker"
                         android:textAlignment="center"
                         android:textSize="20sp" />
 
@@ -820,7 +820,7 @@
 
                 <LinearLayout
                     android:layout_width="0dp"
-                    android:layout_height="match_parent"
+                    android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:orientation="vertical">
 
@@ -866,7 +866,7 @@
                         android:layout_height="48dp"
                         android:ems="10"
                         android:inputType="number"
-                        android:text="1"
+                        android:text="0"
                         android:textAlignment="center" />
 
                     <EditText
@@ -881,16 +881,18 @@
             </LinearLayout>
 
             <LinearLayout
+                android:id="@+id/playerRoleButtonPanel"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_marginLeft="30dp"
                 android:layout_marginRight="30dp"
                 android:layout_weight="1.2"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:visibility="invisible">
 
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
+                    android:layout_height="0dp"
                     android:layout_weight="1"
                     android:gravity="center"
                     android:orientation="horizontal">
@@ -908,33 +910,34 @@
                         app:strokeWidth="2dp" />
 
                     <Button
-                        android:id="@+id/mageButton"
+                        android:id="@+id/rogueButton"
                         android:layout_width="0dp"
                         android:layout_height="match_parent"
                         android:layout_weight="1"
                         android:backgroundTint="#FFFFFF"
-                        android:text="Magiker"
+                        android:text="Odåga"
                         android:textColor="#000000"
                         app:strokeColor="#000000"
                         app:strokeWidth="2dp" />
+
                 </LinearLayout>
 
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
+                    android:layout_height="0dp"
                     android:layout_marginTop="5dp"
                     android:layout_weight="1"
                     android:gravity="center"
                     android:orientation="horizontal">
 
                     <Button
-                        android:id="@+id/rogueButton"
+                        android:id="@+id/mageButton"
                         android:layout_width="0dp"
                         android:layout_height="match_parent"
                         android:layout_marginRight="5dp"
                         android:layout_weight="1"
                         android:backgroundTint="#FFFFFF"
-                        android:text="Odåga"
+                        android:text="Magiker"
                         android:textColor="#000000"
                         app:strokeColor="#000000"
                         app:strokeWidth="2dp" />
@@ -953,7 +956,7 @@
 
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
+                    android:layout_height="0dp"
                     android:layout_marginTop="5dp"
                     android:layout_weight="1"
                     android:gravity="center"
@@ -985,7 +988,7 @@
 
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
+                    android:layout_height="0dp"
                     android:layout_marginTop="5dp"
                     android:layout_weight="1"
                     android:gravity="center"

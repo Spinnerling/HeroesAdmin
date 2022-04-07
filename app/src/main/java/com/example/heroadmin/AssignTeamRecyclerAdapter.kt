@@ -49,7 +49,7 @@ class AssignTeamRecyclerAdapter (private val ticketArray: MutableList<Ticket>, p
         holder.contactPhone.text = contactPhone
         var contactEmail = ticket.guardianEmail
         holder.contactEmail.text = contactEmail
-        var bookerName = ticket.bookerEmail
+        var bookerName = ticket.bookerFullName
         holder.bookerName.text = bookerName
         var bookerPhone = ticket.bookerPhoneNr
         holder.bookerPhone.text = bookerPhone

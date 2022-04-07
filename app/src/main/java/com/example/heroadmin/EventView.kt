@@ -52,6 +52,8 @@ class EventView : Fragment() {
     private lateinit var bottomPanel : LinearLayout
     private lateinit var bottomPanelPlayer : LinearLayout
     private lateinit var bottomPanelNewRound : LinearLayout
+    private lateinit var playerRoleButtonPanel : LinearLayout
+    private var firstPlayerSelected : Boolean = false
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -108,6 +110,7 @@ class EventView : Fragment() {
         bottomPanel = binding.bottomPanel
         bottomPanelNewRound = binding.bottomPanelNewRound
         bottomPanelPlayer = binding.bottomPanelPlayer
+        playerRoleButtonPanel = binding.playerRoleButtonPanel
 
         // Set variables
         eventInfoDate.text = "Date: ${event.actualDate}"
@@ -158,13 +161,17 @@ class EventView : Fragment() {
         }
 
         newRoundButton.setOnClickListener{
+            deselectPlayer()
             bottomPanel.visibility = View.GONE
             bottomPanelNewRound.visibility = View.VISIBLE
+
         }
 
         cancelNewRoundButton.setOnClickListener{
+            deselectPlayer()
             bottomPanel.visibility = View.VISIBLE
             bottomPanelNewRound.visibility = View.GONE
+            playerRoleButtonPanel.visibility = View.INVISIBLE
         }
 
         switchTeamButton.setOnClickListener{
@@ -179,10 +186,11 @@ class EventView : Fragment() {
     }
 
     private fun deselectPlayer() {
-        if (bottomPanel.visibility == View.VISIBLE){return}
-
-        bottomPanel.visibility = View.VISIBLE
-        bottomPanelPlayer.visibility = View.GONE
+        if (!firstPlayerSelected){return}
+        if (bottomPanelPlayer.visibility == View.VISIBLE){
+            bottomPanel.visibility = View.VISIBLE
+            bottomPanelPlayer.visibility = View.GONE
+        }
         selectedTicketTVH.deselect()
     }
 
@@ -337,18 +345,23 @@ class EventView : Fragment() {
     }
 
     private fun onTeamItemClick(position : Int) {
-        if (binding.bottomPanelPlayer.visibility == View.VISIBLE){
+        if (!firstPlayerSelected){
             deselectPlayer()
         }
-        Log.i("test", "eventView")
         selectedPlayer = getPlayer(selectedTicket.ticketId)
-        binding.bottomPanel.visibility = View.GONE
-        binding.bottomPanelPlayer.visibility = View.VISIBLE
-        binding.playerNameText.text = selectedTicket.fullName
-        playerExpText.text = "${selectedPlayer.totalExp} EXP kvar"
-        val roleInText = getRoleByNumber(selectedTicket.currentRole)
-        binding.ticketRoleText.text = roleInText
-        playerOnOffSwitch.isChecked = !selectedTicket.benched
+
+        if (bottomPanelNewRound.visibility == View.VISIBLE){
+            playerRoleButtonPanel.visibility = View.VISIBLE
+        }
+        else {
+            binding.bottomPanel.visibility = View.GONE
+            binding.bottomPanelPlayer.visibility = View.VISIBLE
+            binding.playerNameText.text = selectedTicket.fullName
+            playerExpText.text = "${selectedPlayer.totalExp} EXP kvar"
+            val roleInText = getRoleByNumber(selectedTicket.currentRole)
+            binding.ticketRoleText.text = roleInText
+            playerOnOffSwitch.isChecked = !selectedTicket.benched
+        }
     }
 
     private fun setTicketPlayer(ticket: Ticket) {
@@ -393,7 +406,7 @@ class EventView : Fragment() {
         }
     }
 
-    private fun autoSetRoleAmounts() {
+    fun autoSetRoleAmounts() {
         if (allPlayers.isEmpty()) {
             return
         }
@@ -402,11 +415,15 @@ class EventView : Fragment() {
         var mages = (allPlayers.size + 4) / 16
         var rogues = (allPlayers.size + 12) / 16
         var knights = (allPlayers.size + 8) / 16
-
+        binding.healerAmountValue.setText(healers.toString())
+        binding.mageAmountValue.setText(mages.toString())
+        binding.rogueAmountValue.setText(rogues.toString())
+        binding.knightAmountValue.setText(knights.toString())
     }
 
     fun selectTicket(ticket : Ticket) {
-        deselectPlayer()
+        if (firstPlayerSelected) { deselectPlayer() }
+        firstPlayerSelected = true;
         ticket.selected = true
         selectedTicket = ticket
     }

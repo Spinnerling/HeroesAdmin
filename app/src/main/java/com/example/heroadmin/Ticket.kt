@@ -11,8 +11,8 @@ class Ticket(
     var costume: Boolean,
     var recruits: Int,
     var benched: Boolean,
-    var currentRole: Int,   // 0 = Undecided, 1 = Healer, 2 = Mage, 3 = Rogue, 4 = Knight, 5 = SpecialA, 6 = SpecialB, 7 = Warrior
-    var lastRole: Int,      // 0 = Undecided, 1 = Healer, 2 = Mage, 3 = Rogue, 4 = Knight, 5 = SpecialA, 6 = SpecialB, 7 = Warrior
+    var currentRole: Int,   // 0 = Undecided, 1 = Healer, 2 = Rogue, 3 = Mage, 4 = Knight, 5 = SpecialA, 6 = SpecialB, 7 = Warrior
+    var lastRole: Int,      // 0 = Undecided, 1 = Healer, 2 = Rogue, 3 = Mage, 4 = Knight, 5 = SpecialA, 6 = SpecialB, 7 = Warrior
     val guardianFirstName: String,
     val guardianLastName: String,
     val guardianPhoneNr: String,
