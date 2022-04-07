@@ -28,7 +28,7 @@ class Ticket(
     var roundsWarrior: Int,
     var roundsSpecial: Int,
     var respawns: Int,
-    var guaranteedRole: Int,
+    var guaranteedRole: Int, // 0 = Undecided, 1 = Healer, 2 = Rogue, 3 = Mage, 4 = Knight, 5 = SpecialA, 6 = SpecialB, 7 = Warrior
     var expPersonal: Int,
     var tabardNr : Int,
     var note : String
@@ -37,4 +37,6 @@ class Ticket(
     var guardianFullName = "$guardianFirstName $guardianLastName"
     var bookerFullName = "$bookerFirstName $bookerLastName"
     var selected = false
+    var roundsSpecialRole = 0
+    var allowedTimesPerRole = 1
 }

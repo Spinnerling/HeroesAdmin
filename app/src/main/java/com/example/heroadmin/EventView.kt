@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.graphics.Color
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -52,6 +53,12 @@ class EventView : Fragment() {
     private lateinit var bottomPanelPlayer : LinearLayout
     private lateinit var bottomPanelNewRound : LinearLayout
     private lateinit var playerRoleButtonPanel : LinearLayout
+    private var healerAmount : Int = 0
+    private var rogueAmount : Int = 0
+    private var mageAmount : Int = 0
+    private var knightAmount : Int = 0
+    private var specialAAmount : Int = 0
+    private var specialBAmount : Int = 0
     private var firstPlayerSelected : Boolean = false
 
     override fun onCreateView(
@@ -188,6 +195,10 @@ class EventView : Fragment() {
 
         binding.ticketInfoButton.setOnClickListener{
             openTicketInfo()
+        }
+
+        binding.rollRoundButton2.setOnClickListener{
+            randomizeRoles()
         }
     }
 
@@ -452,14 +463,14 @@ class EventView : Fragment() {
             return
         }
 
-        var healers = allPlayers.size / 16
-        var mages = (allPlayers.size + 4) / 16
-        var rogues = (allPlayers.size + 12) / 16
-        var knights = (allPlayers.size + 8) / 16
-        binding.healerAmountValue.setText(healers.toString())
-        binding.mageAmountValue.setText(mages.toString())
-        binding.rogueAmountValue.setText(rogues.toString())
-        binding.knightAmountValue.setText(knights.toString())
+        healerAmount = allPlayers.size / 16
+        mageAmount = (allPlayers.size + 4) / 16
+        rogueAmount = (allPlayers.size + 12) / 16
+        knightAmount = (allPlayers.size + 8) / 16
+        binding.healerAmountValue.setText(healerAmount.toString())
+        binding.mageAmountValue.setText(mageAmount.toString())
+        binding.rogueAmountValue.setText(rogueAmount.toString())
+        binding.knightAmountValue.setText(knightAmount.toString())
     }
 
     fun selectTicket(ticket : Ticket) {
@@ -547,5 +558,217 @@ class EventView : Fragment() {
         redBench.sortBy { it.currentRole }
     }
 
+    private fun randomizeRoles() {
+        pickTeamRoles(redTeam)
+        pickTeamRoles(blueTeam)
+    }
 
+    private fun pickTeamRoles(team: MutableList<Ticket>) {
+        healerAmount = binding.healerAmountValue.text.toString().toInt()
+        rogueAmount = binding.rogueAmountValue.text.toString().toInt()
+        mageAmount = binding.mageAmountValue.text.toString().toInt()
+        knightAmount = binding.knightAmountValue.text.toString().toInt()
+        specialAAmount = binding.specialAAmountValue.text.toString().toInt()
+        specialBAmount = binding.specialBAmountValue.text.toString().toInt()
+
+        var finishedHealers = mutableListOf<Ticket>()
+        var finishedrogue = mutableListOf<Ticket>()
+        var finishedmage = mutableListOf<Ticket>()
+        var finishedknight = mutableListOf<Ticket>()
+        var finishedspecialA = mutableListOf<Ticket>()
+        var finishedspecialB = mutableListOf<Ticket>()
+
+
+        fun setRole(ticket: Ticket, role : Int){
+            when (role) {
+                1 -> {
+                    finishedHealers.add(ticket)
+                    healerAmount--
+                }
+                2 -> {
+                    finishedrogue.add(ticket)
+                    rogueAmount--
+                }
+                3 -> {
+                    finishedmage.add(ticket)
+                    mageAmount--
+                }
+                4 -> {
+                    finishedknight.add(ticket)
+                    knightAmount--
+                }
+                5 -> {
+                    finishedspecialA.add(ticket)
+                    specialAAmount--
+                }
+                6 -> {
+                    finishedspecialB.add(ticket)
+                    specialBAmount--
+                }
+            }
+        }
+
+        val thirdList = mutableListOf<Ticket>()
+
+        val totalAmount = healerAmount + rogueAmount + mageAmount + knightAmount + specialAAmount + specialBAmount
+        team.sortBy { it.roundsSpecialRole }
+        val secondList = team.slice(0.. totalAmount).toList()
+
+        for (ticket in secondList) {
+            if (ticket.guaranteedRole != 0){
+                setRole(ticket, ticket.guaranteedRole)
+            }
+            else{
+                thirdList.add(ticket)
+            }
+        }
+        // Repeat
+        var tempTotal = 0
+        var loops = 0
+
+        while (tempTotal != totalAmount) {
+            val tempHealers = mutableListOf<Ticket>()
+            val temprogue = mutableListOf<Ticket>()
+            val tempmage = mutableListOf<Ticket>()
+            val tempknight = mutableListOf<Ticket>()
+            val tempspecialA = mutableListOf<Ticket>()
+            val tempspecialB = mutableListOf<Ticket>()
+            finishedHealers = mutableListOf()
+            finishedrogue = mutableListOf()
+            finishedmage = mutableListOf()
+            finishedknight = mutableListOf()
+            finishedspecialA = mutableListOf()
+            finishedspecialB = mutableListOf()
+
+
+            for (ticket in thirdList) {
+                if (ticket.roundsHealer < ticket.allowedTimesPerRole) {
+                    tempHealers.add(ticket)
+                    Log.i("test", "Put in tempHealer")
+                }
+                if (ticket.roundsRogue < ticket.allowedTimesPerRole) {
+                    temprogue.add(ticket)
+                    Log.i("test", "Put in temprogue")
+                }
+                if (ticket.roundsMage < ticket.allowedTimesPerRole) {
+                    tempmage.add(ticket)
+                }
+                if (ticket.roundsKnight < ticket.allowedTimesPerRole) {
+                    tempknight.add(ticket)
+                }
+                if (ticket.roundsSpecial < ticket.allowedTimesPerRole) {
+                    tempspecialA.add(ticket)
+                }
+                if (ticket.roundsSpecial < ticket.allowedTimesPerRole) {
+                    tempspecialB.add(ticket)
+                }
+            }
+            tempHealers.shuffle()
+            temprogue.shuffle()
+            tempmage.shuffle()
+            tempknight.shuffle()
+            tempspecialA.shuffle()
+            tempspecialB.shuffle()
+
+            val pickedPlayerList = mutableListOf<Ticket>()
+
+            for (ticket in tempHealers){
+                if (finishedHealers.size < healerAmount && !pickedPlayerList.contains(ticket)){
+                    pickedPlayerList.add(ticket)
+                    finishedHealers.add(ticket)
+                }
+            }
+            Log.i("test", finishedHealers.size.toString() + " in healers")
+            for (ticket in temprogue){
+                if (finishedrogue.size < rogueAmount && !pickedPlayerList.contains(ticket)){
+                    pickedPlayerList.add(ticket)
+                    finishedrogue.add(ticket)
+                }
+            }
+            Log.i("test", finishedrogue.size.toString() + " in rogues")
+            for (ticket in tempmage){
+                if (finishedmage.size < mageAmount && !pickedPlayerList.contains(ticket)){
+                    pickedPlayerList.add(ticket)
+                    finishedmage.add(ticket)
+                }
+            }
+            Log.i("test", finishedmage.size.toString() + " in mages")
+            for (ticket in tempknight){
+                if (finishedknight.size < knightAmount && !pickedPlayerList.contains(ticket)){
+                    pickedPlayerList.add(ticket)
+                    finishedknight.add(ticket)
+                }
+            }
+            Log.i("test", finishedknight.size.toString() + " in knights")
+            for (ticket in tempspecialA){
+                if (finishedspecialA.size < specialAAmount && !pickedPlayerList.contains(ticket)){
+                    pickedPlayerList.add(ticket)
+                    finishedspecialA.add(ticket)
+                }
+            }
+            for (ticket in tempspecialB){
+                if (finishedspecialB.size < specialBAmount && !pickedPlayerList.contains(ticket)){
+                    pickedPlayerList.add(ticket)
+                    finishedspecialB.add(ticket)
+                }
+            }
+            tempTotal = finishedHealers.size + finishedrogue.size + finishedmage.size + finishedknight.size + finishedspecialA.size + finishedspecialB.size
+            loops++
+            if (loops > 99){
+                Log.i("test", "Pick Roles function looped 100 times without finding a match!")
+                break
+            }
+        }
+
+        for (ticket in finishedHealers){
+            ticket.currentRole = 1
+            Log.i("test", ticket.firstName + " got healer")
+        }
+        for (ticket in finishedrogue){
+            ticket.currentRole = 2
+            Log.i("test", ticket.firstName + " got rogue")
+        }
+        for (ticket in finishedmage){
+            ticket.currentRole = 3
+            Log.i("test", ticket.firstName + " got mage")
+        }
+        for (ticket in finishedknight){
+            ticket.currentRole = 4
+            Log.i("test", ticket.firstName + " got knight")
+        }
+        for (ticket in finishedspecialA){
+            ticket.currentRole = 5
+            Log.i("test", ticket.firstName + " got specialA")
+        }
+        for (ticket in finishedspecialB){
+            ticket.currentRole = 6
+            Log.i("test", ticket.firstName + " got specialB")
+        }
+
+        for (ticket in team){
+            if (ticket.roundsHealer == ticket.roundsKnight && ticket.roundsHealer == ticket.roundsMage && ticket.roundsHealer == ticket.roundsRogue){
+                ticket.allowedTimesPerRole++
+            }
+        }
+
+        updateTicketLists()
+        Log.i("test", "Pick Roles done!")
+
+    }
+
+
+
+    // For each team:
+    // Get the amount of special roles
+    // Get the next players in line to be special
+    // If any of the players have a guaranteed role, set it as the role and remove one from the amount to be picked as that role. Also remove the person from the players list.
+
+    //Repeat:
+        // Put each player in the role lists they're allowed to be
+        // Shuffle each rolelist
+        // Pick out players who have not already been picked
+        // Check if all roles have correct amount, otherwise rinse & repeat.
+
+    // If a player has been all special roles an equal amount, increase the amount of times they can be special
+    // Set role to player's currRole
 }
