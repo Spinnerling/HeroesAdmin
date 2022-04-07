@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.graphics.Color
 import android.os.Bundle
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -95,6 +94,7 @@ class EventView : Fragment() {
         val newRoundButton = binding.newRoundButton
         val cancelNewRoundButton = binding.cancelNewRoundButton
         val switchTeamButton = binding.switchTeamButton
+        val switchTeamButton2 = binding.switchTeamButton2
         val spendExpButton = binding.spendExpButton
         playerExpText = binding.playerExpText
 
@@ -175,13 +175,19 @@ class EventView : Fragment() {
         }
 
         switchTeamButton.setOnClickListener{
-            selectedTicket.teamColor = "None"
-            updateTicketLists()
-            deselectPlayer()
+            switchTeam()
+        }
+
+        switchTeamButton2.setOnClickListener{
+            switchTeam()
         }
 
         spendExpButton.setOnClickListener{
             findNavController().navigate(EventViewDirections.actionEventViewToLevelUpFragment(selectedTicket.playerId))
+        }
+
+        binding.ticketInfoButton.setOnClickListener{
+            openTicketInfo()
         }
     }
 
@@ -406,6 +412,41 @@ class EventView : Fragment() {
         }
     }
 
+    fun openTicketInfo() {
+        var ticket = selectedTicket
+        val dialogView = LayoutInflater.from(context).inflate(R.layout.ticket_info,null)
+        val builder = AlertDialog.Builder(context)
+            .setView(dialogView)
+        val playerInfoDialog = builder.show()
+
+        // Fill with info
+        val name : TextView = dialogView.findViewById<TextView>(R.id.ti_playerName)
+        name.text = ticket.fullName
+        val userAge = dialogView.findViewById<TextView>(R.id.ti_playerAge)
+        userAge.text = ticket.age.toString()
+        val userId = dialogView.findViewById<TextView>(R.id.ti_playerUserId)
+        userId.text = ticket.playerId
+        val ticketNote = dialogView.findViewById<TextView>(R.id.ti_Note)
+        ticketNote.text = ticket.note
+        val guardianName = dialogView.findViewById<TextView>(R.id.ti_guardianName)
+        guardianName.text = ticket.guardianFullName
+        val guardianPhone = dialogView.findViewById<TextView>(R.id.ti_guardianPhone)
+        guardianPhone.text = ticket.guardianPhoneNr
+        val guardianEmail = dialogView.findViewById<TextView>(R.id.ti_guardianEmail)
+        guardianEmail.text = ticket.guardianEmail
+        val bookerName = dialogView.findViewById<TextView>(R.id.ti_bookerName)
+        bookerName.text = ticket.bookerFullName
+        val bookerPhone = dialogView.findViewById<TextView>(R.id.ti_bookerPhone)
+        bookerPhone.text = ticket.bookerPhoneNr
+        val bookerEmail = dialogView.findViewById<TextView>(R.id.ti_bookerEmail)
+        bookerEmail.text = ticket.bookerEmail
+
+        // Close window
+        dialogView.findViewById<Button>(R.id.ti_closeButton).setOnClickListener{
+            playerInfoDialog.dismiss()
+        }
+    }
+
     fun autoSetRoleAmounts() {
         if (allPlayers.isEmpty()) {
             return
@@ -426,6 +467,12 @@ class EventView : Fragment() {
         firstPlayerSelected = true;
         ticket.selected = true
         selectedTicket = ticket
+    }
+
+    fun switchTeam(){
+        selectedTicket.teamColor = "None"
+        updateTicketLists()
+        deselectPlayer()
     }
 
     private fun endEvent() {
