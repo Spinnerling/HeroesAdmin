@@ -1,20 +1,13 @@
 package com.example.heroadmin
 
-import android.content.res.ColorStateList
-import android.graphics.Color
-import android.graphics.Color.*
-import android.graphics.ColorFilter
-import android.graphics.PorterDuff
 import android.os.Bundle
-import android.text.style.BackgroundColorSpan
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import android.widget.ImageButton
 import android.widget.TextView
-import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
 import androidx.navigation.fragment.findNavController
 import com.example.heroadmin.databinding.FragmentLevelUpBinding
@@ -74,7 +67,7 @@ class LevelUpFragment : Fragment() {
         subClassLevels = player.subclassArray
 
         binding.levelUpPlayerNameText.text = player.fullName
-        binding.levelUpExpRemText.text = player.totalExp.toString() + " EXP"
+        updateExpText()
 
         upgBtn1_1 = binding.subclass1button1
         upgBtn1_2 = binding.subclass1button2
@@ -155,21 +148,70 @@ class LevelUpFragment : Fragment() {
             findNavController().navigate(LevelUpFragmentDirections.actionLevelUpFragmentToEventView())
         }
 
-        upgBtn1_1.setOnClickListener {
-            if (player.healerLevels[0] > 0) {
-                player.healerLevels[0] = 0
-            }
-            else {
-                player.healerLevels[0] = 1
-            }
-        }
+        upgBtn1_1.setOnClickListener { buttonClick(upgBtn1_1) }
+        upgBtn1_2.setOnClickListener { buttonClick(upgBtn1_2) }
+        upgBtn1_3.setOnClickListener { buttonClick(upgBtn1_3) }
+        upgBtn1_4.setOnClickListener { buttonClick(upgBtn1_4) }
+        upgBtn2_1.setOnClickListener { buttonClick(upgBtn2_1) }
+        upgBtn2_2.setOnClickListener { buttonClick(upgBtn2_2) }
+        upgBtn2_3.setOnClickListener { buttonClick(upgBtn2_3) }
+        upgBtn2_4.setOnClickListener { buttonClick(upgBtn2_4) }
+        upgBtn3_1.setOnClickListener { buttonClick(upgBtn3_1) }
+        upgBtn3_2.setOnClickListener { buttonClick(upgBtn3_2) }
+        upgBtn3_3.setOnClickListener { buttonClick(upgBtn3_3) }
+        upgBtn3_4.setOnClickListener { buttonClick(upgBtn3_4) }
 
 
         // Inflate the layout for this fragment
         return binding.root
     }
 
-    private fun setUpgradeCosts() {
+    private fun updateExpText() {
+        binding.levelUpExpRemText.text = player.remExp.toString()
+    }
+
+    private fun buttonClick(button : ImageButton){
+        var indexArray = findIndex(buttonList, button)
+        if (indexArray[0] == -1){
+            Log.i("test", "Could not find upgrade button")
+            return
+        }
+        else {
+            val i = indexArray[0]
+            val j = indexArray[1]
+
+            // If your level in subclass i (ex 1) is larger than the button index j you clicked (0)
+            if (subClassLevels[currSection][i] >= j + 1)
+            {
+                subClassLevels[currSection][i] = j
+                updateUpgrades()
+            }
+            else {
+                if (player.remExp >= expArray[i][j]) {
+                    subClassLevels[currSection][i] = j + 1
+                    // update player
+                    updateUpgrades()
+                    updateExpText()
+                }
+            }
+
+        }
+    }
+
+    private fun findIndex(arr: Array<Array<ImageButton>>, item: ImageButton): Array<Int> {
+        for (i in arr.indices)
+        {
+            for (j in arr[i].indices){
+                if (arr[i][j] == item) {
+                    return arrayOf(i, j)
+                }
+            }
+
+        }
+        return arrayOf(-1)
+    }
+
+    private fun updateUpgrades() {
         for ((i, array) in expArray.withIndex()) {
             for ((j, item) in array.withIndex()) {
 
@@ -201,7 +243,7 @@ class LevelUpFragment : Fragment() {
         binding.subclassListBackground.background.setTint(resources.getColor(R.color.healerColor))
         binding.subclassList3.visibility = View.VISIBLE
         currSection = 0
-        setUpgradeCosts()
+        updateUpgrades()
     }
 
     fun rogueSection() {
@@ -212,7 +254,7 @@ class LevelUpFragment : Fragment() {
         binding.subclassListBackground.background.setTint(resources.getColor(R.color.rogueColor))
         binding.subclassList3.visibility = View.VISIBLE
         currSection = 1
-        setUpgradeCosts()
+        updateUpgrades()
     }
 
     fun mageSection() {
@@ -223,7 +265,7 @@ class LevelUpFragment : Fragment() {
         binding.subclassListBackground.background.setTint(resources.getColor(R.color.mageColor))
         binding.subclassList3.visibility = View.GONE
         currSection = 2
-        setUpgradeCosts()
+        updateUpgrades()
     }
 
     fun knightSection() {
@@ -234,7 +276,7 @@ class LevelUpFragment : Fragment() {
         binding.subclassListBackground.background.setTint(resources.getColor(R.color.knightColor))
         binding.subclassList3.visibility = View.VISIBLE
         currSection = 3
-        setUpgradeCosts()
+        updateUpgrades()
     }
 
     fun setButtonOwnership(button : ImageButton, isOwned : Boolean, available : Boolean) {

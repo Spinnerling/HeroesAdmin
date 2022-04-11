@@ -14,6 +14,8 @@ class Player(
     var guardians : List<String>, // List of phoneNumbers
 ) {
     var fullName = "$firstName $lastName"
+    // var remExp = totalExp - getUsedExp(playerId)
+    var remExp = 165
 
     //var subclassArray = mutableListOf(healerLevels, rogueLevels, mageLevels, knightLevels)
 
