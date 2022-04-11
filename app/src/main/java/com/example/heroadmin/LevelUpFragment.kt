@@ -172,23 +172,22 @@ class LevelUpFragment : Fragment() {
     private fun setUpgradeCosts() {
         for ((i, array) in expArray.withIndex()) {
             for ((j, item) in array.withIndex()) {
-                //index = 0
-                //item = 0
-                // templar == 0 -> false
-                // templar == 1 -> true
-                // templar == 2 -> true
+
+                var canBeBought = false
+                if (subClassLevels[currSection][i] >= j){
+                    canBeBought = true
+                }
 
                 if (subClassLevels[currSection][i]-1 >= j){
                     expTextArray[i][j].text = "OWNED"
+
+
+                    setButtonOwnership(buttonList[i][j], true, true)
                 }
                 else {
                     expTextArray[i][j].text = item.toString() + " EXP"
+                    setButtonOwnership(buttonList[i][j], false, canBeBought)
                 }
-                /*if (expArray[i][j] != 0) {
-                    expTextArray[i][j].text = expArray[i][j].toString() + " EXP"
-                } else {
-                    expTextArray[i][j].text = "OWNED"
-                }*/
             }
         }
     }
@@ -201,9 +200,8 @@ class LevelUpFragment : Fragment() {
         binding.subclassTitle3.text = "Väktare"
         binding.subclassListBackground.background.setTint(resources.getColor(R.color.healerColor))
         binding.subclassList3.visibility = View.VISIBLE
-        setUpgradeCosts()
         currSection = 0
-        markOwnedUpgrades()
+        setUpgradeCosts()
     }
 
     fun rogueSection() {
@@ -213,9 +211,8 @@ class LevelUpFragment : Fragment() {
         binding.subclassTitle3.text = "Rövare"
         binding.subclassListBackground.background.setTint(resources.getColor(R.color.rogueColor))
         binding.subclassList3.visibility = View.VISIBLE
-        setUpgradeCosts()
         currSection = 1
-        markOwnedUpgrades()
+        setUpgradeCosts()
     }
 
     fun mageSection() {
@@ -225,9 +222,8 @@ class LevelUpFragment : Fragment() {
         binding.subclassTitle3.text = ""
         binding.subclassListBackground.background.setTint(resources.getColor(R.color.mageColor))
         binding.subclassList3.visibility = View.GONE
-        setUpgradeCosts()
         currSection = 2
-        markOwnedUpgrades()
+        setUpgradeCosts()
     }
 
     fun knightSection() {
@@ -237,108 +233,8 @@ class LevelUpFragment : Fragment() {
         binding.subclassTitle3.text = "Knekt"
         binding.subclassListBackground.background.setTint(resources.getColor(R.color.knightColor))
         binding.subclassList3.visibility = View.VISIBLE
-        setUpgradeCosts()
         currSection = 3
-        markOwnedUpgrades()
-    }
-
-    fun markOwnedUpgrades() {
-        when (subClassLevels[currSection][0]){
-            0 -> {
-                setButtonOwnership(upgBtn1_1, false, true)
-                setButtonOwnership(upgBtn1_2, false, false)
-                setButtonOwnership(upgBtn1_3, false, false)
-                setButtonOwnership(upgBtn1_4, false, false)
-            }
-            1 -> {
-                setButtonOwnership(upgBtn1_1, true, true)
-                setButtonOwnership(upgBtn1_2, false, true)
-                setButtonOwnership(upgBtn1_3, false, false)
-                setButtonOwnership(upgBtn1_4, false, false)
-            }
-            2 -> {
-                setButtonOwnership(upgBtn1_1, true, true)
-                setButtonOwnership(upgBtn1_2, true, true)
-                setButtonOwnership(upgBtn1_3, false, true)
-                setButtonOwnership(upgBtn1_4, false, false)
-            }
-            3 -> {
-                setButtonOwnership(upgBtn1_1, true, true)
-                setButtonOwnership(upgBtn1_2, true, true)
-                setButtonOwnership(upgBtn1_3, true, true)
-                setButtonOwnership(upgBtn1_4, false, true)
-            }
-            4 -> {
-                setButtonOwnership(upgBtn1_1, true, true)
-                setButtonOwnership(upgBtn1_2, true, true)
-                setButtonOwnership(upgBtn1_3, true, true)
-                setButtonOwnership(upgBtn1_4, true, true)
-            }
-        }
-        when (subClassLevels[currSection][1]){
-            0 -> {
-                setButtonOwnership(upgBtn2_1, false, true)
-                setButtonOwnership(upgBtn2_2, false, false)
-                setButtonOwnership(upgBtn2_3, false, false)
-                setButtonOwnership(upgBtn2_4, false, false)
-            }
-            1 -> {
-                setButtonOwnership(upgBtn2_1, true, true)
-                setButtonOwnership(upgBtn2_2, false, true)
-                setButtonOwnership(upgBtn2_3, false, false)
-                setButtonOwnership(upgBtn2_4, false, false)
-            }
-            2 -> {
-                setButtonOwnership(upgBtn2_1, true, true)
-                setButtonOwnership(upgBtn2_2, true, true)
-                setButtonOwnership(upgBtn2_3, false, true)
-                setButtonOwnership(upgBtn2_4, false, false)
-            }
-            3 -> {
-                setButtonOwnership(upgBtn2_1, true, true)
-                setButtonOwnership(upgBtn2_2, true, true)
-                setButtonOwnership(upgBtn2_3, true, true)
-                setButtonOwnership(upgBtn2_4, false, true)
-            }
-            4 -> {
-                setButtonOwnership(upgBtn2_1, true, true)
-                setButtonOwnership(upgBtn2_2, true, true)
-                setButtonOwnership(upgBtn2_3, true, true)
-                setButtonOwnership(upgBtn2_4, true, true)
-            }
-        }
-        when (subClassLevels[currSection][2]){
-            0 -> {
-                setButtonOwnership(upgBtn3_1, false, true)
-                setButtonOwnership(upgBtn3_2, false, false)
-                setButtonOwnership(upgBtn3_3, false, false)
-                setButtonOwnership(upgBtn3_4, false, false)
-            }
-            1 -> {
-                setButtonOwnership(upgBtn3_1, true, true)
-                setButtonOwnership(upgBtn3_2, false, true)
-                setButtonOwnership(upgBtn3_3, false, false)
-                setButtonOwnership(upgBtn3_4, false, false)
-            }
-            2 -> {
-                setButtonOwnership(upgBtn3_1, true, true)
-                setButtonOwnership(upgBtn3_2, true, true)
-                setButtonOwnership(upgBtn3_3, false, true)
-                setButtonOwnership(upgBtn3_4, false, false)
-            }
-            3 -> {
-                setButtonOwnership(upgBtn3_1, true, true)
-                setButtonOwnership(upgBtn3_2, true, true)
-                setButtonOwnership(upgBtn3_3, true, true)
-                setButtonOwnership(upgBtn3_4, false, true)
-            }
-            4 -> {
-                setButtonOwnership(upgBtn3_1, true, true)
-                setButtonOwnership(upgBtn3_2, true, true)
-                setButtonOwnership(upgBtn3_3, true, true)
-                setButtonOwnership(upgBtn3_4, true, true)
-            }
-        }
+        setUpgradeCosts()
     }
 
     fun setButtonOwnership(button : ImageButton, isOwned : Boolean, available : Boolean) {
