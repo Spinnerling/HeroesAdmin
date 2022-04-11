@@ -64,7 +64,8 @@ class LevelUpFragment : Fragment() {
         args = LevelUpFragmentArgs.fromBundle(requireArguments())
         currPlayerId = args.passedPlayerId
         player = getPlayer(currPlayerId)
-        subClassLevels = player.subclassArray
+        player.updateExp()
+        subClassLevels = player.classLevelsArray
 
         binding.levelUpPlayerNameText.text = player.fullName
         updateExpText()
@@ -185,12 +186,14 @@ class LevelUpFragment : Fragment() {
             {
                 subClassLevels[currSection][i] = j
                 updateUpgrades()
+                player.updateExp()
             }
             else {
                 if (player.remExp >= expArray[i][j]) {
                     subClassLevels[currSection][i] = j + 1
                     // update player
                     updateUpgrades()
+                    player.updateExp()
                     updateExpText()
                 }
             }
@@ -212,6 +215,7 @@ class LevelUpFragment : Fragment() {
     }
 
     private fun updateUpgrades() {
+        // TODO: Update player's subclass levels
         for ((i, array) in expArray.withIndex()) {
             for ((j, item) in array.withIndex()) {
 

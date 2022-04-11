@@ -163,10 +163,10 @@ fun getPlayer(playerId : String) : Player {
         "Polo",
         16,
         155,
-        listOf(1, 0, 0),
-        listOf(1, 0, 0),
-        listOf(1, 0, 0),
-        listOf(1, 0, 0),
+        listOf(1, 2, 3),
+        listOf(2, 0, 0),
+        listOf(3, 1, 4),
+        listOf(4, 3, 1),
         listOf(1, 0, 0),
         mutableListOf("0767667090", "+46738255553"),
 
@@ -253,23 +253,9 @@ fun getRoleByNumber(number : Int) : String {
 }
 
 
-
-
 fun mergeTicketAndPlayer(player : Player, ticket : Ticket) {
     player.age = ticket.age
     // Add guardian to player
-}
-
-
-fun getPlayerSubclasses() : MutableList<MutableList<Int>> {
-    // Find array of owned Upgrade Levels in database
-    //val subclassArray : MutableList<Int> =
-
-    //Placeholder "found" array
-    val subclassArray : MutableList<MutableList<Int>> = mutableListOf(mutableListOf(1,2,0), mutableListOf(3,4,1), mutableListOf(2,0,2), mutableListOf(4,1,3))
-
-    return subclassArray
-
 }
 
 fun pingDatabase() : Boolean {
