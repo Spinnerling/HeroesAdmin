@@ -32,26 +32,7 @@ class LevelUpFragment : Fragment() {
     private lateinit var upgBtn3_4 : ImageButton
     private lateinit var buttonList : Array<Array<ImageButton>>
 
-    private var healerExpArray: Array<IntArray> = arrayOf(
-        intArrayOf(0, 50, 75, 100),
-        intArrayOf(100, 50, 75, 100),
-        intArrayOf(100, 50, 75, 100))
-
-    private var rogueExpArray: Array<IntArray> = arrayOf(
-        intArrayOf(0, 50, 75, 100),
-        intArrayOf(100, 50, 75, 100),
-        intArrayOf(100, 50, 75, 100))
-
-    private var mageExpArray: Array<IntArray> = arrayOf(
-        intArrayOf(0, 50, 75, 100),
-        intArrayOf(100, 50, 75, 100))
-
-    private var knightExpArray: Array<IntArray> = arrayOf(
-        intArrayOf(0, 50, 75, 100),
-        intArrayOf(100, 50, 75, 100),
-        intArrayOf(100, 50, 75, 100))
-
-    private lateinit var expArray: Array<IntArray>
+    private lateinit var expArray: Array<Array<Int>>
     private lateinit var expTextArray: Array<Array<TextView>>
     private lateinit var args: LevelUpFragmentArgs
 
@@ -64,6 +45,7 @@ class LevelUpFragment : Fragment() {
         args = LevelUpFragmentArgs.fromBundle(requireArguments())
         currPlayerId = args.passedPlayerId
         player = getPlayer(currPlayerId)
+        player.getExpCosts()
         player.updateExp()
         subClassLevels = player.classLevelsArray
 
@@ -168,11 +150,13 @@ class LevelUpFragment : Fragment() {
     }
 
     private fun updateExpText() {
+        player.updateExp()
         binding.levelUpExpRemText.text = player.remExp.toString()
+        Log.i("test", "Updated exp text. Rem exp: " + player.remExp)
     }
 
     private fun buttonClick(button : ImageButton){
-        var indexArray = findIndex(buttonList, button)
+        val indexArray = findIndex(buttonList, button)
         if (indexArray[0] == -1){
             Log.i("test", "Could not find upgrade button")
             return
@@ -182,18 +166,18 @@ class LevelUpFragment : Fragment() {
             val j = indexArray[1]
 
             // If your level in subclass i (ex 1) is larger than the button index j you clicked (0)
-            if (subClassLevels[currSection][i] >= j + 1)
-            {
-                subClassLevels[currSection][i] = j
+            if (subClassLevels[currSection][i] >= j + 1){
+                // remove upgrade
+                player.setSubclassLevel(currSection, i, j)
                 updateUpgrades()
-                player.updateExp()
+                updateExpText()
             }
             else {
+                // if enough exp, add upgrade
                 if (player.remExp >= expArray[i][j]) {
                     subClassLevels[currSection][i] = j + 1
-                    // update player
+                    player.setSubclassLevel(currSection, i, subClassLevels[currSection][i])
                     updateUpgrades()
-                    player.updateExp()
                     updateExpText()
                 }
             }
@@ -215,7 +199,6 @@ class LevelUpFragment : Fragment() {
     }
 
     private fun updateUpgrades() {
-        // TODO: Update player's subclass levels
         for ((i, array) in expArray.withIndex()) {
             for ((j, item) in array.withIndex()) {
 
@@ -226,8 +209,6 @@ class LevelUpFragment : Fragment() {
 
                 if (subClassLevels[currSection][i]-1 >= j){
                     expTextArray[i][j].text = "OWNED"
-
-
                     setButtonOwnership(buttonList[i][j], true, true)
                 }
                 else {
@@ -239,8 +220,8 @@ class LevelUpFragment : Fragment() {
     }
 
 
-    fun healerSection() {
-        expArray = healerExpArray
+    private fun healerSection() {
+        expArray = player.healerExpArray
         binding.subclassTitle1.text = "Templar"
         binding.subclassTitle2.text = "Fältskär"
         binding.subclassTitle3.text = "Väktare"
@@ -250,8 +231,8 @@ class LevelUpFragment : Fragment() {
         updateUpgrades()
     }
 
-    fun rogueSection() {
-        expArray = rogueExpArray
+    private fun rogueSection() {
+        expArray = player.rogueExpArray
         binding.subclassTitle1.text = "Tjuv"
         binding.subclassTitle2.text = "Ninja"
         binding.subclassTitle3.text = "Rövare"
@@ -261,8 +242,8 @@ class LevelUpFragment : Fragment() {
         updateUpgrades()
     }
 
-    fun mageSection() {
-        expArray = mageExpArray
+    private fun mageSection() {
+        expArray = player.mageExpArray
         binding.subclassTitle1.text = "Mystiker"
         binding.subclassTitle2.text = "Gycklare"
         binding.subclassTitle3.text = ""
@@ -272,8 +253,8 @@ class LevelUpFragment : Fragment() {
         updateUpgrades()
     }
 
-    fun knightSection() {
-        expArray = knightExpArray
+    private fun knightSection() {
+        expArray = player.knightExpArray
         binding.subclassTitle1.text = "Förkämpe"
         binding.subclassTitle2.text = "Paladin"
         binding.subclassTitle3.text = "Knekt"

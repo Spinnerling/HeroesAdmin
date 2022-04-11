@@ -937,4 +937,7 @@ class EventView : Fragment() {
     }
 
 
+    fun findUserId(ticket : Ticket){
+        
+    }
 }

@@ -162,7 +162,7 @@ fun getPlayer(playerId : String) : Player {
         "Bobb",
         "Polo",
         16,
-        155,
+        1830,
         listOf(1, 2, 3),
         listOf(2, 0, 0),
         listOf(3, 1, 4),
