@@ -60,6 +60,9 @@ class EventView : Fragment() {
     private var specialAAmount : Int = 0
     private var specialBAmount : Int = 0
     private var firstPlayerSelected : Boolean = false
+    private var assignSorting = 0
+    private var checkInSorting = 0
+    private var teamSorting = 0
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -200,6 +203,84 @@ class EventView : Fragment() {
         binding.rollRoundButton2.setOnClickListener{
             randomizeRoles()
         }
+
+        binding.devButton.setOnClickListener{
+            var team = "Blue"
+            for (ticket in allTickets){
+                ticket.checkedIn = true
+                if (team == "Blue"){
+                    ticket.teamColor = "Blue"
+                    team = "Red"
+                }
+                else {
+                    ticket.teamColor = "Red"
+                    team = "Blue"
+                }
+            }
+            updateTicketLists()
+        }
+        binding.assignTeamOrgByNameButton.setOnClickListener {
+            assignSorting = 0
+            updateTicketLists()
+        }
+        binding.assignTeamOrgByAgeButton.setOnClickListener {
+            assignSorting = 1
+            updateTicketLists()
+        }
+        binding.assignTeamOrgByUserIDButton.setOnClickListener {
+            assignSorting = 2
+            updateTicketLists()
+        }
+        binding.assignTeamOrgByEmailButton.setOnClickListener {
+            assignSorting = 3
+            updateTicketLists()
+        }
+
+        binding.checkInOrgByNameButton.setOnClickListener {
+            checkInSorting = 0
+            updateTicketLists()
+        }
+        binding.checkInOrgByAge.setOnClickListener {
+            checkInSorting = 1
+            updateTicketLists()
+        }
+        binding.checkInOrgByNote.setOnClickListener {
+            checkInSorting = 2
+            updateTicketLists()
+        }
+        binding.checkInOrgByColor.setOnClickListener {
+            checkInSorting = 3
+            updateTicketLists()
+        }
+
+        binding.teamNameButton1.setOnClickListener {
+            teamSorting = 0
+            updateTicketLists()
+        }
+        binding.teamNumberButton1.setOnClickListener {
+            teamSorting = 1
+            updateTicketLists()
+        }
+        binding.teamRoleButton1.setOnClickListener {
+            teamSorting = 2
+            updateTicketLists()
+        }
+
+        binding.teamNameButton2.setOnClickListener {
+            teamSorting = 0
+            updateTicketLists()
+        }
+        binding.teamNumberButton2.setOnClickListener {
+            teamSorting = 1
+            updateTicketLists()
+        }
+        binding.teamRoleButton2.setOnClickListener {
+            teamSorting = 2
+            updateTicketLists()
+        }
+        binding.awardExpButton.setOnClickListener {
+            openAwardExp()
+        }
     }
 
     private fun deselectPlayer() {
@@ -241,6 +322,48 @@ class EventView : Fragment() {
                 else{
                     blueTeam.add(ticket)
                 }
+            }
+        }
+
+        when (assignSorting) {
+            0 -> {
+                sortAssignByName()
+            }
+            1 -> {
+                sortAssignByAge()
+            }
+            2 -> {
+                sortAssignByUserId()
+            }
+            3 -> {
+                sortAssignByEmail()
+            }
+        }
+
+        when (checkInSorting) {
+            0 -> {
+                sortCheckInByName()
+            }
+            1 -> {
+                sortCheckInByAge()
+            }
+            2 -> {
+                sortCheckInByNote()
+            }
+            3 -> {
+                sortCheckInByColor()
+            }
+        }
+
+        when (teamSorting) {
+            0 -> {
+                sortTeamsByName()
+            }
+            1 -> {
+                sortTeamsByNumber()
+            }
+            2 -> {
+                sortTeamsByRole()
             }
         }
 
@@ -458,6 +581,33 @@ class EventView : Fragment() {
         }
     }
 
+    private fun openAwardExp(){
+            var ticket = selectedTicket
+            val dialogView = LayoutInflater.from(context).inflate(R.layout.award_exp,null)
+
+            val builder = AlertDialog.Builder(context)
+                .setView(dialogView)
+
+            val alertDialog = builder.show()
+            val name : TextView = dialogView.findViewById<TextView>(R.id.ae_playerNameText)
+            name.text = ticket.fullName
+            val userNo = dialogView.findViewById<EditText>(R.id.ae_expAmount)
+            userNo.requestFocus()
+
+            dialogView.findViewById<Button>(R.id.ae_acceptButton).setOnClickListener{
+                val number = userNo.text.toString()
+                if (number != ""){
+                    ticket.expPersonal += number.toInt()
+
+                    alertDialog.dismiss()
+                }
+            }
+            dialogView.findViewById<Button>(R.id.ae_cancelButton).setOnClickListener{
+                Toast.makeText(context,"Cancelled",Toast.LENGTH_SHORT).show()
+                alertDialog.dismiss()
+            }
+    }
+
     fun autoSetRoleAmounts() {
         if (allPlayers.isEmpty()) {
             return
@@ -494,7 +644,7 @@ class EventView : Fragment() {
 
     // SORTING FUNCTIONS
 
-    private fun sortAssignByTicketId() {
+    private fun sortAssignByUserId() {
         assignList.sortBy { it.ticketId }
     }
 
@@ -511,10 +661,6 @@ class EventView : Fragment() {
     }
 
 
-    private fun sortCheckInByTicketId() {
-        checkInList.sortBy { it.ticketId }
-    }
-
     private fun sortCheckInByName() {
         checkInList.sortBy { it.fullName }
     }
@@ -523,47 +669,48 @@ class EventView : Fragment() {
         checkInList.sortBy { it.age }
     }
 
-    private fun sortCheckInByEmail() {
-        checkInList.sortBy { it.bookerEmail }
+    private fun sortCheckInByNote() {
+        checkInList.sortBy { it.note }
+    }
+
+    private fun sortCheckInByColor() {
+        checkInList.sortBy { it.teamColor }
     }
 
 
-    private fun sortBlueByName() {
+    private fun sortTeamsByName(){
         blueTeam.sortBy { it.fullName }
         blueBench.sortBy { it.fullName }
-    }
-
-    private fun sortBlueByNumber() {
-        blueTeam.sortBy { it.tabardNr }
-        blueBench.sortBy { it.tabardNr }
-    }
-
-    private fun sortBlueByRole() {
-        blueTeam.sortBy { it.currentRole }
-        blueBench.sortBy { it.currentRole }
-    }
-
-    private fun sortRedByName() {
         redTeam.sortBy { it.fullName }
         redBench.sortBy { it.fullName }
     }
-
-    private fun sortRedByNumber() {
+    private fun sortTeamsByNumber(){
+        blueTeam.sortBy { it.tabardNr }
+        blueBench.sortBy { it.tabardNr }
         redTeam.sortBy { it.tabardNr }
         redBench.sortBy { it.tabardNr }
     }
-
-    private fun sortRedByRole() {
+    private fun sortTeamsByRole(){
+        blueTeam.sortBy { it.currentRole }
+        blueBench.sortBy { it.currentRole }
         redTeam.sortBy { it.currentRole }
         redBench.sortBy { it.currentRole }
     }
 
     private fun randomizeRoles() {
-        pickTeamRoles(redTeam)
-        pickTeamRoles(blueTeam)
+        val redSuccess = pickTeamRoles(redTeam)
+        val blueSuccess = pickTeamRoles(blueTeam)
+
+        if (redSuccess){
+            Toast.makeText(context,"Red team randomized successfully!",Toast.LENGTH_SHORT).show()
+        }
+        if (blueSuccess){
+            Toast.makeText(context,"Blue team randomized successfully!",Toast.LENGTH_SHORT).show()
+        }
     }
 
-    private fun pickTeamRoles(team: MutableList<Ticket>) {
+    private fun pickTeamRoles(team: MutableList<Ticket>) : Boolean {
+        // Get the amount of special roles
         healerAmount = binding.healerAmountValue.text.toString().toInt()
         rogueAmount = binding.rogueAmountValue.text.toString().toInt()
         mageAmount = binding.mageAmountValue.text.toString().toInt()
@@ -571,6 +718,7 @@ class EventView : Fragment() {
         specialAAmount = binding.specialAAmountValue.text.toString().toInt()
         specialBAmount = binding.specialBAmountValue.text.toString().toInt()
 
+        // Create lists to be filled in loop
         var finishedHealers = mutableListOf<Ticket>()
         var finishedrogue = mutableListOf<Ticket>()
         var finishedmage = mutableListOf<Ticket>()
@@ -578,7 +726,12 @@ class EventView : Fragment() {
         var finishedspecialA = mutableListOf<Ticket>()
         var finishedspecialB = mutableListOf<Ticket>()
 
+        // Set everybody as warrior
+        for (ticket in team){
+            ticket.currentRole = 7
+        }
 
+        // A function to set correct ticket in correct list
         fun setRole(ticket: Ticket, role : Int){
             when (role) {
                 1 -> {
@@ -608,12 +761,19 @@ class EventView : Fragment() {
             }
         }
 
-        val thirdList = mutableListOf<Ticket>()
-
+        // Find how many special roles should be assigned - for comparison later
         val totalAmount = healerAmount + rogueAmount + mageAmount + knightAmount + specialAAmount + specialBAmount
+
+        // Get the next players in line to be special
         team.sortBy { it.roundsSpecialRole }
+
         val secondList = team.slice(0.. totalAmount).toList()
 
+        // Set the rest as warriors
+        Log.i("test", team.size.toString() + " in team after slice")
+
+        // If any of the players have a guaranteed role, set it as the role and remove the person from the players list.
+        val thirdList = mutableListOf<Ticket>()
         for (ticket in secondList) {
             if (ticket.guaranteedRole != 0){
                 setRole(ticket, ticket.guaranteedRole)
@@ -627,12 +787,14 @@ class EventView : Fragment() {
         var loops = 0
 
         while (tempTotal != totalAmount) {
+            // Create and reset lists
             val tempHealers = mutableListOf<Ticket>()
             val temprogue = mutableListOf<Ticket>()
             val tempmage = mutableListOf<Ticket>()
             val tempknight = mutableListOf<Ticket>()
             val tempspecialA = mutableListOf<Ticket>()
             val tempspecialB = mutableListOf<Ticket>()
+
             finishedHealers = mutableListOf()
             finishedrogue = mutableListOf()
             finishedmage = mutableListOf()
@@ -640,7 +802,7 @@ class EventView : Fragment() {
             finishedspecialA = mutableListOf()
             finishedspecialB = mutableListOf()
 
-
+            // Put each player in the role lists they're allowed to be
             for (ticket in thirdList) {
                 if (ticket.roundsHealer < ticket.allowedTimesPerRole) {
                     tempHealers.add(ticket)
@@ -663,6 +825,8 @@ class EventView : Fragment() {
                     tempspecialB.add(ticket)
                 }
             }
+
+            // Shuffle each rolelist
             tempHealers.shuffle()
             temprogue.shuffle()
             tempmage.shuffle()
@@ -670,6 +834,7 @@ class EventView : Fragment() {
             tempspecialA.shuffle()
             tempspecialB.shuffle()
 
+            // Pick out players who have not already been picked
             val pickedPlayerList = mutableListOf<Ticket>()
 
             for (ticket in tempHealers){
@@ -679,6 +844,7 @@ class EventView : Fragment() {
                 }
             }
             Log.i("test", finishedHealers.size.toString() + " in healers")
+
             for (ticket in temprogue){
                 if (finishedrogue.size < rogueAmount && !pickedPlayerList.contains(ticket)){
                     pickedPlayerList.add(ticket)
@@ -686,6 +852,7 @@ class EventView : Fragment() {
                 }
             }
             Log.i("test", finishedrogue.size.toString() + " in rogues")
+
             for (ticket in tempmage){
                 if (finishedmage.size < mageAmount && !pickedPlayerList.contains(ticket)){
                     pickedPlayerList.add(ticket)
@@ -693,6 +860,7 @@ class EventView : Fragment() {
                 }
             }
             Log.i("test", finishedmage.size.toString() + " in mages")
+
             for (ticket in tempknight){
                 if (finishedknight.size < knightAmount && !pickedPlayerList.contains(ticket)){
                     pickedPlayerList.add(ticket)
@@ -700,6 +868,7 @@ class EventView : Fragment() {
                 }
             }
             Log.i("test", finishedknight.size.toString() + " in knights")
+
             for (ticket in tempspecialA){
                 if (finishedspecialA.size < specialAAmount && !pickedPlayerList.contains(ticket)){
                     pickedPlayerList.add(ticket)
@@ -712,14 +881,18 @@ class EventView : Fragment() {
                     finishedspecialB.add(ticket)
                 }
             }
+
+            // Check if the correct amount of roles have been picked, otherwise rinse & repeat.
             tempTotal = finishedHealers.size + finishedrogue.size + finishedmage.size + finishedknight.size + finishedspecialA.size + finishedspecialB.size
             loops++
+
             if (loops > 99){
-                Log.i("test", "Pick Roles function looped 100 times without finding a match!")
-                break
+                Toast.makeText(context,"Randomizer looped 100 times without finding a match!",Toast.LENGTH_LONG).show()
+                return false
             }
         }
 
+        // Set role to player's currRole
         for (ticket in finishedHealers){
             ticket.currentRole = 1
             Log.i("test", ticket.firstName + " got healer")
@@ -745,30 +918,23 @@ class EventView : Fragment() {
             Log.i("test", ticket.firstName + " got specialB")
         }
 
+        // If a player has been all special roles an equal amount, increase the amount of times they can be special
         for (ticket in team){
             if (ticket.roundsHealer == ticket.roundsKnight && ticket.roundsHealer == ticket.roundsMage && ticket.roundsHealer == ticket.roundsRogue){
                 ticket.allowedTimesPerRole++
             }
+            if (ticket.currentRole == ticket.guaranteedRole){
+                ticket.guaranteedRole = 0
+            }
         }
 
+        // Update team lists and return to play
+        teamSorting = 2
         updateTicketLists()
-        Log.i("test", "Pick Roles done!")
-
+        bottomPanel.visibility = View.VISIBLE
+        bottomPanelNewRound.visibility = View.GONE
+        return true
     }
 
 
-
-    // For each team:
-    // Get the amount of special roles
-    // Get the next players in line to be special
-    // If any of the players have a guaranteed role, set it as the role and remove one from the amount to be picked as that role. Also remove the person from the players list.
-
-    //Repeat:
-        // Put each player in the role lists they're allowed to be
-        // Shuffle each rolelist
-        // Pick out players who have not already been picked
-        // Check if all roles have correct amount, otherwise rinse & repeat.
-
-    // If a player has been all special roles an equal amount, increase the amount of times they can be special
-    // Set role to player's currRole
 }

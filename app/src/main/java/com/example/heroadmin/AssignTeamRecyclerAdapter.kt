@@ -1,5 +1,6 @@
 package com.example.heroadmin
 
+import android.graphics.Color
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -87,7 +88,7 @@ class AssignTeamRecyclerAdapter (private val ticketArray: MutableList<Ticket>, p
 
         if (note != "") {
             holder.infoButton.setCompoundDrawablesRelativeWithIntrinsicBounds(R.drawable.ic_warning, 0, 0, 0)
-            // #E61F1F
+            holder.infoButton.setBackgroundColor(Color.RED)
         }
     }
 }

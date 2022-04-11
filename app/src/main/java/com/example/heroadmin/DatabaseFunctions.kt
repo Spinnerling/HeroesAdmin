@@ -9,8 +9,8 @@ fun getTicket(ticketId: String): Ticket {
     val arrayContents = mutableListOf(
         "ticket123",
         "12345",
-        "Bob",
-        "Polo",
+        "Nathaniel",
+        "Bolberito Monaugusta",
         16,
         false,
         "None",
@@ -92,7 +92,9 @@ fun getEvent(eventId: String): Event {
     // var arrayContents = [insert code here]
 
     // Placeholder "found" event
-    val arrayContents = mutableListOf("A123", "Stockholm", "24/3 -22", "2020", "2021", "15:09", "IN PLAY", "", "Torsdagsspel", "Kom och programmera, din blötvattensfisk!", listOf("ticket123", "ticket234", "ticket345", "ticket567", "ticket678", "ticket789"),0, 32,35,0, 0,10,2,5 )
+    val arrayContents = mutableListOf("A123", "Stockholm", "24/3 -22", "2020", "2021", "15:09", "IN PLAY", "", "Torsdagsspel", "Kom och programmera, din blötvattensfisk!",
+        listOf("ticket123", "ticket234", "ticket345", "ticket567", "ticket678", "ticket789", "ticket789", "ticket789", "ticket789", "ticket789", "ticket789", "ticket789", "ticket789", "ticket789", "ticket789", "ticket789", "ticket789", "ticket789", "ticket789", "ticket789", "ticket789", "ticket789", "ticket789", "ticket789", "ticket789", "ticket789", "ticket789", "ticket789", "ticket789", "ticket789")
+        ,0, 32,35,0, 0,10,2,5 )
 
     return Event(
         arrayContents[0] as String,         // eventId
@@ -227,10 +229,11 @@ fun getRoleByNumber(number : Int) : String {
             role = "Helare"
         }
         2 -> {
-            role = "Magiker"
+            role = "Odåga"
+
         }
         3 -> {
-            role = "Odåga"
+            role = "Magiker"
         }
         4 -> {
             role = "Riddare"
@@ -258,13 +261,22 @@ fun mergeTicketAndPlayer(player : Player, ticket : Ticket) {
 }
 
 
-fun getPlayerSubclasses() : MutableList<Int> {
+fun getPlayerSubclasses() : MutableList<MutableList<Int>> {
     // Find array of owned Upgrade Levels in database
     //val subclassArray : MutableList<Int> =
 
     //Placeholder "found" array
-    val subclassArray : MutableList<Int> = mutableListOf(1, 2, 1, 1, 2, 1, 2)
+    val subclassArray : MutableList<MutableList<Int>> = mutableListOf(mutableListOf(1,2,0), mutableListOf(3,4,1), mutableListOf(2,0,2), mutableListOf(4,1,3))
 
     return subclassArray
 
+}
+
+fun pingDatabase() : Boolean {
+    var isConnected = true
+
+    if (isConnected) {
+        return true
+    }
+    return false
 }

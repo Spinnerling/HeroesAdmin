@@ -229,6 +229,12 @@
                         android:orientation="vertical"
                         android:padding="10dp">
 
+                        <Button
+                            android:id="@+id/devButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="DEV" />
+
                         <LinearLayout
                             android:id="@+id/assign_team_org_buttons"
                             android:layout_width="match_parent"
@@ -304,7 +310,9 @@
                         <androidx.recyclerview.widget.RecyclerView
                             android:id="@+id/assignTeamRecycler"
                             android:layout_width="match_parent"
-                            android:layout_height="match_parent" />
+                            android:layout_height="match_parent" >
+
+                        </androidx.recyclerview.widget.RecyclerView>
 
                     </LinearLayout>
 
@@ -384,11 +392,13 @@
                                 app:strokeWidth="1dp" />
 
                             <Button
+                                android:id="@+id/check_in_orgBy_color"
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="8"
                                 android:backgroundTint="#FFFFFF"
                                 android:contentDescription="empty"
+                                android:text="Color"
                                 android:textAlignment="viewStart"
                                 android:textColor="#000000"
                                 android:textSize="12sp"
@@ -834,7 +844,7 @@
                         android:textAlignment="center" />
 
                     <EditText
-                        android:id="@+id/mageAmountValue"
+                        android:id="@+id/rogueAmountValue"
                         android:layout_width="wrap_content"
                         android:layout_height="48dp"
                         android:ems="10"
@@ -843,7 +853,7 @@
                         android:textAlignment="center" />
 
                     <EditText
-                        android:id="@+id/rogueAmountValue"
+                        android:id="@+id/mageAmountValue"
                         android:layout_width="wrap_content"
                         android:layout_height="48dp"
                         android:ems="10"
