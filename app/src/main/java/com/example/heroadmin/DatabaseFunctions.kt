@@ -128,8 +128,8 @@ fun getAllTickets(eventId: String) : MutableList<Ticket> {
     var allTickets : MutableList<Ticket> = mutableListOf()
     for (i in allTicketIds.indices) {
         val ticket : Ticket = getTicket(allTicketIds[i])
-        val currTicket : Ticket = getTicket(ticket.playerId)
-        allTickets.add(currTicket)
+        findTicketUserId(ticket)
+        allTickets.add(ticket)
     }
 
     return allTickets
@@ -258,11 +258,64 @@ fun mergeTicketAndPlayer(player : Player, ticket : Ticket) {
     // Add guardian to player
 }
 
-fun pingDatabase() : Boolean {
-    var isConnected = true
+fun findTicketUserId(ticket : Ticket) : String {
+    var matchingId = ""
 
-    if (isConnected) {
-        return true
+    val phoneNumber = getContact(ticket)
+
+    // find players connected to contact
+    val playerArray : Array<String> = getContactPlayerArray(phoneNumber)
+
+    // find name under that
+    for (playerId in playerArray) {
+        val name = getPlayerName(playerId)
+        if (name == ticket.fullName) {
+            matchingId = playerId
+        }
     }
-    return false
+
+    return matchingId
+}
+
+fun getContact(ticket: Ticket) : String {
+    // Find phone nr
+    var formattedNumber = formatPhoneNumber(ticket.guardianPhoneNr)
+
+    // Hitta i databasen
+    // var phone = findContactByPhone(formattedNumber)
+    var phone = ""
+
+    if (phone == ""){
+        //phone = findContactPhoneByEmail(ticket.guardianEmail)
+        phone = "0700000000"
+    }
+    return phone
+}
+
+fun getContactPlayerArray(phoneNumber : String) : Array<String>{
+    // hitta i databasen
+    // val ids = getPlayerArray(phoneNumber)
+
+    // placeholder
+    val ids = arrayOf("12345", "12346", "12347")
+
+    return ids
+}
+
+fun formatPhoneNumber(number: String) : String{
+    // pls
+    return number
+}
+
+fun getPlayerName(playerId : String) : String {
+    // Hitta i databasen
+    // val firstName = getPlayerFirstName(playerId)
+    // val lastName = getPlayerLastName(playerId)
+
+    // Placeholder
+    val firstName = "Bob"
+    val lastName = "Gold"
+    val fullName = "${firstName} ${lastName}"
+
+    return fullName
 }

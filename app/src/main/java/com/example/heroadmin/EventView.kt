@@ -935,9 +935,4 @@ class EventView : Fragment() {
         bottomPanelNewRound.visibility = View.GONE
         return true
     }
-
-
-    fun findUserId(ticket : Ticket){
-        
-    }
 }
