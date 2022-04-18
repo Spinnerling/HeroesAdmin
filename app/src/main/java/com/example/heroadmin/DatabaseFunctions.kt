@@ -1,5 +1,34 @@
 package com.example.heroadmin
 
+import android.content.Context
+import android.util.Log
+import com.android.volley.Request
+import com.android.volley.toolbox.JsonObjectRequest
+import org.json.JSONArray
+import org.json.JSONObject
+
+fun apiBaseCall (context : Context?, method : Int, url : String) : JSONObject{
+    val response : JSONObject = JSONObject()
+
+    val jsonObjectRequest = JsonObjectRequest(
+        method, url, null,
+        { response: JSONObject ->
+
+        },
+        { error ->
+            Log.i("test", "Failed api call to: " + url)
+            Log.i("test", "Error: ".format(error.toString()))
+        }
+    )
+
+    context.let {
+        if (it != null) {
+            MySingleton.getInstance(it).addToRequestQueue(jsonObjectRequest)
+        }
+    }
+    return response
+}
+
 fun getTicket(ticketId: String): Ticket {
 
     // Find ticket in database by ticketId, return an array of its contents
@@ -9,8 +38,8 @@ fun getTicket(ticketId: String): Ticket {
     val arrayContents = mutableListOf(
         "ticket123",
         "12345",
-        "Nathaniel",
-        "Bolberito Monaugusta",
+        "Bob",
+        "Gold",
         16,
         false,
         "None",
@@ -77,14 +106,46 @@ fun getTicket(ticketId: String): Ticket {
     )
 }
 
-fun getEventIds(): List<String> {
+
+
+fun getEventIds(context : Context?): List<String> {
     // Find array of events in database
-    // [insert code here]
 
-    // Placeholder "found" array
-    val array = listOf("event123")
+    val url = "https://www.talltales.nu/API/api/read.php"
+    var list = mutableListOf<String>()
+    val jsonObjectRequest = JsonObjectRequest(
+        Request.Method.GET, url, null,
+        { response ->
+            list = getEventArray(response)
+        },
+        { error ->
+            Log.i("test", "Failed: ".format(error.toString()))
+        }
+    )
 
-    return array
+    context.let {
+        if (it != null) {
+            MySingleton.getInstance(it).addToRequestQueue(jsonObjectRequest)
+        }
+    }
+    return list
+}
+
+private fun getEventArray(response: JSONObject?) : MutableList<String> {
+    val eventIdArray = mutableListOf<String>()
+    val array : JSONArray = response!!.getJSONArray("data")
+    val length = array.length()
+    if (length > 0){
+        var index = 0
+        while (index < length){
+            val item = array.getJSONObject(index)
+            val id = item.getString("id")
+            Log.i("test", id + " is the id")
+            eventIdArray.add(id)
+            index++
+        }
+    }
+    return eventIdArray
 }
 
 fun getEvent(eventId: String): Event {
@@ -259,14 +320,19 @@ fun mergeTicketAndPlayer(player : Player, ticket : Ticket) {
 }
 
 fun findTicketUserId(ticket : Ticket) : String {
+    // Find ticket's guardian among previous guardians
     var matchingId = ""
+    val phoneNumber = getGuardian(ticket)
 
-    val phoneNumber = getContact(ticket)
+    // If no match found, return empty, wait for manual matching
+    if (phoneNumber == ""){
+        return matchingId
+    }
 
-    // find players connected to contact
-    val playerArray : Array<String> = getContactPlayerArray(phoneNumber)
+    // Otherwise, find all players connected to guardian
+    val playerArray : Array<String> = getGuardianPlayerArray(phoneNumber)
 
-    // find name under that
+    // Find matching name among players
     for (playerId in playerArray) {
         val name = getPlayerName(playerId)
         if (name == ticket.fullName) {
@@ -277,22 +343,23 @@ fun findTicketUserId(ticket : Ticket) : String {
     return matchingId
 }
 
-fun getContact(ticket: Ticket) : String {
+fun getGuardian(ticket: Ticket) : String {
     // Find phone nr
     var formattedNumber = formatPhoneNumber(ticket.guardianPhoneNr)
 
     // Hitta i databasen
-    // var phone = findContactByPhone(formattedNumber)
+    // var phone = findGuardianByPhone(formattedNumber)
     var phone = ""
 
     if (phone == ""){
-        //phone = findContactPhoneByEmail(ticket.guardianEmail)
+        // Hitta i databasen
+        //phone = findGuardianPhoneByEmail(ticket.guardianEmail)
         phone = "0700000000"
     }
     return phone
 }
 
-fun getContactPlayerArray(phoneNumber : String) : Array<String>{
+fun getGuardianPlayerArray(phoneNumber : String) : Array<String>{
     // hitta i databasen
     // val ids = getPlayerArray(phoneNumber)
 

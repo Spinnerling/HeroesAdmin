@@ -1,6 +1,7 @@
 package com.example.heroadmin
 
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -12,7 +13,11 @@ import androidx.databinding.DataBindingUtil
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.android.volley.Request
+import com.android.volley.toolbox.JsonObjectRequest
 import com.example.heroadmin.databinding.FragmentEventListBinding
+import org.json.JSONArray
+import org.json.JSONObject
 
 class EventList : Fragment() {
     // Initialize the binding object
@@ -57,7 +62,7 @@ class EventList : Fragment() {
         }
 
         // Divvy up all the events into correct event list
-        val allEventIds = getEventIds()
+        val allEventIds = getEventIds(this.context)
         for (eventId in allEventIds){
             for (i in venues.indices) {
                 // Find current event and list
