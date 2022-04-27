@@ -281,12 +281,12 @@
                                 app:strokeWidth="1dp" />
 
                             <Button
-                                android:id="@+id/assign_team_orgBy_email_button"
+                                android:id="@+id/assign_team_orgBy_group_button"
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
-                                android:layout_weight="8"
+                                android:layout_weight="5"
                                 android:backgroundTint="#FFFFFF"
-                                android:text="Booking Email"
+                                android:text="Group"
                                 android:textAlignment="viewStart"
                                 android:textColor="#000000"
                                 android:textSize="12sp"
@@ -686,7 +686,7 @@
                 android:orientation="vertical">
 
                 <Button
-                    android:id="@+id/historyButton"
+                    android:id="@+id/refreshButton"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_weight="1"

@@ -25,21 +25,42 @@
         android:textAlignment="center"
         android:textSize="26sp" />
 
-    <EditText
-        android:id="@+id/checkInPopupEditText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="40dp"
-        android:ems="10"
-        android:hint="Tabardnummer"
-        android:inputType="number"
-        android:textAlignment="center"
-        android:textSize="24sp" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginLeft="5dp"
+        android:layout_marginTop="25dp"
+        android:layout_marginRight="5dp"
+        android:orientation="horizontal">
+
+        <EditText
+            android:id="@+id/checkInPopupEditText"
+            android:layout_width="150dp"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:hint="Tabard#"
+            android:inputType="number"
+            android:textAlignment="center"
+            android:textSize="24sp" />
+
+        <EditText
+            android:id="@+id/checkInPopupEditText2"
+            android:layout_width="150dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:ems="10"
+            android:hint="Nya Kompisar"
+            android:inputType="number"
+            android:textAlignment="center"
+            android:textSize="24sp" />
+    </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="50dp"
+        android:layout_marginLeft="5dp"
+        android:layout_marginTop="25dp"
+        android:layout_marginRight="5dp"
         android:orientation="horizontal">
 
         <Button

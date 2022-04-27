@@ -1,17 +1,9 @@
 package com.example.heroadmin
 
-import android.app.AlertDialog
-import android.content.Context
 import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.inputmethod.InputMethodManager
-import android.widget.Button
-import android.widget.EditText
-import android.widget.TextView
-import android.widget.Toast
-import androidx.core.content.ContextCompat.getSystemService
 import androidx.recyclerview.widget.RecyclerView
 
 
@@ -40,16 +32,12 @@ class CheckInRecyclerAdapter(private var ticketArray: MutableList<Ticket>, priva
         var note = ticket.note
         holder.note.text = note
 
-        var contactName = ticket.guardianFullName
+        var contactName = ticket.guardianName
         holder.contactName.text = contactName
         var contactPhone = ticket.guardianPhoneNr
         holder.contactPhone.text = contactPhone
-        var contactEmail = ticket.guardianEmail
-        holder.contactEmail.text = contactEmail
         var bookerName = ticket.bookerFullName
         holder.bookerName.text = bookerName
-        var bookerPhone = ticket.bookerPhoneNr
-        holder.bookerPhone.text = bookerPhone
 
 
         holder.infoButton.setOnClickListener{

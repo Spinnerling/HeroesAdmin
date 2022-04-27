@@ -111,7 +111,7 @@
             android:textStyle="bold" />
 
         <TextView
-            android:id="@+id/assignTeam_ContactEmailHeader"
+            android:id="@+id/assignTeam_BookerEmailHeader"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginRight="5dp"

@@ -15,6 +15,8 @@ import com.example.heroadmin.databinding.FragmentLevelUpBinding
 class LevelUpFragment : Fragment() {
     private lateinit var binding: FragmentLevelUpBinding
     lateinit var player: Player
+    private lateinit var v : View
+    private val DBF = DatabaseFunctions(v.context)
     lateinit var currPlayerId: String
     private var currSection = 0
     private lateinit var subClassLevels : MutableList<MutableList<Int>>
@@ -44,7 +46,7 @@ class LevelUpFragment : Fragment() {
 
         args = LevelUpFragmentArgs.fromBundle(requireArguments())
         currPlayerId = args.passedPlayerId
-        player = getPlayer(currPlayerId)
+        player = DBF.getPlayer(currPlayerId)
         player.getExpCosts()
         player.updateExp()
         subClassLevels = player.classLevelsArray

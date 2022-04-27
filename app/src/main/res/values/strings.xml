@@ -8,10 +8,63 @@
     <string name="eventVenue">Stockholm</string>
     <string name="eventStartTime">13:00</string>
     <string name="eventParticipants">42 / 72 players</string>
+
     <string-array name="venues">
         <item>Stockholm</item>
         <item>Visby</item>
     </string-array>
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+
+    <string-array name="groupNames">
+        <item>Grip</item>
+        <item>Drake</item>
+        <item>Enhörning</item>
+        <item>Kraken</item>
+        <item>Chimaera</item>
+        <item>Mantikora</item>
+        <item>Tomte</item>
+        <item>Skogsrå</item>
+        <item>Fenix</item>
+        <item>Sphinx</item>
+        <item>Wendigo</item>
+        <item>Bortbyting</item>
+        <item>Draug</item>
+        <item>Gast</item>
+        <item>Irrbloss</item>
+        <item>Grimm</item>
+        <item>Lindorm</item>
+        <item>Lyktgubbe</item>
+        <item>Mara</item>
+        <item>Myling</item>
+        <item>Oknytt</item>
+        <item>Vätte</item>
+        <item>Älva</item>
+        <item>Odjur</item>
+        <item>Nosferatu</item>
+        <item>Tengu</item>
+        <item>Yokai</item>
+        <item>Balrog</item>
+        <item>Dementor</item>
+        <item>Nifflare</item>
+        <item>Fantom</item>
+        <item>Frankenstein</item>
+        <item>Fenris</item>
+        <item>Siren</item>
+        <item>Poltergeist</item>
+        <item>Cyklop</item>
+        <item>Titan</item>
+        <item>Grådvärg</item>
+        <item>Kobold</item>
+        <item>Basilisk</item>
+        <item>Dryad</item>
+        <item>Faun</item>
+        <item>Golem</item>
+        <item>Hydra</item>
+        <item>Kappa</item>
+        <item>Kentaur</item>
+        <item>Krampus</item>
+        <item>Åskfågel</item>
+        <item>Naga</item>
+        <item>Salamander</item>
+    </string-array>
+
 </resources>

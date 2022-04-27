@@ -7,7 +7,7 @@ class Player(
     var firstName : String,
     var lastName : String,
     var age : Int,
-    var totalExp : Int = getPlayerEXP(playerId),
+    var totalExp : Int,
     var healerLevels : MutableList<Int>,
     var rogueLevels : MutableList<Int>,
     var mageLevels : MutableList<Int>,

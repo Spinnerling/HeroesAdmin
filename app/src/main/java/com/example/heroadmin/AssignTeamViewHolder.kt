@@ -12,19 +12,20 @@ class AssignTeamViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView){
     var ageText: TextView = itemView.findViewById(R.id.assignTeam_ageText)
     var checkIdButton : Button = itemView.findViewById(R.id.assignTeam_checkIdButton)
     var playerIdText: TextView = itemView.findViewById(R.id.assignTeam_playerId)
-    var bookerEmailText: TextView = itemView.findViewById(R.id.assignTeam_bookingEmail)
     var infoButton: Button = itemView.findViewById(R.id.assignTeam_infoButton)
     var blueButton: Button = itemView.findViewById(R.id.assignTeam_blueTeamButton)
     var redButton: Button = itemView.findViewById(R.id.assignTeam_redTeamButton)
+    var hideNoteButton: Button = itemView.findViewById(R.id.assignTeam_HideNoteButton)
 
-    var itemInfoHeaders : LinearLayout = itemView.findViewById(R.id.checkIn_itemInfoHeaders)
-    var itemInfoTexts : LinearLayout = itemView.findViewById(R.id.checkIn_itemInfoTexts)
+    var notePanel : LinearLayout = itemView.findViewById(R.id.assignTeam_notepanel)
+    var itemInfoHeaders : LinearLayout = itemView.findViewById(R.id.assignTeam_itemInfoHeaders)
+    var itemInfoTexts : LinearLayout = itemView.findViewById(R.id.assignTeam_itemInfoTexts)
 
     var contactName: TextView = itemView.findViewById(R.id.assignTeam_ContactName)
     var contactPhone: TextView = itemView.findViewById(R.id.assignTeam_ContactPhone)
-    var contactEmail: TextView = itemView.findViewById(R.id.assignTeam_ContactEmail)
     var bookerName: TextView = itemView.findViewById(R.id.assignTeam_BookingName)
-    var bookerPhone: TextView = itemView.findViewById(R.id.assignTeam_BookingPhone)
+    var bookerEmailText: TextView = itemView.findViewById(R.id.assignTeam_bookingEmail)
     var note: TextView = itemView.findViewById(R.id.assignTeam_Note)
+    var groupName: TextView = itemView.findViewById(R.id.assignTeam_GroupName)
 
 }

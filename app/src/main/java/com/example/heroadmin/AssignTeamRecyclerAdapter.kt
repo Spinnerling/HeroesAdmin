@@ -1,12 +1,9 @@
 package com.example.heroadmin
 
 import android.graphics.Color
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentManager
 import androidx.recyclerview.widget.RecyclerView
 
 class AssignTeamRecyclerAdapter (private val ticketArray: MutableList<Ticket>, private val eventView : EventView) : RecyclerView.Adapter<AssignTeamViewHolder>() {
@@ -26,16 +23,17 @@ class AssignTeamRecyclerAdapter (private val ticketArray: MutableList<Ticket>, p
         // is called to attach data to a ViewHolder. Here you change the text, color, whatever needs to be done to the list item views according to the data being displayed. I created a bind function in the ViewHolder earlier for convenience which I use here, if you want you could do everything in the bind function here instead.
         val ticket = ticketArray[position]
 
-        var name = ticket.fullName
-        holder.nameText.text = name
-        var age = ticket.age
-        holder.ageText.text = age.toString()
-        var playerId = ticket.playerId
-        holder.playerIdText.text = playerId
-        var bookerEmail = ticket.bookerEmail
-        holder.bookerEmailText.text = bookerEmail
+        holder.nameText.text = ticket.fullName
+        holder.ageText.text = ticket.age.toString()
+        holder.playerIdText.text = ticket.playerId
+        holder.bookerEmailText.text = ticket.bookerEmail
+        holder.contactName.text = ticket.guardianName
+        holder.contactPhone.text = ticket.guardianPhoneNr
+        holder.bookerName.text = ticket.bookerFullName
+        holder.note.text = ticket.note
+        holder.groupName.text = "(${ticket.groupSize}) ${ticket.group}"
 
-        if (holder.playerIdText.text == ""){
+        if (holder.playerIdText.text == "" || holder.playerIdText.text == "0"){
             holder.checkIdButton.visibility = View.VISIBLE
             holder.playerIdText.visibility = View.GONE
         }
@@ -43,19 +41,6 @@ class AssignTeamRecyclerAdapter (private val ticketArray: MutableList<Ticket>, p
             holder.checkIdButton.visibility = View.GONE
             holder.playerIdText.visibility = View.VISIBLE
         }
-
-        var contactName = ticket.guardianFullName
-        holder.contactName.text = contactName
-        var contactPhone = ticket.guardianPhoneNr
-        holder.contactPhone.text = contactPhone
-        var contactEmail = ticket.guardianEmail
-        holder.contactEmail.text = contactEmail
-        var bookerName = ticket.bookerFullName
-        holder.bookerName.text = bookerName
-        var bookerPhone = ticket.bookerPhoneNr
-        holder.bookerPhone.text = bookerPhone
-        var note = ticket.note
-        holder.note.text = note
 
         holder.infoButton.setOnClickListener{
             if (holder.itemInfoHeaders.visibility == View.VISIBLE){
@@ -72,7 +57,7 @@ class AssignTeamRecyclerAdapter (private val ticketArray: MutableList<Ticket>, p
             ticket.teamColor = "Blue"
             eventView.updateTicketLists()
 
-            if (ticket.checkedIn){
+            if (ticket.checkedIn == 1){
                 eventView.setTicketTabardNumber(ticket)
             }
         }
@@ -81,14 +66,27 @@ class AssignTeamRecyclerAdapter (private val ticketArray: MutableList<Ticket>, p
             ticket.teamColor = "Red"
             eventView.updateTicketLists()
 
-            if (ticket.checkedIn){
+            if (ticket.checkedIn == 1){
                 eventView.setTicketTabardNumber(ticket)
             }
         }
 
-        if (note != "") {
-            holder.infoButton.setCompoundDrawablesRelativeWithIntrinsicBounds(R.drawable.ic_warning, 0, 0, 0)
-            holder.infoButton.setBackgroundColor(Color.RED)
+        holder.hideNoteButton.setOnClickListener{
+            ticket.noteHandled = !ticket.noteHandled
+            if (ticket.noteHandled){
+                holder.notePanel.visibility = View.GONE
+                holder.hideNoteButton.text = "SHOW NOTE"
+            }
+            else {
+                holder.hideNoteButton.text = "HIDE NOTE"
+                if (ticket.note != "") {
+                    holder.notePanel.visibility = View.VISIBLE
+                }
+            }
+        }
+
+        if (holder.note.text != "" && !ticket.noteHandled) {
+            holder.notePanel.visibility = View.VISIBLE
         }
     }
 }

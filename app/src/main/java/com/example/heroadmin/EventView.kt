@@ -2,7 +2,6 @@ package com.example.heroadmin
 
 import android.annotation.SuppressLint
 import android.app.AlertDialog
-import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -14,55 +13,62 @@ import androidx.databinding.DataBindingUtil
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.android.volley.Request
 import com.example.heroadmin.databinding.FragmentEventViewBinding
+import org.json.JSONArray
+import org.json.JSONObject
+import kotlin.random.Random
 
 class EventView : Fragment() {
-    private lateinit var binding : FragmentEventViewBinding
-    private lateinit var v : View
-    private lateinit var args : EventViewArgs
-    private lateinit var currEventId : String
-    private lateinit var event : Event
+    private lateinit var currActivity: MainActivity
+    private lateinit var binding: FragmentEventViewBinding
+    private lateinit var v: View
+    private lateinit var DBF: DatabaseFunctions
+    private lateinit var args: EventViewArgs
+    private lateinit var currEventId: String
+    private lateinit var event: Event
     private lateinit var allPlayers: MutableList<Player>
     private lateinit var allTickets: MutableList<Ticket>
     private lateinit var redTeam: MutableList<Ticket>
     private lateinit var blueTeam: MutableList<Ticket>
     private var redBench: MutableList<Ticket> = mutableListOf()
     private var blueBench: MutableList<Ticket> = mutableListOf()
-    private lateinit var assignList : MutableList<Ticket>
-    private lateinit var checkInList : MutableList<Ticket>
-    private lateinit var assignTeamAdapter : AssignTeamRecyclerAdapter
-    private lateinit var checkInAdapter : CheckInRecyclerAdapter
-    private lateinit var redTeamAdapter : TeamRecyclerAdapter
-    private lateinit var blueTeamAdapter : TeamRecyclerAdapter
-    private lateinit var redBenchAdapter : TeamRecyclerAdapter
-    private lateinit var blueBenchAdapter : TeamRecyclerAdapter
-    private lateinit var redTeamPowerText : TextView
-    private lateinit var blueTeamPowerText : TextView
-    private lateinit var redTeamAmountText : TextView
-    private lateinit var blueTeamAmountText : TextView
-    private lateinit var redTeamTeensText : TextView
-    private lateinit var blueTeamTeensText : TextView
-    private lateinit var redTeamTiniesText : TextView
-    private lateinit var blueTeamTiniesText : TextView
-    lateinit var selectedTicket : Ticket
-    private lateinit var selectedPlayer : Player
-    private lateinit var playerOnOffSwitch : Switch
-    lateinit var selectedTicketTVH : TeamViewHolder
-    private lateinit var playerExpText : TextView
-    private lateinit var bottomPanel : LinearLayout
-    private lateinit var bottomPanelPlayer : LinearLayout
-    private lateinit var bottomPanelNewRound : LinearLayout
-    private lateinit var playerRoleButtonPanel : LinearLayout
-    private var healerAmount : Int = 0
-    private var rogueAmount : Int = 0
-    private var mageAmount : Int = 0
-    private var knightAmount : Int = 0
-    private var specialAAmount : Int = 0
-    private var specialBAmount : Int = 0
-    private var firstPlayerSelected : Boolean = false
-    private var assignSorting = 0
+    private lateinit var assignList: MutableList<Ticket>
+    private lateinit var checkInList: MutableList<Ticket>
+    private lateinit var assignTeamAdapter: AssignTeamRecyclerAdapter
+    private lateinit var checkInAdapter: CheckInRecyclerAdapter
+    private lateinit var redTeamAdapter: TeamRecyclerAdapter
+    private lateinit var blueTeamAdapter: TeamRecyclerAdapter
+    private lateinit var redBenchAdapter: TeamRecyclerAdapter
+    private lateinit var blueBenchAdapter: TeamRecyclerAdapter
+    private lateinit var redTeamPowerText: TextView
+    private lateinit var blueTeamPowerText: TextView
+    private lateinit var redTeamAmountText: TextView
+    private lateinit var blueTeamAmountText: TextView
+    private lateinit var redTeamTeensText: TextView
+    private lateinit var blueTeamTeensText: TextView
+    private lateinit var redTeamTiniesText: TextView
+    private lateinit var blueTeamTiniesText: TextView
+    lateinit var selectedTicket: Ticket
+    private lateinit var selectedPlayer: Player
+    private lateinit var playerOnOffSwitch: Switch
+    lateinit var selectedTicketTVH: TeamViewHolder
+    private lateinit var playerExpText: TextView
+    private lateinit var bottomPanel: LinearLayout
+    private lateinit var bottomPanelPlayer: LinearLayout
+    private lateinit var bottomPanelNewRound: LinearLayout
+    private lateinit var playerRoleButtonPanel: LinearLayout
+    private var healerAmount: Int = 0
+    private var rogueAmount: Int = 0
+    private var mageAmount: Int = 0
+    private var knightAmount: Int = 0
+    private var specialAAmount: Int = 0
+    private var specialBAmount: Int = 0
+    private var firstPlayerSelected: Boolean = false
+    private var assignSorting = 3
     private var checkInSorting = 0
     private var teamSorting = 0
+    private var takenGroupNames = mutableListOf<String>()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -71,17 +77,12 @@ class EventView : Fragment() {
         // Inflate the layout for this fragment
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_event_view, container, false)
         v = inflater.inflate(R.layout.fragment_event_view, container, false)
-
+        DBF = DatabaseFunctions(v.context)
         args = EventViewArgs.fromBundle(requireArguments())
         currEventId = args.passedEventId.toString()
-        event = getEvent(currEventId)
-        allPlayers = getAllPlayers(currEventId)
-        allTickets = getAllTickets(currEventId)
-
-        if (allTickets.isNotEmpty()){
-            redTeam = getTeamTickets(allTickets, false)
-            blueTeam = getTeamTickets(allTickets, true)
-        }
+        currActivity = (activity as MainActivity)
+        event = currActivity.event
+        allPlayers = DBF.getAllPlayers(event)
 
         return binding.root
     }
@@ -92,10 +93,10 @@ class EventView : Fragment() {
         super.onResume()
 
         // Find elements
-        val assignTeamPanelButton : Button = binding.assignTeamPanelButton
-        val assignTeamList : LinearLayout = binding.assignTeamList
-        val checkInPanelButton : Button = binding.checkInPanelButton
-        val checkInList : LinearLayout = binding.checkInList
+        val assignTeamPanelButton: Button = binding.assignTeamPanelButton
+        val assignTeamList: LinearLayout = binding.assignTeamList
+        val checkInPanelButton: Button = binding.checkInPanelButton
+        val checkInList: LinearLayout = binding.checkInList
         val eventInfoDate = binding.dateText
         val eventInfoTime = binding.timeText
         val eventInfoVenue = binding.venueText
@@ -122,103 +123,130 @@ class EventView : Fragment() {
         bottomPanelPlayer = binding.bottomPanelPlayer
         playerRoleButtonPanel = binding.playerRoleButtonPanel
 
+        getAllTickets(event)
+        autoSetRoleAmounts()
+
         // Set variables
         eventInfoDate.text = "Date: ${event.actualDate}"
         eventInfoTime.text = "Start: ${event.actualStartTime}"
         eventInfoVenue.text = "Venue: ${event.venue}"
         eventInfoPlayerAmount.text = "Tickets: ${allTickets.size} / ${event.playerMax}"
 
-
-        updateTicketLists()
-        autoSetRoleAmounts()
-
         assignTeamPanelButton.setOnClickListener {
             if (assignTeamList.layoutParams.height == 0) {
                 assignTeamList.layoutParams = LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.WRAP_CONTENT,
-                    LinearLayout.LayoutParams.WRAP_CONTENT
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.MATCH_PARENT
                 )
-                assignTeamPanelButton.setCompoundDrawablesRelativeWithIntrinsicBounds(R.drawable.ic_list_open, 0, 0, 0)
-                assignTeamPanelButton.background.setTint(Color.RED)
-            }
-            else {
+                assignTeamPanelButton.setCompoundDrawablesRelativeWithIntrinsicBounds(
+                    R.drawable.ic_list_open,
+                    0,
+                    0,
+                    0
+                )
+            } else {
                 assignTeamList.layoutParams.height = 0
-                assignTeamPanelButton.setCompoundDrawablesRelativeWithIntrinsicBounds(R.drawable.ic_list_closed, 0, 0, 0)
+                assignTeamPanelButton.setCompoundDrawablesRelativeWithIntrinsicBounds(
+                    R.drawable.ic_list_closed,
+                    0,
+                    0,
+                    0
+                )
             }
         }
 
         checkInPanelButton.setOnClickListener {
             if (checkInList.layoutParams.height == 0) {
                 checkInList.layoutParams = LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.WRAP_CONTENT,
-                    LinearLayout.LayoutParams.WRAP_CONTENT
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.MATCH_PARENT
                 )
-                checkInPanelButton.setCompoundDrawablesRelativeWithIntrinsicBounds(R.drawable.ic_list_open, 0, 0, 0)
-            }
-            else {
+
+                // Set button arrow icon
+                checkInPanelButton.setCompoundDrawablesRelativeWithIntrinsicBounds(
+                    R.drawable.ic_list_open,
+                    0,
+                    0,
+                    0
+                )
+            } else {
                 checkInList.layoutParams.height = 0
-                checkInPanelButton.setCompoundDrawablesRelativeWithIntrinsicBounds(R.drawable.ic_list_closed, 0, 0, 0)
+
+                // Set button arrow icon
+                checkInPanelButton.setCompoundDrawablesRelativeWithIntrinsicBounds(
+                    R.drawable.ic_list_closed,
+                    0,
+                    0,
+                    0
+                )
             }
         }
 
-        playerOnOffSwitch.setOnCheckedChangeListener{ _, isChecked ->
-            selectedTicket.benched = !isChecked
+        playerOnOffSwitch.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                selectedTicket.benched = 1
+            } else {
+                selectedTicket.benched = 0
+            }
             updateTicketLists()
         }
 
-        playerCloseButton.setOnClickListener{
+        playerCloseButton.setOnClickListener {
             deselectPlayer()
         }
 
-        newRoundButton.setOnClickListener{
+        newRoundButton.setOnClickListener {
             deselectPlayer()
             bottomPanel.visibility = View.GONE
             bottomPanelNewRound.visibility = View.VISIBLE
-
         }
 
-        cancelNewRoundButton.setOnClickListener{
+        cancelNewRoundButton.setOnClickListener {
             deselectPlayer()
             bottomPanel.visibility = View.VISIBLE
             bottomPanelNewRound.visibility = View.GONE
             playerRoleButtonPanel.visibility = View.INVISIBLE
         }
 
-        switchTeamButton.setOnClickListener{
+        switchTeamButton.setOnClickListener {
             switchTeam()
         }
 
-        switchTeamButton2.setOnClickListener{
+        switchTeamButton2.setOnClickListener {
             switchTeam()
         }
 
-        spendExpButton.setOnClickListener{
-            findNavController().navigate(EventViewDirections.actionEventViewToLevelUpFragment(selectedTicket.playerId))
+        spendExpButton.setOnClickListener {
+            findNavController().navigate(
+                EventViewDirections.actionEventViewToLevelUpFragment(
+                    selectedTicket.playerId
+                )
+            )
         }
 
-        binding.ticketInfoButton.setOnClickListener{
+        binding.ticketInfoButton.setOnClickListener {
             openTicketInfo()
         }
 
-        binding.rollRoundButton2.setOnClickListener{
+        binding.rollRoundButton2.setOnClickListener {
             randomizeRoles()
         }
 
-        binding.devButton.setOnClickListener{
+        binding.devButton.setOnClickListener {
             var team = "Blue"
-            for (ticket in allTickets){
-                ticket.checkedIn = true
-                if (team == "Blue"){
+            for (ticket in allTickets) {
+                ticket.checkedIn = 1
+                if (team == "Blue") {
                     ticket.teamColor = "Blue"
                     team = "Red"
-                }
-                else {
+                } else {
                     ticket.teamColor = "Red"
                     team = "Blue"
                 }
             }
             updateTicketLists()
         }
+
         binding.assignTeamOrgByNameButton.setOnClickListener {
             assignSorting = 0
             updateTicketLists()
@@ -231,7 +259,7 @@ class EventView : Fragment() {
             assignSorting = 2
             updateTicketLists()
         }
-        binding.assignTeamOrgByEmailButton.setOnClickListener {
+        binding.assignTeamOrgByGroupButton.setOnClickListener {
             assignSorting = 3
             updateTicketLists()
         }
@@ -281,11 +309,110 @@ class EventView : Fragment() {
         binding.awardExpButton.setOnClickListener {
             openAwardExp()
         }
+        binding.refreshButton.setOnClickListener {
+            getEvent()
+        }
+    }
+
+    private fun getEvent() {
+        Log.i("test", currEventId + " is event")
+        DBF.apiBaseCall(
+            Request.Method.GET,
+            "https://talltales.nu/API/api/event.php?id=" + currEventId,
+            ::refreshEvent
+        )
+    }
+
+    private fun refreshEvent(response: JSONObject) {
+        val dataArray: JSONArray = response.getJSONArray("data")
+        val eventJson: JSONObject = dataArray.getJSONObject(0)
+        val jsonArray: JSONArray = eventJson.getJSONArray("TicketIDs")
+        val list = MutableList(jsonArray.length()) {
+            jsonArray.getString(it)
+        }
+
+        event = Event(
+            eventJson.getString("ID"),
+            eventJson.getString("Event_Title"),
+            eventJson.getString("Event_Start_date"),
+            eventJson.getString("Event_End_Date"),
+            eventJson.getString("Venue_ID"),
+            eventJson.getString("Report_Text"),
+            eventJson.getString("Description"),
+            eventJson.getInt("EXP_Blueteam"),
+            eventJson.getInt("EXP_Redteam"),
+            eventJson.getInt("EXP_Attendance"),
+            eventJson.getInt("EXP_Recruit"),
+            eventJson.getInt("Round"),
+            eventJson.getString("Status"),
+            list
+        )
+
+        getAllTickets(event)
+    }
+
+    private fun getAllTickets(event: Event) {
+        // Get the event's ticket ids
+        val allTicketIds: MutableList<String> = event.tickets
+
+        // Create an array of the players connected to the tickets
+        allTickets = mutableListOf()
+        for (i in allTicketIds.indices) {
+            getTicket(allTicketIds[i])
+        }
+    }
+
+    private fun getTicket(ticketId: String) {
+        // Find ticket in database by ticketId, return an array of its contents
+        DBF.apiBaseCall(
+            Request.Method.GET,
+            "https://talltales.nu/API/api/ticket.php?id=$ticketId",
+            ::parseTicket
+        )
+    }
+
+    private fun parseTicket(response: JSONObject) {
+        val ticket = Ticket(
+            response.getString("Ticket_ID"),
+            response.getString("First_Name"),
+            response.getString("Last_Name"),
+            response.getInt("Age"),
+            response.getString("KP_Phone_Nr"),
+            response.getString("KP_Name"),
+            response.getString("Booking_Mail"),
+            response.getString("Booking_Name"),
+            response.getString("Team_Color"),
+            response.getInt("Tabard_Nr"),
+            response.getString("Note"),
+            response.getInt("Checked_In"),
+            response.getInt("Recruits"),
+            response.getInt("EXP_Personal"),
+            response.getInt("Benched"),
+            response.getInt("Guaranteed_Role"),
+            response.getInt("Rounds_M"),
+            response.getInt("Rounds_O"),
+            response.getInt("Rounds_K"),
+            response.getInt("Rounds_H"),
+            response.getInt("Rounds_R"),
+            response.getInt("Respawns"),
+            response.getInt("Current_Role"),
+            response.getString("Player_ID"),
+        )
+
+        allTickets.add(ticket)
+        DBF.findTicketPlayerId(ticket)
+
+        // If this is the last ticket to be parsed, update lists
+        if (allTickets.size >= event.tickets.size) {
+            updateTicketLists()
+        }
     }
 
     private fun deselectPlayer() {
-        if (!firstPlayerSelected){return}
-        if (bottomPanelPlayer.visibility == View.VISIBLE){
+        if (!firstPlayerSelected) {
+            return
+        }
+        if (bottomPanelPlayer.visibility == View.VISIBLE) {
             bottomPanel.visibility = View.VISIBLE
             bottomPanelPlayer.visibility = View.GONE
         }
@@ -300,30 +427,29 @@ class EventView : Fragment() {
         redBench = mutableListOf()
         blueBench = mutableListOf()
 
-        for (ticket in allTickets){
-            if (ticket.teamColor == "None"){
+        Log.i("test", "updating tickets")
+
+        for (ticket in allTickets) {
+            if (ticket.teamColor == "None" || ticket.teamColor == "") {
                 assignList.add(ticket)
-            }
-            else if(!ticket.checkedIn){
+            } else if (ticket.checkedIn == 0) {
                 checkInList.add(ticket)
-            }
-            else if(ticket.teamColor == "Red"){
-                if (ticket.benched){
+            } else if (ticket.teamColor == "Red") {
+                if (ticket.benched == 1) {
                     redBench.add(ticket)
-                }
-                else{
+                } else {
                     redTeam.add(ticket)
                 }
-            }
-            else if (ticket.teamColor == "Blue"){
-                if (ticket.benched){
+            } else if (ticket.teamColor == "Blue") {
+                if (ticket.benched == 1) {
                     blueBench.add(ticket)
-                }
-                else{
+                } else {
                     blueTeam.add(ticket)
                 }
             }
         }
+
+        updateTicketGroups()
 
         when (assignSorting) {
             0 -> {
@@ -336,7 +462,7 @@ class EventView : Fragment() {
                 sortAssignByUserId()
             }
             3 -> {
-                sortAssignByEmail()
+                sortAssignByGroup()
             }
         }
 
@@ -374,6 +500,73 @@ class EventView : Fragment() {
         updateTeamPower()
     }
 
+    private fun updateTicketGroups() {
+        takenGroupNames = mutableListOf()
+
+        for (i in assignList.indices) {
+            val ticket1 = assignList[i]
+            ticket1.groupSize = 1
+
+            for (j in assignList.indices) {
+                val ticket2 = assignList[j]
+                // Skip until next ticket in line
+                if (j <= i || ticket2 == ticket1) {
+                    continue
+                }
+
+                // Check if already in the same group
+                if (ticket1.group != "" && ticket1.group == ticket2.group) {
+                    continue
+                }
+
+                // Check if tickets are booked by same mail
+                if (ticket1.bookerEmail == ticket2.bookerEmail) {
+
+                    // Check if both tickets have no group yet
+                    if (ticket1.group == "" && ticket2.group == "") {
+
+                        // Randomize new group name and put both in it
+                        val nameArray = resources.getStringArray(R.array.groupNames)
+                        var randomValue = Random.nextInt(nameArray.size)
+                        var newGroupName: String = nameArray[randomValue]
+
+                        // Check that the name is not already taken
+                        while (takenGroupNames.contains(newGroupName)){
+                            randomValue = Random.nextInt(nameArray.size)
+                            newGroupName = nameArray[randomValue]
+                        }
+
+                        takenGroupNames.add(newGroupName)
+                        ticket1.group = newGroupName
+                        ticket2.group = newGroupName
+
+                        continue
+                    }
+
+                    // Check if they are already split up into different existing groups
+                    if (ticket1.group != "" && ticket2.group != "" && ticket1.group != ticket2.group) {
+                        continue
+                    }
+
+                    // Put the ticket with empty group into the other one's group
+                    if (ticket1.group == "") {
+                        ticket1.group = ticket2.group
+                        continue
+                    }
+
+                    if (ticket2.group == "") {
+                        ticket2.group = ticket1.group
+                        continue
+                    }
+                }
+            }
+
+            if (ticket1.group != ""){
+                ticket1.groupSize = assignList.count {  it.group == ticket1.group }
+            }
+        }
+    }
+
     private fun updateTeamPower() {
         var redPowerLevel = 0
         var bluePowerLevel = 0
@@ -384,21 +577,19 @@ class EventView : Fragment() {
 
 
         for (ticket in allTickets) {
-            if (ticket.teamColor == "Red" && !ticket.benched) {
+            if (ticket.teamColor == "Red" && ticket.benched == 0) {
                 redPowerLevel += ticket.age
-                if (ticket.age > 12){
+                if (ticket.age > 12) {
                     redTeenAmount++
-                }
-                else if (ticket.age < 8){
+                } else if (ticket.age < 8) {
                     redTiniesAmount++
                 }
 
-            } else if (ticket.teamColor == "Blue" && !ticket.benched) {
+            } else if (ticket.teamColor == "Blue" && ticket.benched == 0) {
                 bluePowerLevel += ticket.age
-                if (ticket.age > 12){
+                if (ticket.age > 12) {
                     blueTeenAmount++
-                }
-                else if (ticket.age < 8){
+                } else if (ticket.age < 8) {
                     blueTiniesAmount++
                 }
             }
@@ -418,17 +609,15 @@ class EventView : Fragment() {
     }
 
     private fun checkListVisibilities() {
-        if (assignList.isEmpty()){
+        if (assignList.isEmpty()) {
             binding.assignTeamPanel.visibility = View.GONE
-        }
-        else {
+        } else {
             binding.assignTeamPanel.visibility = View.VISIBLE
         }
 
-        if (checkInList.isEmpty()){
+        if (checkInList.isEmpty()) {
             binding.checkInPanel.visibility = View.GONE
-        }
-        else {
+        } else {
             binding.checkInPanel.visibility = View.VISIBLE
         }
     }
@@ -452,10 +641,14 @@ class EventView : Fragment() {
     }
 
     private fun setTeamAdapters() {
-        redTeamAdapter = TeamRecyclerAdapter(redTeam, { position -> onTeamItemClick(position)}, this)
-        blueTeamAdapter = TeamRecyclerAdapter(blueTeam, { position -> onTeamItemClick(position)}, this)
-        redBenchAdapter = TeamRecyclerAdapter(redBench, { position -> onTeamItemClick(position)}, this)
-        blueBenchAdapter = TeamRecyclerAdapter(blueBench, { position -> onTeamItemClick(position)}, this)
+        redTeamAdapter =
+            TeamRecyclerAdapter(redTeam, { position -> onTeamItemClick(position) }, this)
+        blueTeamAdapter =
+            TeamRecyclerAdapter(blueTeam, { position -> onTeamItemClick(position) }, this)
+        redBenchAdapter =
+            TeamRecyclerAdapter(redBench, { position -> onTeamItemClick(position) }, this)
+        blueBenchAdapter =
+            TeamRecyclerAdapter(blueBench, { position -> onTeamItemClick(position) }, this)
 
         val layoutManagerR = LinearLayoutManager(v.context)
         val layoutManagerRB = LinearLayoutManager(v.context)
@@ -484,23 +677,27 @@ class EventView : Fragment() {
         ticketListBB.adapter = blueBenchAdapter
     }
 
-    private fun onTeamItemClick(position : Int) {
-        if (!firstPlayerSelected){
+    private fun onTeamItemClick(position: Int) {
+        if (!firstPlayerSelected) {
             deselectPlayer()
         }
-        selectedPlayer = getPlayer(selectedTicket.ticketId)
+        selectedPlayer = DBF.getPlayer(selectedTicket.ticketId)
 
-        if (bottomPanelNewRound.visibility == View.VISIBLE){
+        if (bottomPanelNewRound.visibility == View.VISIBLE) {
             playerRoleButtonPanel.visibility = View.VISIBLE
-        }
-        else {
+        } else {
             binding.bottomPanel.visibility = View.GONE
             binding.bottomPanelPlayer.visibility = View.VISIBLE
             binding.playerNameText.text = selectedTicket.fullName
             playerExpText.text = "${selectedPlayer.totalExp} EXP kvar"
-            val roleInText = getRoleByNumber(selectedTicket.currentRole)
+            val roleInText = DBF.getRoleByNumber(selectedTicket.currentRole)
             binding.ticketRoleText.text = roleInText
-            playerOnOffSwitch.isChecked = !selectedTicket.benched
+
+            if (selectedTicket.benched == 0) {
+                playerOnOffSwitch.isChecked = true
+            } else if (selectedTicket.benched == 1) {
+                playerOnOffSwitch.isChecked = false
+            }
         }
     }
 
@@ -518,43 +715,43 @@ class EventView : Fragment() {
         // Transfer ticket info to player
     }
 
-    fun setTicketTabardNumber(ticket : Ticket) {
-        val dialogView = LayoutInflater.from(context).inflate(R.layout.checkin_popup,null)
+    fun setTicketTabardNumber(ticket: Ticket) {
+        val dialogView = LayoutInflater.from(context).inflate(R.layout.checkin_popup, null)
 
         val builder = AlertDialog.Builder(context)
             .setView(dialogView)
 
         val alertDialog = builder.show()
-        val name : TextView = dialogView.findViewById<TextView>(R.id.checkInPopupNameText)
+        val name: TextView = dialogView.findViewById<TextView>(R.id.checkInPopupNameText)
         name.text = ticket.fullName
         val userNo = dialogView.findViewById<EditText>(R.id.checkInPopupEditText)
         userNo.requestFocus()
 
-        dialogView.findViewById<Button>(R.id.checkinAcceptButton).setOnClickListener{
+        dialogView.findViewById<Button>(R.id.checkinAcceptButton).setOnClickListener {
             val number = userNo.text.toString()
-            if (number != ""){
+            if (number != "") {
                 ticket.tabardNr = number.toInt()
-                ticket.checkedIn = true;
+                ticket.checkedIn = 1;
                 updateTicketLists()
 
                 alertDialog.dismiss()
             }
         }
-        dialogView.findViewById<Button>(R.id.checkinCancelButton).setOnClickListener{
-            Toast.makeText(context,"Cancelled",Toast.LENGTH_SHORT).show()
+        dialogView.findViewById<Button>(R.id.checkinCancelButton).setOnClickListener {
+            Toast.makeText(context, "Cancelled", Toast.LENGTH_SHORT).show()
             alertDialog.dismiss()
         }
     }
 
-    fun openTicketInfo() {
-        var ticket = selectedTicket
-        val dialogView = LayoutInflater.from(context).inflate(R.layout.ticket_info,null)
+    private fun openTicketInfo() {
+        val ticket = selectedTicket
+        val dialogView = LayoutInflater.from(context).inflate(R.layout.ticket_info, null)
         val builder = AlertDialog.Builder(context)
             .setView(dialogView)
         val playerInfoDialog = builder.show()
 
         // Fill with info
-        val name : TextView = dialogView.findViewById<TextView>(R.id.ti_playerName)
+        val name: TextView = dialogView.findViewById<TextView>(R.id.ti_playerName)
         name.text = ticket.fullName
         val userAge = dialogView.findViewById<TextView>(R.id.ti_playerAge)
         userAge.text = ticket.age.toString()
@@ -563,49 +760,45 @@ class EventView : Fragment() {
         val ticketNote = dialogView.findViewById<TextView>(R.id.ti_Note)
         ticketNote.text = ticket.note
         val guardianName = dialogView.findViewById<TextView>(R.id.ti_guardianName)
-        guardianName.text = ticket.guardianFullName
+        guardianName.text = ticket.guardianName
         val guardianPhone = dialogView.findViewById<TextView>(R.id.ti_guardianPhone)
         guardianPhone.text = ticket.guardianPhoneNr
-        val guardianEmail = dialogView.findViewById<TextView>(R.id.ti_guardianEmail)
-        guardianEmail.text = ticket.guardianEmail
         val bookerName = dialogView.findViewById<TextView>(R.id.ti_bookerName)
         bookerName.text = ticket.bookerFullName
-        val bookerPhone = dialogView.findViewById<TextView>(R.id.ti_bookerPhone)
-        bookerPhone.text = ticket.bookerPhoneNr
         val bookerEmail = dialogView.findViewById<TextView>(R.id.ti_bookerEmail)
         bookerEmail.text = ticket.bookerEmail
 
         // Close window
-        dialogView.findViewById<Button>(R.id.ti_closeButton).setOnClickListener{
+        dialogView.findViewById<Button>(R.id.ti_closeButton).setOnClickListener {
             playerInfoDialog.dismiss()
         }
     }
 
-    private fun openAwardExp(){
-            var ticket = selectedTicket
-            val dialogView = LayoutInflater.from(context).inflate(R.layout.award_exp,null)
+    private fun openAwardExp() {
+        val ticket = selectedTicket
+        val dialogView = LayoutInflater.from(context).inflate(R.layout.award_exp, null)
 
-            val builder = AlertDialog.Builder(context)
-                .setView(dialogView)
+        val builder = AlertDialog.Builder(context)
+            .setView(dialogView)
 
-            val alertDialog = builder.show()
-            val name : TextView = dialogView.findViewById<TextView>(R.id.ae_playerNameText)
-            name.text = ticket.fullName
-            val userNo = dialogView.findViewById<EditText>(R.id.ae_expAmount)
-            userNo.requestFocus()
+        val alertDialog = builder.show()
+        val name: TextView = dialogView.findViewById<TextView>(R.id.ae_playerNameText)
+        name.text = ticket.fullName
+        val userNo = dialogView.findViewById<EditText>(R.id.ae_expAmount)
+        userNo.requestFocus()
 
-            dialogView.findViewById<Button>(R.id.ae_acceptButton).setOnClickListener{
-                val number = userNo.text.toString()
-                if (number != ""){
-                    ticket.expPersonal += number.toInt()
+        dialogView.findViewById<Button>(R.id.ae_acceptButton).setOnClickListener {
+            val number = userNo.text.toString()
+            if (number != "") {
+                ticket.expPersonal += number.toInt()
 
-                    alertDialog.dismiss()
-                }
-            }
-            dialogView.findViewById<Button>(R.id.ae_cancelButton).setOnClickListener{
-                Toast.makeText(context,"Cancelled",Toast.LENGTH_SHORT).show()
                 alertDialog.dismiss()
             }
+        }
+        dialogView.findViewById<Button>(R.id.ae_cancelButton).setOnClickListener {
+            Toast.makeText(context, "Cancelled", Toast.LENGTH_SHORT).show()
+            alertDialog.dismiss()
+        }
     }
 
     fun autoSetRoleAmounts() {
@@ -623,14 +816,16 @@ class EventView : Fragment() {
         binding.knightAmountValue.setText(knightAmount.toString())
     }
 
-    fun selectTicket(ticket : Ticket) {
-        if (firstPlayerSelected) { deselectPlayer() }
+    fun selectTicket(ticket: Ticket) {
+        if (firstPlayerSelected) {
+            deselectPlayer()
+        }
         firstPlayerSelected = true;
         ticket.selected = true
         selectedTicket = ticket
     }
 
-    fun switchTeam(){
+    private fun switchTeam() {
         selectedTicket.teamColor = "None"
         updateTicketLists()
         deselectPlayer()
@@ -642,7 +837,7 @@ class EventView : Fragment() {
         // Pass along eventId
     }
 
-    // SORTING FUNCTIONS
+// SORTING FUNCTIONS
 
     private fun sortAssignByUserId() {
         assignList.sortBy { it.ticketId }
@@ -656,8 +851,14 @@ class EventView : Fragment() {
         assignList.sortBy { it.age }
     }
 
-    private fun sortAssignByEmail() {
-        assignList.sortBy { it.bookerEmail }
+    private fun sortAssignByGroup() {
+        assignList = assignList.sortedWith(
+            compareBy(
+                Ticket::groupSize,
+                Ticket::group,
+                Ticket::fullName
+            ).reversed()
+        ) as MutableList<Ticket>
     }
 
 
@@ -678,19 +879,21 @@ class EventView : Fragment() {
     }
 
 
-    private fun sortTeamsByName(){
+    private fun sortTeamsByName() {
         blueTeam.sortBy { it.fullName }
         blueBench.sortBy { it.fullName }
         redTeam.sortBy { it.fullName }
         redBench.sortBy { it.fullName }
     }
-    private fun sortTeamsByNumber(){
+
+    private fun sortTeamsByNumber() {
         blueTeam.sortBy { it.tabardNr }
         blueBench.sortBy { it.tabardNr }
         redTeam.sortBy { it.tabardNr }
         redBench.sortBy { it.tabardNr }
     }
-    private fun sortTeamsByRole(){
+
+    private fun sortTeamsByRole() {
         blueTeam.sortBy { it.currentRole }
         blueBench.sortBy { it.currentRole }
         redTeam.sortBy { it.currentRole }
@@ -701,15 +904,15 @@ class EventView : Fragment() {
         val redSuccess = pickTeamRoles(redTeam)
         val blueSuccess = pickTeamRoles(blueTeam)
 
-        if (redSuccess){
-            Toast.makeText(context,"Red team randomized successfully!",Toast.LENGTH_SHORT).show()
+        if (redSuccess) {
+            Toast.makeText(context, "Red team randomized successfully!", Toast.LENGTH_SHORT).show()
         }
-        if (blueSuccess){
-            Toast.makeText(context,"Blue team randomized successfully!",Toast.LENGTH_SHORT).show()
+        if (blueSuccess) {
+            Toast.makeText(context, "Blue team randomized successfully!", Toast.LENGTH_SHORT).show()
         }
     }
 
-    private fun pickTeamRoles(team: MutableList<Ticket>) : Boolean {
+    private fun pickTeamRoles(team: MutableList<Ticket>): Boolean {
         // Get the amount of special roles
         healerAmount = binding.healerAmountValue.text.toString().toInt()
         rogueAmount = binding.rogueAmountValue.text.toString().toInt()
@@ -727,12 +930,12 @@ class EventView : Fragment() {
         var finishedspecialB = mutableListOf<Ticket>()
 
         // Set everybody as warrior
-        for (ticket in team){
+        for (ticket in team) {
             ticket.currentRole = 7
         }
 
         // A function to set correct ticket in correct list
-        fun setRole(ticket: Ticket, role : Int){
+        fun setRole(ticket: Ticket, role: Int) {
             when (role) {
                 1 -> {
                     finishedHealers.add(ticket)
@@ -762,23 +965,22 @@ class EventView : Fragment() {
         }
 
         // Find how many special roles should be assigned - for comparison later
-        val totalAmount = healerAmount + rogueAmount + mageAmount + knightAmount + specialAAmount + specialBAmount
+        val totalAmount =
+            healerAmount + rogueAmount + mageAmount + knightAmount + specialAAmount + specialBAmount
 
         // Get the next players in line to be special
         team.sortBy { it.roundsSpecialRole }
 
-        val secondList = team.slice(0.. totalAmount).toList()
+        val secondList = team.slice(0..totalAmount).toList()
 
         // Set the rest as warriors
-        Log.i("test", team.size.toString() + " in team after slice")
 
         // If any of the players have a guaranteed role, set it as the role and remove the person from the players list.
         val thirdList = mutableListOf<Ticket>()
         for (ticket in secondList) {
-            if (ticket.guaranteedRole != 0){
+            if (ticket.guaranteedRole != 0) {
                 setRole(ticket, ticket.guaranteedRole)
-            }
-            else{
+            } else {
                 thirdList.add(ticket)
             }
         }
@@ -806,11 +1008,9 @@ class EventView : Fragment() {
             for (ticket in thirdList) {
                 if (ticket.roundsHealer < ticket.allowedTimesPerRole) {
                     tempHealers.add(ticket)
-                    Log.i("test", "Put in tempHealer")
                 }
                 if (ticket.roundsRogue < ticket.allowedTimesPerRole) {
                     temprogue.add(ticket)
-                    Log.i("test", "Put in temprogue")
                 }
                 if (ticket.roundsMage < ticket.allowedTimesPerRole) {
                     tempmage.add(ticket)
@@ -837,94 +1037,93 @@ class EventView : Fragment() {
             // Pick out players who have not already been picked
             val pickedPlayerList = mutableListOf<Ticket>()
 
-            for (ticket in tempHealers){
-                if (finishedHealers.size < healerAmount && !pickedPlayerList.contains(ticket)){
+            for (ticket in tempHealers) {
+                if (finishedHealers.size < healerAmount && !pickedPlayerList.contains(ticket)) {
                     pickedPlayerList.add(ticket)
                     finishedHealers.add(ticket)
                 }
             }
-            Log.i("test", finishedHealers.size.toString() + " in healers")
 
-            for (ticket in temprogue){
-                if (finishedrogue.size < rogueAmount && !pickedPlayerList.contains(ticket)){
+            for (ticket in temprogue) {
+                if (finishedrogue.size < rogueAmount && !pickedPlayerList.contains(ticket)) {
                     pickedPlayerList.add(ticket)
                     finishedrogue.add(ticket)
                 }
             }
-            Log.i("test", finishedrogue.size.toString() + " in rogues")
 
-            for (ticket in tempmage){
-                if (finishedmage.size < mageAmount && !pickedPlayerList.contains(ticket)){
+            for (ticket in tempmage) {
+                if (finishedmage.size < mageAmount && !pickedPlayerList.contains(ticket)) {
                     pickedPlayerList.add(ticket)
                     finishedmage.add(ticket)
                 }
             }
-            Log.i("test", finishedmage.size.toString() + " in mages")
 
-            for (ticket in tempknight){
-                if (finishedknight.size < knightAmount && !pickedPlayerList.contains(ticket)){
+            for (ticket in tempknight) {
+                if (finishedknight.size < knightAmount && !pickedPlayerList.contains(ticket)) {
                     pickedPlayerList.add(ticket)
                     finishedknight.add(ticket)
                 }
             }
-            Log.i("test", finishedknight.size.toString() + " in knights")
 
-            for (ticket in tempspecialA){
-                if (finishedspecialA.size < specialAAmount && !pickedPlayerList.contains(ticket)){
+            for (ticket in tempspecialA) {
+                if (finishedspecialA.size < specialAAmount && !pickedPlayerList.contains(ticket)) {
                     pickedPlayerList.add(ticket)
                     finishedspecialA.add(ticket)
                 }
             }
-            for (ticket in tempspecialB){
-                if (finishedspecialB.size < specialBAmount && !pickedPlayerList.contains(ticket)){
+
+            for (ticket in tempspecialB) {
+                if (finishedspecialB.size < specialBAmount && !pickedPlayerList.contains(ticket)) {
                     pickedPlayerList.add(ticket)
                     finishedspecialB.add(ticket)
                 }
             }
 
             // Check if the correct amount of roles have been picked, otherwise rinse & repeat.
-            tempTotal = finishedHealers.size + finishedrogue.size + finishedmage.size + finishedknight.size + finishedspecialA.size + finishedspecialB.size
+            tempTotal =
+                finishedHealers.size + finishedrogue.size + finishedmage.size + finishedknight.size + finishedspecialA.size + finishedspecialB.size
             loops++
 
-            if (loops > 99){
-                Toast.makeText(context,"Randomizer looped 100 times without finding a match!",Toast.LENGTH_LONG).show()
+            if (loops > 99) {
+                Toast.makeText(
+                    context,
+                    "Randomizer looped 100 times without finding a match!",
+                    Toast.LENGTH_LONG
+                ).show()
                 return false
             }
         }
 
         // Set role to player's currRole
-        for (ticket in finishedHealers){
+        for (ticket in finishedHealers) {
             ticket.currentRole = 1
-            Log.i("test", ticket.firstName + " got healer")
         }
-        for (ticket in finishedrogue){
+        for (ticket in finishedrogue) {
             ticket.currentRole = 2
-            Log.i("test", ticket.firstName + " got rogue")
         }
-        for (ticket in finishedmage){
+        for (ticket in finishedmage) {
             ticket.currentRole = 3
-            Log.i("test", ticket.firstName + " got mage")
         }
-        for (ticket in finishedknight){
+        for (ticket in finishedknight) {
             ticket.currentRole = 4
-            Log.i("test", ticket.firstName + " got knight")
         }
-        for (ticket in finishedspecialA){
+        for (ticket in finishedspecialA) {
             ticket.currentRole = 5
-            Log.i("test", ticket.firstName + " got specialA")
         }
-        for (ticket in finishedspecialB){
+        for (ticket in finishedspecialB) {
             ticket.currentRole = 6
-            Log.i("test", ticket.firstName + " got specialB")
         }
 
         // If a player has been all special roles an equal amount, increase the amount of times they can be special
-        for (ticket in team){
-            if (ticket.roundsHealer == ticket.roundsKnight && ticket.roundsHealer == ticket.roundsMage && ticket.roundsHealer == ticket.roundsRogue){
+        for (ticket in team) {
+            if (ticket.roundsHealer == ticket.roundsKnight && ticket.roundsHealer == ticket.roundsMage && ticket.roundsHealer == ticket.roundsRogue) {
                 ticket.allowedTimesPerRole++
             }
-            if (ticket.currentRole == ticket.guaranteedRole){
+            if (ticket.currentRole == ticket.guaranteedRole) {
                 ticket.guaranteedRole = 0
+            }
+            if (ticket.currentRole != 7) {
+                ticket.roundsSpecialRole++
             }
         }
 
