@@ -124,7 +124,6 @@ class EventView : Fragment() {
         playerRoleButtonPanel = binding.playerRoleButtonPanel
 
         getAllTickets(event)
-        autoSetRoleAmounts()
 
         // Set variables
         eventInfoDate.text = "Date: ${event.actualDate}"
@@ -498,6 +497,7 @@ class EventView : Fragment() {
         setTeamAdapters()
         checkListVisibilities()
         updateTeamPower()
+        autoSetRoleAmounts()
     }
 
     private fun updateTicketGroups() {
@@ -505,7 +505,6 @@ class EventView : Fragment() {
 
         for (i in assignList.indices) {
             val ticket1 = assignList[i]
-            ticket1.groupSize = 1
 
             for (j in assignList.indices) {
                 val ticket2 = assignList[j]
@@ -514,14 +513,14 @@ class EventView : Fragment() {
                     continue
                 }
 
-                // Check if already in the same group
+                // Skip if already in the same existing group
                 if (ticket1.group != "" && ticket1.group == ticket2.group) {
                     continue
                 }
 
-                // Check if tickets are booked by same mail
+                // Check if tickets are booked by same email
                 if (ticket1.bookerEmail == ticket2.bookerEmail) {
-
+                    Log.i("test", ticket1.fullName + " " + ticket2.fullName + " have the same email")
                     // Check if both tickets have no group yet
                     if (ticket1.group == "" && ticket2.group == "") {
 
@@ -564,6 +563,33 @@ class EventView : Fragment() {
             if (ticket1.group != ""){
                 ticket1.groupSize = assignList.count {  it.group == ticket1.group }
             }
+            else {
+                ticket1.groupSize = 1
+            }
+        }
+    }
+
+    fun setGroupColor(ticket : Ticket, setBlue : Boolean) {
+        if (ticket.group == ""){
+            if (setBlue){
+                ticket.teamColor = "Blue"
+            }
+            else {
+                ticket.teamColor = "Red"
+            }
+        }
+        else {
+            for (ticket2 in allTickets) {
+
+                if (ticket2.group == ticket.group) {
+                    if (setBlue){
+                        ticket2.teamColor = "Blue"
+                    }
+                    else {
+                        ticket2.teamColor = "Red"
+                    }
+                }
+            }
         }
     }
 
@@ -578,7 +604,7 @@ class EventView : Fragment() {
 
         for (ticket in allTickets) {
             if (ticket.teamColor == "Red" && ticket.benched == 0) {
-                redPowerLevel += ticket.age
+                redPowerLevel += ticket.powerLevel
                 if (ticket.age > 12) {
                     redTeenAmount++
                 } else if (ticket.age < 8) {
@@ -586,7 +612,7 @@ class EventView : Fragment() {
                 }
 
             } else if (ticket.teamColor == "Blue" && ticket.benched == 0) {
-                bluePowerLevel += ticket.age
+                bluePowerLevel += ticket.powerLevel
                 if (ticket.age > 12) {
                     blueTeenAmount++
                 } else if (ticket.age < 8) {
@@ -689,6 +715,14 @@ class EventView : Fragment() {
             binding.bottomPanel.visibility = View.GONE
             binding.bottomPanelPlayer.visibility = View.VISIBLE
             binding.playerNameText.text = selectedTicket.fullName
+
+            if (selectedTicket.teamColor == "Blue"){
+                binding.playerNameText.setBackgroundResource(R.color.teamBlueColor)
+            }
+            else {
+                binding.playerNameText.setBackgroundResource(R.color.teamRedColor)
+            }
+
             playerExpText.text = "${selectedPlayer.totalExp} EXP kvar"
             val roleInText = DBF.getRoleByNumber(selectedTicket.currentRole)
             binding.ticketRoleText.text = roleInText
@@ -724,6 +758,13 @@ class EventView : Fragment() {
         val alertDialog = builder.show()
         val name: TextView = dialogView.findViewById<TextView>(R.id.checkInPopupNameText)
         name.text = ticket.fullName
+        if (ticket.teamColor == "Blue"){
+            name.setBackgroundResource(R.color.teamBlueColor)
+        }
+        else {
+            name.setBackgroundResource(R.color.teamRedColor)
+        }
+
         val userNo = dialogView.findViewById<EditText>(R.id.checkInPopupEditText)
         userNo.requestFocus()
 
@@ -802,14 +843,15 @@ class EventView : Fragment() {
     }
 
     fun autoSetRoleAmounts() {
-        if (allPlayers.isEmpty()) {
+        if (allTickets.isEmpty()) {
+            Log.i("test", "allPlayers is empty")
             return
         }
-
-        healerAmount = allPlayers.size / 16
-        mageAmount = (allPlayers.size + 4) / 16
-        rogueAmount = (allPlayers.size + 12) / 16
-        knightAmount = (allPlayers.size + 8) / 16
+        Log.i("test","setting role amounts")
+        healerAmount = allTickets.size / 16
+        mageAmount = (allTickets.size + 4) / 16
+        rogueAmount = (allTickets.size + 12) / 16
+        knightAmount = (allTickets.size + 8) / 16
         binding.healerAmountValue.setText(healerAmount.toString())
         binding.mageAmountValue.setText(mageAmount.toString())
         binding.rogueAmountValue.setText(rogueAmount.toString())
@@ -852,6 +894,8 @@ class EventView : Fragment() {
     }
 
     private fun sortAssignByGroup() {
+        if (assignList.size == 0) { return }
+
         assignList = assignList.sortedWith(
             compareBy(
                 Ticket::groupSize,

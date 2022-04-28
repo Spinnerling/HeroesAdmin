@@ -10,7 +10,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#BD9E5E"
+        android:background="#64BD5E"
         android:orientation="vertical"
         android:padding="10dp"
         tools:context=".EventView">
@@ -26,7 +26,7 @@
                 android:layout_height="match_parent"
                 android:layout_marginRight="10dp"
                 android:layout_weight="1"
-                android:background="#2B80FF"
+                android:background="#3857F6"
                 android:gravity="center"
                 android:orientation="horizontal"
                 android:padding="5dp">
@@ -36,7 +36,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:src="@mipmap/ic_tiger_foreground" />
+                    android:src="@drawable/power" />
 
                 <TextView
                     android:id="@+id/blueTeamPowerText"
@@ -55,7 +55,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:src="@mipmap/ic_tiger_foreground" />
+                    android:src="@drawable/amount" />
 
                 <TextView
                     android:id="@+id/blueTeamAmountText"
@@ -73,7 +73,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:src="@mipmap/ic_tiger_foreground" />
+                    android:src="@drawable/teen" />
 
                 <TextView
                     android:id="@+id/blueTeamTeensText"
@@ -91,7 +91,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:src="@mipmap/ic_tiger_foreground" />
+                    android:src="@drawable/tiny" />
 
                 <TextView
                     android:id="@+id/blueTeamTiniesText"
@@ -118,7 +118,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:src="@mipmap/ic_tiger_foreground" />
+                    android:src="@drawable/power" />
 
                 <TextView
                     android:id="@+id/redTeamPowerText"
@@ -137,7 +137,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:src="@mipmap/ic_tiger_foreground" />
+                    android:src="@drawable/amount" />
 
                 <TextView
                     android:id="@+id/redTeamAmountText"
@@ -155,7 +155,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:src="@mipmap/ic_tiger_foreground" />
+                    android:src="@drawable/teen" />
 
                 <TextView
                     android:id="@+id/redTeamTeensText"
@@ -173,7 +173,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:src="@mipmap/ic_tiger_foreground" />
+                    android:src="@drawable/tiny" />
 
                 <TextView
                     android:id="@+id/redTeamTiniesText"
@@ -193,7 +193,7 @@
             android:layout_marginTop="10dp"
             android:layout_marginBottom="10dp"
             android:layout_weight="5"
-            android:background="#E4CB98">
+            android:background="#9DE498">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -233,6 +233,7 @@
                             android:id="@+id/devButton"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:backgroundTint="#148800"
                             android:text="DEV" />
 
                         <LinearLayout
@@ -310,7 +311,7 @@
                         <androidx.recyclerview.widget.RecyclerView
                             android:id="@+id/assignTeamRecycler"
                             android:layout_width="match_parent"
-                            android:layout_height="match_parent" >
+                            android:layout_height="wrap_content">
 
                         </androidx.recyclerview.widget.RecyclerView>
 
@@ -441,17 +442,6 @@
                             android:textSize="20sp"
                             android:textStyle="bold" />
 
-                        <TextView
-                            android:id="@+id/round_text1"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:background="#2B80FF"
-                            android:gravity="center"
-                            android:text="Round #"
-                            android:textAlignment="center"
-                            android:textColor="#FFFFFF"
-                            android:textStyle="bold" />
-
                         <LinearLayout
                             android:id="@+id/team_list1"
                             android:layout_width="match_parent"
@@ -542,17 +532,6 @@
                             android:textSize="20sp"
                             android:textStyle="bold" />
 
-                        <TextView
-                            android:id="@+id/round_text2"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:background="#ED6363"
-                            android:gravity="center"
-                            android:text="Round #"
-                            android:textAlignment="center"
-                            android:textColor="#FFFFFF"
-                            android:textStyle="bold" />
-
                         <LinearLayout
                             android:id="@+id/team_list2"
                             android:layout_width="match_parent"
@@ -628,7 +607,7 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:background="#E4CB98"
+            android:background="@color/background_green_light"
             android:orientation="horizontal"
             android:visibility="visible">
 
@@ -691,7 +670,7 @@
                     android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:backgroundTint="#FFFFFF"
-                    android:text="History"
+                    android:text="Refresh"
                     android:textColor="#000000"
                     app:strokeColor="#000000"
                     app:strokeWidth="2dp" />
@@ -746,7 +725,7 @@
             android:id="@+id/bottom_panel_newRound"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="#E4CB98"
+            android:background="@color/background_green_light"
             android:orientation="horizontal"
             android:paddingRight="5dp"
             android:visibility="gone">
@@ -755,7 +734,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1.2"
-                android:background="#DDDDDD"
+                android:background="@color/background_green_extralight"
                 android:orientation="horizontal">
 
                 <LinearLayout
@@ -1068,7 +1047,7 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1.5"
-            android:background="#E4CB98"
+            android:background="@color/background_green_light"
             android:orientation="vertical"
             android:padding="10dp"
             android:visibility="gone">
@@ -1087,7 +1066,7 @@
                     android:layout_height="48dp"
                     android:layout_marginRight="10dp"
                     android:layout_weight="1"
-                    android:background="#F6E8CC"
+                    android:background="@color/background_green_extralight"
                     android:checked="true"
                     android:paddingLeft="10dp"
                     android:text="Playing"
@@ -1168,7 +1147,7 @@
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
-                    android:background="#D5D5D5"
+                    android:background="@color/background_green_extralight"
                     android:gravity="center"
                     android:orientation="vertical"
                     android:padding="5dp">

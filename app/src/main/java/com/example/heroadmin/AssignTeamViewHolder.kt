@@ -23,7 +23,7 @@ class AssignTeamViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView){
 
     var contactName: TextView = itemView.findViewById(R.id.assignTeam_ContactName)
     var contactPhone: TextView = itemView.findViewById(R.id.assignTeam_ContactPhone)
-    var bookerName: TextView = itemView.findViewById(R.id.assignTeam_BookingName)
+    var bookerName: TextView = itemView.findViewById(R.id.assignTeam_BookerName)
     var bookerEmailText: TextView = itemView.findViewById(R.id.assignTeam_bookingEmail)
     var note: TextView = itemView.findViewById(R.id.assignTeam_Note)
     var groupName: TextView = itemView.findViewById(R.id.assignTeam_GroupName)

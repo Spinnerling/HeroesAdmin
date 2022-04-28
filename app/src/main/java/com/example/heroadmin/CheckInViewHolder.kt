@@ -19,9 +19,8 @@ class CheckInViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     var itemInfoHeaders : LinearLayout = itemView.findViewById(R.id.checkIn_itemInfoHeaders)
     var itemInfoTexts : LinearLayout = itemView.findViewById(R.id.checkIn_itemInfoTexts)
 
-    var contactName: TextView = itemView.findViewById(R.id.assignTeam_ContactName)
-    var contactPhone: TextView = itemView.findViewById(R.id.assignTeam_ContactPhone)
-    var contactEmail: TextView = itemView.findViewById(R.id.assignTeam_ContactEmail)
-    var bookerName: TextView = itemView.findViewById(R.id.assignTeam_BookingName)
-    var bookerPhone: TextView = itemView.findViewById(R.id.assignTeam_BookingPhone)
+    var contactName: TextView = itemView.findViewById(R.id.checkin_ContactName)
+    var contactPhone: TextView = itemView.findViewById(R.id.checkin_ContactPhone)
+    var bookerEmail: TextView = itemView.findViewById(R.id.checkin_BookerEmail)
+    var bookerName: TextView = itemView.findViewById(R.id.checkin_BookerName)
 }

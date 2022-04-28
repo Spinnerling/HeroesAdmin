@@ -12,7 +12,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="10dp"
-        android:background="#CCC5F3"
+        android:background="@color/background_green_extralight"
         android:gravity="center"
         android:paddingLeft="40dp"
         android:paddingTop="10dp"

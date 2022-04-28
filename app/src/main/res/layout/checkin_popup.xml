@@ -10,7 +10,7 @@
         android:id="@+id/textView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#48A645"
+        android:background="@color/background_green_medium"
         android:text="Check In"
         android:textAlignment="center"
         android:textColor="#FFFFFF"
@@ -21,45 +21,46 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
+        android:layout_marginBottom="5dp"
         android:text="ticket name"
         android:textAlignment="center"
         android:textSize="26sp" />
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginLeft="5dp"
-        android:layout_marginTop="25dp"
-        android:layout_marginRight="5dp"
-        android:orientation="horizontal">
+    <EditText
+        android:id="@+id/checkInPopupEditText"
+        android:layout_width="150dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="25dp"
+        android:ems="10"
+        android:hint="Tabard#"
+        android:inputType="number"
+        android:textAlignment="center"
+        android:textSize="24sp" />
 
-        <EditText
-            android:id="@+id/checkInPopupEditText"
-            android:layout_width="150dp"
-            android:layout_height="wrap_content"
-            android:ems="10"
-            android:hint="Tabard#"
-            android:inputType="number"
-            android:textAlignment="center"
-            android:textSize="24sp" />
-
-        <EditText
-            android:id="@+id/checkInPopupEditText2"
-            android:layout_width="150dp"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="10dp"
-            android:ems="10"
-            android:hint="Nya Kompisar"
-            android:inputType="number"
-            android:textAlignment="center"
-            android:textSize="24sp" />
-    </LinearLayout>
-
-    <LinearLayout
+    <TextView
+        android:id="@+id/textView8"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="5dp"
+        android:background="@color/background_green_medium"
+        android:text="Recruited Friends"
+        android:textAlignment="center"
+        android:textColor="#FFFFFF" />
+
+    <EditText
+        android:id="@+id/checkInPopupEditText2"
+        android:layout_width="150dp"
+        android:layout_height="wrap_content"
+        android:hint="Amount"
+        android:inputType="number"
+        android:textAlignment="center"
+        android:textSize="24sp" />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_marginLeft="5dp"
-        android:layout_marginTop="25dp"
+        android:layout_marginTop="15dp"
         android:layout_marginRight="5dp"
         android:orientation="horizontal">
 
@@ -82,7 +83,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="bottom"
             android:layout_weight="1"
-            android:backgroundTint="#48A645"
+            android:backgroundTint="@color/buttonGreen"
             android:text="Accept" />
     </LinearLayout>
 

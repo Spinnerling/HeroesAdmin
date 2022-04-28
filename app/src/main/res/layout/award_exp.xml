@@ -5,22 +5,25 @@
     android:layout_height="wrap_content"
     android:background="#FFFFFF"
     android:gravity="center"
-    android:orientation="vertical"
-    android:padding="10dp">
+    android:orientation="vertical">
 
     <TextView
         android:id="@+id/aw_titleText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#81D86E"
+        android:layout_marginBottom="10dp"
+        android:background="@color/background_green_medium"
         android:text="Award EXP"
         android:textAlignment="center"
+        android:textColor="#FFFFFF"
         android:textStyle="bold" />
 
     <TextView
         android:id="@+id/ae_playerNameText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
         android:layout_marginBottom="10dp"
         android:text="Player Name"
         android:textAlignment="center"
@@ -30,6 +33,8 @@
         android:id="@+id/ae_expAmount"
         android:layout_width="match_parent"
         android:layout_height="48dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
         android:layout_marginBottom="10dp"
         android:ems="10"
         android:hint="Amount"
@@ -39,7 +44,9 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp">
 
         <Button
             android:id="@+id/ae_cancelButton"
@@ -58,9 +65,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:backgroundTint="#81D86E"
+            android:backgroundTint="@color/buttonGreen"
             android:text="Accept"
-            android:textColor="#000000" />
+            android:textColor="#FFFFFF" />
     </LinearLayout>
 
 </LinearLayout>

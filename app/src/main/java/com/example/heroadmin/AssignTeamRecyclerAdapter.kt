@@ -12,6 +12,8 @@ class AssignTeamRecyclerAdapter (private val ticketArray: MutableList<Ticket>, p
         return if (ticketArray.isEmpty()) 0 else ticketArray.size
     }
 
+    override fun getItemViewType(position : Int) : Int { return position; }
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AssignTeamViewHolder{
         val context = parent.context
         val inflater = LayoutInflater.from(context)
@@ -31,7 +33,17 @@ class AssignTeamRecyclerAdapter (private val ticketArray: MutableList<Ticket>, p
         holder.contactPhone.text = ticket.guardianPhoneNr
         holder.bookerName.text = ticket.bookerFullName
         holder.note.text = ticket.note
-        holder.groupName.text = "(${ticket.groupSize}) ${ticket.group}"
+
+        if (ticket.groupSize > 1){
+            holder.groupName.text = "(${ticket.groupSize}) ${ticket.group}"
+        }
+        else {
+            holder.groupName.text = ""
+        }
+
+        if (holder.note.text != "" && !ticket.noteHandled) {
+            holder.notePanel.visibility = View.VISIBLE
+        }
 
         if (holder.playerIdText.text == "" || holder.playerIdText.text == "0"){
             holder.checkIdButton.visibility = View.VISIBLE
@@ -54,7 +66,7 @@ class AssignTeamRecyclerAdapter (private val ticketArray: MutableList<Ticket>, p
         }
 
         holder.blueButton.setOnClickListener{
-            ticket.teamColor = "Blue"
+            eventView.setGroupColor(ticket, true)
             eventView.updateTicketLists()
 
             if (ticket.checkedIn == 1){
@@ -63,7 +75,7 @@ class AssignTeamRecyclerAdapter (private val ticketArray: MutableList<Ticket>, p
         }
 
         holder.redButton.setOnClickListener{
-            ticket.teamColor = "Red"
+            eventView.setGroupColor(ticket, false)
             eventView.updateTicketLists()
 
             if (ticket.checkedIn == 1){
@@ -83,10 +95,6 @@ class AssignTeamRecyclerAdapter (private val ticketArray: MutableList<Ticket>, p
                     holder.notePanel.visibility = View.VISIBLE
                 }
             }
-        }
-
-        if (holder.note.text != "" && !ticket.noteHandled) {
-            holder.notePanel.visibility = View.VISIBLE
         }
     }
 }

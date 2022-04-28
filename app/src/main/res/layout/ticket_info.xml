@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="500dp"
     android:layout_height="wrap_content"
-    android:background="#EDEDED"
+    android:background="@color/background_green_extralight"
     android:orientation="vertical"
     android:padding="10dp">
 
@@ -11,7 +11,7 @@
         android:id="@+id/textView23"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#878787"
+        android:background="@color/background_green_medium"
         android:paddingLeft="5dp"
         android:text="Player"
         android:textColor="#FFFFFF"
@@ -132,7 +132,7 @@
         android:id="@+id/textView24"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#878787"
+        android:background="@color/background_green_medium"
         android:paddingLeft="5dp"
         android:text="Guardian"
         android:textColor="#FFFFFF"
@@ -174,8 +174,7 @@
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginRight="10dp"
-            android:layout_weight="1"
+            android:layout_weight="2"
             android:orientation="vertical"
             android:padding="5dp">
 
@@ -197,37 +196,12 @@
                 android:textSize="16sp" />
         </LinearLayout>
 
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="2"
-            android:orientation="vertical"
-            android:padding="5dp">
-
-            <TextView
-                android:id="@+id/textView11"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Email"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/ti_guardianEmail"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="TextView"
-                android:textColor="#000000"
-                android:textSize="16sp" />
-        </LinearLayout>
-
     </LinearLayout>
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#878787"
+        android:background="@color/background_green_medium"
         android:paddingLeft="5dp"
         android:text="Booker"
         android:textColor="#FFFFFF"
@@ -258,32 +232,6 @@
 
             <TextView
                 android:id="@+id/ti_bookerName"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="TextView"
-                android:textColor="#000000"
-                android:textSize="16sp" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginRight="10dp"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:padding="5dp">
-
-            <TextView
-                android:id="@+id/textView18"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Phone Nr"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/ti_bookerPhone"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"

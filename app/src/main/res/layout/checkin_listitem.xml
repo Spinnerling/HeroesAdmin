@@ -9,7 +9,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#FFFFFF"
+        android:background="@color/background_green_extralight"
         android:gravity="center"
         android:orientation="horizontal">
 
@@ -51,11 +51,11 @@
             android:backgroundTint="#FFFFFF"
             android:contentDescription="info button"
             android:textColor="#000000"
-            app:icon="@drawable/ic_warning"
+            app:icon="@drawable/ic_baseline_help_outline_24"
             app:iconGravity="textStart"
             app:iconPadding="0dp"
             app:iconSize="20dp"
-            app:iconTint="#E61F1F"
+            app:iconTint="#000000"
             app:strokeColor="#000000"
             app:strokeWidth="2dp" />
 
@@ -65,7 +65,6 @@
             android:layout_height="wrap_content"
             android:layout_marginRight="5dp"
             android:layout_weight="3"
-            android:backgroundTint="#1482E3"
             android:text="Team" />
 
         <Button
@@ -74,12 +73,10 @@
             android:layout_height="wrap_content"
             android:layout_marginRight="5dp"
             android:layout_weight="3"
-            android:backgroundTint="#FFFFFF"
+            android:backgroundTint="@color/buttonGreen"
             android:text="Check\nIn"
-            android:textColor="#000000"
-            android:textSize="12sp"
-            app:strokeColor="#000000"
-            app:strokeWidth="2dp" />
+            android:textColor="#FFFFFF"
+            android:textSize="12sp" />
 
     </LinearLayout>
 
@@ -87,13 +84,13 @@
         android:id="@+id/checkIn_itemInfoHeaders"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#B3B3B3"
+        android:background="@color/background_green_medium"
         android:orientation="horizontal"
         android:padding="5dp"
         android:visibility="gone">
 
         <TextView
-            android:id="@+id/assignTeam_ContactNameHeader"
+            android:id="@+id/checkin_ContactNameHeader"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginRight="5dp"
@@ -102,7 +99,7 @@
             android:textStyle="bold" />
 
         <TextView
-            android:id="@+id/assignTeam_ContactPhoneHeader"
+            android:id="@+id/checkin_ContactPhoneHeader"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginRight="5dp"
@@ -111,30 +108,21 @@
             android:textStyle="bold" />
 
         <TextView
-            android:id="@+id/assignTeam_BookerEmailHeader"
+            android:id="@+id/checkin_BookerEmailHeader"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginRight="5dp"
             android:layout_weight="1"
-            android:text="Guardian\nEmail"
+            android:text="Booker\nEmail"
             android:textStyle="bold" />
 
         <TextView
-            android:id="@+id/assignTeam_BookingNameHeader"
+            android:id="@+id/checkin_BookingNameHeader"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginRight="5dp"
             android:layout_weight="1"
             android:text="Booker\nName"
-            android:textStyle="bold" />
-
-        <TextView
-            android:id="@+id/assignTeam_BookingPhoneHeader"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginRight="5dp"
-            android:layout_weight="1"
-            android:text="Booker\nPhone Nr"
             android:textStyle="bold" />
 
         <Space
@@ -147,13 +135,13 @@
         android:id="@+id/checkIn_itemInfoTexts"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#B3B3B3"
+        android:background="@color/background_green_medium"
         android:orientation="horizontal"
         android:padding="5dp"
         android:visibility="gone">
 
         <TextView
-            android:id="@+id/assignTeam_ContactName"
+            android:id="@+id/checkin_ContactName"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginRight="5dp"
@@ -162,7 +150,7 @@
             android:textColor="#000000" />
 
         <TextView
-            android:id="@+id/assignTeam_ContactPhone"
+            android:id="@+id/checkin_ContactPhone"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginRight="5dp"
@@ -171,7 +159,7 @@
             android:textColor="#000000" />
 
         <TextView
-            android:id="@+id/assignTeam_ContactEmail"
+            android:id="@+id/checkin_BookerEmail"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginRight="5dp"
@@ -180,21 +168,12 @@
             android:textColor="#000000" />
 
         <TextView
-            android:id="@+id/assignTeam_BookingName"
+            android:id="@+id/checkin_BookerName"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginRight="5dp"
             android:layout_weight="1"
             android:text="Nameson Booker"
-            android:textColor="#000000" />
-
-        <TextView
-            android:id="@+id/assignTeam_BookingPhone"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginRight="5dp"
-            android:layout_weight="1"
-            android:text="073 987 65 43"
             android:textColor="#000000" />
 
         <Button

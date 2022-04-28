@@ -7,11 +7,15 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="healerColor">#CFCCC8</color>
+    <color name="healerColor">#FFF2E1</color>
     <color name="mageColor">#6C3CD8</color>
     <color name="rogueColor">#683D20</color>
     <color name="knightColor">#D88E0E</color>
     <color name="teamBlueColor">#2B80FF</color>
     <color name="teamRedColor">#ED6363</color>
+    <color name="buttonGreen">#148800</color>
+    <color name="background_green_medium">#64BD5E</color>
+    <color name="background_green_light">#9DE498</color>
+    <color name="background_green_extralight">#E0FFD5</color>
 
 </resources>
