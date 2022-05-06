@@ -27,6 +27,7 @@ class Ticket(
     var hasRespawn: Int,
     var guaranteedRole: Int, // 0 = Undecided, 1 = Healer, 2 = Rogue, 3 = Mage, 4 = Knight, 5 = SpecialA, 6 = SpecialB, 7 = Warrior
     var playerId: String,
+    //var group: String
 ) {
     var fullName = "$firstName $lastName"
     var selected = false
@@ -35,8 +36,8 @@ class Ticket(
     var roundsSpecial = 0
     var powerLevel : Int = checkPowerLevel()
     var noteHandled = false
-    var group = ""
     var groupSize = 1
+    var group = ""
 
     private fun checkPowerLevel(): Int {
         var multiplier : Float = 1.0F

@@ -15,7 +15,6 @@ import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.android.volley.Request
 import com.example.heroadmin.databinding.FragmentEventListBinding
-import org.json.JSONArray
 import org.json.JSONObject
 
 class EventList : Fragment() {
@@ -41,15 +40,14 @@ class EventList : Fragment() {
             setEventAdapter()
         }
 
-        DBF.apiBaseCall(
-            Request.Method.GET,
+        DBF.apiCallGet(
             "https://talltales.nu/API/api/eventlist.php",
             ::getEvents
         )
         setEventAdapter()
     }
 
-    fun getEvents(eventsJson: JSONObject) {
+    private fun getEvents(eventsJson: JSONObject) {
         eventArray = DBF.getEventArray(eventsJson)
 
         // Create an empty event list for each venue, put into ListList

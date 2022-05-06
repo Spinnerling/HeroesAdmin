@@ -16,10 +16,13 @@ class AssignTeamViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView){
     var blueButton: Button = itemView.findViewById(R.id.assignTeam_blueTeamButton)
     var redButton: Button = itemView.findViewById(R.id.assignTeam_redTeamButton)
     var hideNoteButton: Button = itemView.findViewById(R.id.assignTeam_HideNoteButton)
+    var leaveGroupButton: Button = itemView.findViewById(R.id.assignTeam_LeaveGroupButton)
+    var connectGroupButton: Button = itemView.findViewById(R.id.assignTeam_ConnectButton)
 
     var notePanel : LinearLayout = itemView.findViewById(R.id.assignTeam_notepanel)
     var itemInfoHeaders : LinearLayout = itemView.findViewById(R.id.assignTeam_itemInfoHeaders)
     var itemInfoTexts : LinearLayout = itemView.findViewById(R.id.assignTeam_itemInfoTexts)
+    var itemButtons : LinearLayout = itemView.findViewById(R.id.assignTeam_itemButtons)
 
     var contactName: TextView = itemView.findViewById(R.id.assignTeam_ContactName)
     var contactPhone: TextView = itemView.findViewById(R.id.assignTeam_ContactPhone)

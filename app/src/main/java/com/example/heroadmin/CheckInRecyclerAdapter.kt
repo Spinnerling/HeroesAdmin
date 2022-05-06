@@ -57,10 +57,20 @@ class CheckInRecyclerAdapter(private var ticketArray: MutableList<Ticket>, priva
 
         holder.teamButton.setOnClickListener{
             if (ticket.teamColor == "Blue"){
-                eventView.setGroupColor(ticket, false)
+                if (ticket.group == ""){
+                    ticket.teamColor = "Red"
+                }
+                else {
+                    eventView.setGroupColor(ticket.group, false)
+                }
             }
             else {
-                eventView.setGroupColor(ticket, true)
+                if (ticket.group == ""){
+                    ticket.teamColor = "Blue"
+                }
+                else {
+                    eventView.setGroupColor(ticket.group, true)
+                }
             }
             eventView.updateTicketLists()
         }

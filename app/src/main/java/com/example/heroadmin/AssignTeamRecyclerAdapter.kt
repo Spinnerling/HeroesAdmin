@@ -1,6 +1,7 @@
 package com.example.heroadmin
 
 import android.graphics.Color
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -34,7 +35,7 @@ class AssignTeamRecyclerAdapter (private val ticketArray: MutableList<Ticket>, p
         holder.bookerName.text = ticket.bookerFullName
         holder.note.text = ticket.note
 
-        if (ticket.groupSize > 1){
+        if (ticket.groupSize > 1 && ticket.group != "SELF"){
             holder.groupName.text = "(${ticket.groupSize}) ${ticket.group}"
         }
         else {
@@ -58,15 +59,22 @@ class AssignTeamRecyclerAdapter (private val ticketArray: MutableList<Ticket>, p
             if (holder.itemInfoHeaders.visibility == View.VISIBLE){
                 holder.itemInfoHeaders.visibility = View.GONE
                 holder.itemInfoTexts.visibility = View.GONE
+                holder.itemButtons.visibility = View.GONE
             }
             else {
                 holder.itemInfoHeaders.visibility = View.VISIBLE
                 holder.itemInfoTexts.visibility = View.VISIBLE
+                holder.itemButtons.visibility = View.VISIBLE
             }
         }
 
         holder.blueButton.setOnClickListener{
-            eventView.setGroupColor(ticket, true)
+            if (ticket.group == ""){
+                ticket.teamColor = "Blue"
+            }
+            else {
+                eventView.setGroupColor(ticket.group, true)
+            }
             eventView.updateTicketLists()
 
             if (ticket.checkedIn == 1){
@@ -75,7 +83,12 @@ class AssignTeamRecyclerAdapter (private val ticketArray: MutableList<Ticket>, p
         }
 
         holder.redButton.setOnClickListener{
-            eventView.setGroupColor(ticket, false)
+            if (ticket.group == ""){
+                ticket.teamColor = "Red"
+            }
+            else {
+                eventView.setGroupColor(ticket.group, false)
+            }
             eventView.updateTicketLists()
 
             if (ticket.checkedIn == 1){
@@ -95,6 +108,17 @@ class AssignTeamRecyclerAdapter (private val ticketArray: MutableList<Ticket>, p
                     holder.notePanel.visibility = View.VISIBLE
                 }
             }
+        }
+
+        holder.leaveGroupButton.setOnClickListener {
+            ticket.group = "SELF"
+            ticket.groupSize = 1
+            eventView.updateTicketLists()
+            holder.groupName.text = ""
+        }
+
+        holder.connectGroupButton.setOnClickListener {
+            eventView.addToGroup(ticket)
         }
     }
 }

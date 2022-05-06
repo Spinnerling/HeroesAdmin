@@ -4,20 +4,21 @@ import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.os.Bundle
 import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import androidx.databinding.DataBindingUtil
+import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.android.volley.Request
 import com.example.heroadmin.databinding.FragmentEventViewBinding
 import org.json.JSONArray
 import org.json.JSONObject
+import kotlin.math.abs
 import kotlin.random.Random
+
 
 class EventView : Fragment() {
     private lateinit var currActivity: MainActivity
@@ -27,7 +28,6 @@ class EventView : Fragment() {
     private lateinit var args: EventViewArgs
     private lateinit var currEventId: String
     private lateinit var event: Event
-    private lateinit var allPlayers: MutableList<Player>
     private lateinit var allTickets: MutableList<Ticket>
     private lateinit var redTeam: MutableList<Ticket>
     private lateinit var blueTeam: MutableList<Ticket>
@@ -41,6 +41,7 @@ class EventView : Fragment() {
     private lateinit var blueTeamAdapter: TeamRecyclerAdapter
     private lateinit var redBenchAdapter: TeamRecyclerAdapter
     private lateinit var blueBenchAdapter: TeamRecyclerAdapter
+    private lateinit var groupAdapter: NameListRecyclerAdapter
     private lateinit var redTeamPowerText: TextView
     private lateinit var blueTeamPowerText: TextView
     private lateinit var redTeamAmountText: TextView
@@ -69,20 +70,25 @@ class EventView : Fragment() {
     private var checkInSorting = 0
     private var teamSorting = 0
     private var takenGroupNames = mutableListOf<String>()
+    private var redPowerLevel = 0
+    private var bluePowerLevel = 0
+    private var redTeenAmount = 0
+    private var blueTeenAmount = 0
+    private var redTiniesAmount = 0
+    private var blueTiniesAmount = 0
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         // Inflate the layout for this fragment
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_event_view, container, false)
         v = inflater.inflate(R.layout.fragment_event_view, container, false)
         DBF = DatabaseFunctions(v.context)
         args = EventViewArgs.fromBundle(requireArguments())
-        currEventId = args.passedEventId.toString()
+        currEventId = args.passedEventId
         currActivity = (activity as MainActivity)
         event = currActivity.event
-        allPlayers = DBF.getAllPlayers(event)
 
         return binding.root
     }
@@ -311,12 +317,14 @@ class EventView : Fragment() {
         binding.refreshButton.setOnClickListener {
             getEvent()
         }
+        binding.assignTeamAutoAssignButton.setOnClickListener {
+            autoAssignLoop()
+        }
     }
 
     private fun getEvent() {
         Log.i("test", currEventId + " is event")
-        DBF.apiBaseCall(
-            Request.Method.GET,
+        DBF.apiCallGet(
             "https://talltales.nu/API/api/event.php?id=" + currEventId,
             ::refreshEvent
         )
@@ -363,8 +371,7 @@ class EventView : Fragment() {
 
     private fun getTicket(ticketId: String) {
         // Find ticket in database by ticketId, return an array of its contents
-        DBF.apiBaseCall(
-            Request.Method.GET,
+        DBF.apiCallGet(
             "https://talltales.nu/API/api/ticket.php?id=$ticketId",
             ::parseTicket
         )
@@ -396,10 +403,11 @@ class EventView : Fragment() {
             response.getInt("Respawns"),
             response.getInt("Current_Role"),
             response.getString("Player_ID"),
+            //response.getString("Group"),
         )
 
         allTickets.add(ticket)
-        DBF.findTicketPlayerId(ticket)
+        DBF.getTicketGuardian(ticket)
 
         // If this is the last ticket to be parsed, update lists
         if (allTickets.size >= event.tickets.size) {
@@ -506,10 +514,14 @@ class EventView : Fragment() {
         for (i in assignList.indices) {
             val ticket1 = assignList[i]
 
+            if(ticket1.group == "SELF"){
+                continue
+            }
+
             for (j in assignList.indices) {
                 val ticket2 = assignList[j]
                 // Skip until next ticket in line
-                if (j <= i || ticket2 == ticket1) {
+                if (j <= i || ticket2 == ticket1 || ticket2.group == "SELF") {
                     continue
                 }
 
@@ -520,7 +532,6 @@ class EventView : Fragment() {
 
                 // Check if tickets are booked by same email
                 if (ticket1.bookerEmail == ticket2.bookerEmail) {
-                    Log.i("test", ticket1.fullName + " " + ticket2.fullName + " have the same email")
                     // Check if both tickets have no group yet
                     if (ticket1.group == "" && ticket2.group == "") {
 
@@ -530,7 +541,7 @@ class EventView : Fragment() {
                         var newGroupName: String = nameArray[randomValue]
 
                         // Check that the name is not already taken
-                        while (takenGroupNames.contains(newGroupName)){
+                        while (takenGroupNames.contains(newGroupName)) {
                             randomValue = Random.nextInt(nameArray.size)
                             newGroupName = nameArray[randomValue]
                         }
@@ -560,47 +571,253 @@ class EventView : Fragment() {
                 }
             }
 
-            if (ticket1.group != ""){
-                ticket1.groupSize = assignList.count {  it.group == ticket1.group }
-            }
-            else {
+            if (ticket1.group != "") {
+                ticket1.groupSize = assignList.count { it.group == ticket1.group }
+            } else {
                 ticket1.groupSize = 1
             }
         }
     }
 
-    fun setGroupColor(ticket : Ticket, setBlue : Boolean) {
-        if (ticket.group == ""){
-            if (setBlue){
-                ticket.teamColor = "Blue"
-            }
-            else {
-                ticket.teamColor = "Red"
-            }
-        }
-        else {
-            for (ticket2 in allTickets) {
-
-                if (ticket2.group == ticket.group) {
-                    if (setBlue){
-                        ticket2.teamColor = "Blue"
-                    }
-                    else {
-                        ticket2.teamColor = "Red"
-                    }
+    fun setGroupColor(group: String, setBlue: Boolean) {
+        for (ticket in allTickets) {
+            if (ticket.group == group) {
+                if (setBlue) {
+                    ticket.teamColor = "Blue"
+                } else {
+                    ticket.teamColor = "Red"
+                }
+                val ticketMap = createTicketMap(ticket)
+                DBF.apiCallPost("https://talltales.nu/API/api/update-ticket.php", ticketMap)
+                if (ticket.playerId == ""){
+                    createNewPlayer(ticket)
                 }
             }
         }
+        updateTeamPower()
+    }
+
+    private fun createNewPlayer(ticket: Ticket) {
+        val player = Player(
+            getNewPlayerId(),
+            ticket.firstName,
+            ticket.lastName,
+            ticket.age,
+            0,
+            mutableListOf(1, 0, 0),
+            mutableListOf(1, 0, 0),
+            mutableListOf(1, 0, 0),
+            mutableListOf(1, 0, 0),
+            mutableListOf(1, 0, 0),
+            mutableListOf("", "", ""),
+        )
+        ticket.playerId = player.playerId
+    }
+
+    private fun getNewPlayerId(): String {
+        val playerId = "0"
+        return playerId
+    }
+
+    private fun autoAssignLoop(){
+        var loop = 0
+        var bestDifference = 1000
+        var originalList : MutableList<Ticket> = assignList
+        var bestBlueList : MutableList<Ticket> = mutableListOf()
+        var bestRedList : MutableList<Ticket> = mutableListOf()
+
+        while (loop < 50){
+            // Randomize and save version of list
+            //assignList.shuffle()
+            val currList = originalList
+
+            // Assign teams with that list (which also sorts it)
+            autoAssignTeams()
+
+            // Check how well that went
+            val difference = abs(bluePowerLevel - redPowerLevel)
+            if (difference < bestDifference){
+
+                // If better than before, save that version of team lists
+                bestDifference = difference
+
+                bestRedList = mutableListOf()
+                bestBlueList = mutableListOf()
+
+                for (ticket in assignList){
+                    if (ticket.teamColor == "Blue"){
+                        bestBlueList.add(ticket)
+                    }
+                    else {
+                        bestRedList.add(ticket)
+                    }
+                }
+
+                // If already found best difference, break out of loop
+                if (bestDifference == 0){
+                    break
+                }
+            }
+            loop++
+        }
+
+        for (ticket in bestBlueList){
+            ticket.teamColor = "Blue"
+        }
+        for (ticket in bestRedList){
+            ticket.teamColor = "Red"
+        }
+        updateTeamPower()
+
+        updateTicketLists()
+    }
+
+    private fun autoAssignTeams() {
+        sortAssignByGroup()
+
+        // Create list of groups
+        val groupList = mutableListOf<String>()
+        for (ticket in assignList) {
+            // Only take groups larger than 1
+            if (ticket.group != "" && !groupList.contains(ticket.group)) {
+                groupList.add(ticket.group)
+            }
+        }
+
+/*
+        // Find group stats
+        val statList: MutableList<MutableList<Any>> = mutableListOf()
+
+        for (group in groupList) {
+            val groupStats: MutableList<Any> = mutableListOf("", 0, 0, 0, 0)
+            for (ticket in assignList) {
+                if (ticket.group == group) {
+                    groupStats[0] = group
+                    groupStats[1] = groupStats[1] as Int + ticket.powerLevel
+                    groupStats[2] = groupStats[2] as Int + 1
+                    if (ticket.age > 12) {
+                        groupStats[3] = groupStats[3] as Int + 1
+                    } else if (ticket.age < 7) {
+                        groupStats[4] = groupStats[4] as Int + 1
+                    }
+                }
+            }
+            statList.add(groupStats)
+        }*/
+
+        for (group in groupList) {
+            if (bluePowerLevel > redPowerLevel) {
+                setGroupColor(group, false)
+            } else {
+                setGroupColor(group, true)
+            }
+            updateTeamPower()
+        }
+
+        sortAssignByAge()
+
+        for (ticket in assignList){
+            if (ticket.group == ""){
+                if (bluePowerLevel > redPowerLevel) {
+                    ticket.teamColor = "Red"
+                }
+                else {
+                    ticket.teamColor = "Blue"
+                }
+            }
+            updateTeamPower()
+        }
+    }
+
+    private fun createTicketMap(ticket: Ticket) : HashMap<String, String>{
+        val ticketJson = HashMap<String, String>()
+        ticketJson["Ticket_ID"] = ticket.ticketId
+        ticketJson["First_Name"] = ticket.firstName
+        ticketJson["Last_Name"] = ticket.lastName
+        ticketJson["Age"] = ticket.age.toString()
+        ticketJson["KP_Phone_Nr"] = ticket.guardianPhoneNr
+        ticketJson["KP_Name"] = ticket.guardianName
+        ticketJson["Booking_Mail"] = ticket.bookerEmail
+        ticketJson["Booking_Name"] = ticket.bookerFullName
+        ticketJson["Team_Color"] = ticket.teamColor
+        ticketJson["Tabard_Nr"] = ticket.tabardNr.toString()
+        ticketJson["Note"] = ticket.note
+        ticketJson["Checked_In"] = ticket.checkedIn.toString()
+        ticketJson["Recruits"] = ticket.recruits.toString()
+        ticketJson["EXP_Personal"] = ticket.expPersonal.toString()
+        ticketJson["Benched"] = ticket.benched.toString()
+        ticketJson["Guaranteed_Role"] = ticket.guaranteedRole.toString()
+        ticketJson["Rounds_M"] = ticket.roundsMage.toString()
+        ticketJson["Rounds_O"] = ticket.roundsRogue.toString()
+        ticketJson["Rounds_K"] = ticket.roundsWarrior.toString()
+        ticketJson["Rounds_H"] = ticket.roundsHealer.toString()
+        ticketJson["Rounds_R"] = ticket.roundsKnight.toString()
+        ticketJson["Respawns"] = ticket.hasRespawn.toString()
+        ticketJson["Current_Role"] = ticket.currentRole.toString()
+        ticketJson["Player_ID"] = ticket.playerId
+        //ticketMap["Group"] = ticket.group
+        return ticketJson
+    }
+
+    fun addToGroup(ticket : Ticket) {
+        // Create dialogue
+        val dialogView = LayoutInflater.from(context).inflate(R.layout.group_manual_popup, null)
+        val builder = AlertDialog.Builder(context).setView(dialogView)
+        val alertDialog = builder.show()
+
+        // Create list of groups and names
+        val groupList = mutableListOf<String>()
+        val nameList = mutableListOf<String>()
+
+        for (ticket in allTickets){
+            if (ticket.group != "" && !groupList.contains(ticket.group + " " + ticket.groupSize.toString())){
+                groupList.add(ticket.group + " " + ticket.groupSize.toString())
+            }
+            if (!nameList.contains(ticket.fullName)) {
+                nameList.add(ticket.fullName)
+            }
+        }
+
+        groupList.sort()
+        nameList.sort()
+        val recyclerList : MutableList<String> = (groupList + nameList) as MutableList
+
+        /*
+        // Setup dialogue name recycler
+        groupAdapter = NameListRecyclerAdapter(recyclerList)
+        val layoutManager = LinearLayoutManager(v.context)
+        val nameRecycler : RecyclerView = dialogView.findViewById(R.id.groupRecycler)
+        nameRecycler.layoutManager = layoutManager
+        nameRecycler.itemAnimator = DefaultItemAnimator()
+        nameRecycler.adapter = groupAdapter
+
+        // Setup other info
+        val nameText : TextView = dialogView.findViewById(R.id.gm_ticketName)
+        nameText.text = ticket.fullName
+        val amountText : TextView = dialogView.findViewById(R.id.gm_ticketsFound)
+        amountText.text = "${groupList.size} groups and ${nameList.size} players found"
+
+        dialogView.findViewById<Button>(R.id.gm_acceptButton).setOnClickListener {
+
+            alertDialog.dismiss()
+        }
+        dialogView.findViewById<Button>(R.id.gm_cancelButton).setOnClickListener {
+            Toast.makeText(context, "Cancelled", Toast.LENGTH_SHORT).show()
+            alertDialog.dismiss()
+        }
+
+         */
     }
 
     private fun updateTeamPower() {
-        var redPowerLevel = 0
-        var bluePowerLevel = 0
-        var redTeenAmount = 0
-        var blueTeenAmount = 0
-        var redTiniesAmount = 0
-        var blueTiniesAmount = 0
-
+        redPowerLevel = 0
+        bluePowerLevel = 0
+        redTeenAmount = 0
+        blueTeenAmount = 0
+        redTiniesAmount = 0
+        blueTiniesAmount = 0
+        var redAmount = 0
+        var blueAmount = 0
 
         for (ticket in allTickets) {
             if (ticket.teamColor == "Red" && ticket.benched == 0) {
@@ -610,6 +827,7 @@ class EventView : Fragment() {
                 } else if (ticket.age < 8) {
                     redTiniesAmount++
                 }
+                redAmount++
 
             } else if (ticket.teamColor == "Blue" && ticket.benched == 0) {
                 bluePowerLevel += ticket.powerLevel
@@ -618,14 +836,15 @@ class EventView : Fragment() {
                 } else if (ticket.age < 8) {
                     blueTiniesAmount++
                 }
+                blueAmount++
             }
         }
 
         redTeamPowerText.text = redPowerLevel.toString()
         blueTeamPowerText.text = bluePowerLevel.toString()
 
-        redTeamAmountText.text = redTeam.size.toString()
-        blueTeamAmountText.text = blueTeam.size.toString()
+        redTeamAmountText.text = redAmount.toString()
+        blueTeamAmountText.text = blueAmount.toString()
 
         redTeamTeensText.text = redTeenAmount.toString()
         blueTeamTeensText.text = blueTeenAmount.toString()
@@ -716,10 +935,9 @@ class EventView : Fragment() {
             binding.bottomPanelPlayer.visibility = View.VISIBLE
             binding.playerNameText.text = selectedTicket.fullName
 
-            if (selectedTicket.teamColor == "Blue"){
+            if (selectedTicket.teamColor == "Blue") {
                 binding.playerNameText.setBackgroundResource(R.color.teamBlueColor)
-            }
-            else {
+            } else {
                 binding.playerNameText.setBackgroundResource(R.color.teamRedColor)
             }
 
@@ -735,20 +953,6 @@ class EventView : Fragment() {
         }
     }
 
-    private fun setTicketPlayer(ticket: Ticket) {
-        if (ticket.playerId == "") {
-            // Search for player
-
-            // If player doesn't exist, create a new userId?
-        } else {
-            // See if userId exists
-
-            // Otherwise, search for player
-        }
-
-        // Transfer ticket info to player
-    }
-
     fun setTicketTabardNumber(ticket: Ticket) {
         val dialogView = LayoutInflater.from(context).inflate(R.layout.checkin_popup, null)
 
@@ -756,12 +960,11 @@ class EventView : Fragment() {
             .setView(dialogView)
 
         val alertDialog = builder.show()
-        val name: TextView = dialogView.findViewById<TextView>(R.id.checkInPopupNameText)
+        val name: TextView = dialogView.findViewById(R.id.checkInPopupNameText)
         name.text = ticket.fullName
-        if (ticket.teamColor == "Blue"){
+        if (ticket.teamColor == "Blue") {
             name.setBackgroundResource(R.color.teamBlueColor)
-        }
-        else {
+        } else {
             name.setBackgroundResource(R.color.teamRedColor)
         }
 
@@ -772,7 +975,7 @@ class EventView : Fragment() {
             val number = userNo.text.toString()
             if (number != "") {
                 ticket.tabardNr = number.toInt()
-                ticket.checkedIn = 1;
+                ticket.checkedIn = 1
                 updateTicketLists()
 
                 alertDialog.dismiss()
@@ -792,21 +995,21 @@ class EventView : Fragment() {
         val playerInfoDialog = builder.show()
 
         // Fill with info
-        val name: TextView = dialogView.findViewById<TextView>(R.id.ti_playerName)
+        val name: TextView = dialogView.findViewById(R.id.ti_playerName)
         name.text = ticket.fullName
-        val userAge = dialogView.findViewById<TextView>(R.id.ti_playerAge)
+        val userAge: TextView = dialogView.findViewById(R.id.ti_playerAge)
         userAge.text = ticket.age.toString()
-        val userId = dialogView.findViewById<TextView>(R.id.ti_playerUserId)
+        val userId: TextView = dialogView.findViewById(R.id.ti_playerUserId)
         userId.text = ticket.playerId
-        val ticketNote = dialogView.findViewById<TextView>(R.id.ti_Note)
+        val ticketNote: TextView = dialogView.findViewById(R.id.ti_Note)
         ticketNote.text = ticket.note
-        val guardianName = dialogView.findViewById<TextView>(R.id.ti_guardianName)
+        val guardianName: TextView = dialogView.findViewById(R.id.ti_guardianName)
         guardianName.text = ticket.guardianName
-        val guardianPhone = dialogView.findViewById<TextView>(R.id.ti_guardianPhone)
+        val guardianPhone: TextView = dialogView.findViewById(R.id.ti_guardianPhone)
         guardianPhone.text = ticket.guardianPhoneNr
-        val bookerName = dialogView.findViewById<TextView>(R.id.ti_bookerName)
+        val bookerName: TextView = dialogView.findViewById(R.id.ti_bookerName)
         bookerName.text = ticket.bookerFullName
-        val bookerEmail = dialogView.findViewById<TextView>(R.id.ti_bookerEmail)
+        val bookerEmail: TextView = dialogView.findViewById(R.id.ti_bookerEmail)
         bookerEmail.text = ticket.bookerEmail
 
         // Close window
@@ -823,9 +1026,9 @@ class EventView : Fragment() {
             .setView(dialogView)
 
         val alertDialog = builder.show()
-        val name: TextView = dialogView.findViewById<TextView>(R.id.ae_playerNameText)
+        val name: TextView = dialogView.findViewById(R.id.ae_playerNameText)
         name.text = ticket.fullName
-        val userNo = dialogView.findViewById<EditText>(R.id.ae_expAmount)
+        val userNo: EditText = dialogView.findViewById(R.id.ae_expAmount)
         userNo.requestFocus()
 
         dialogView.findViewById<Button>(R.id.ae_acceptButton).setOnClickListener {
@@ -847,7 +1050,7 @@ class EventView : Fragment() {
             Log.i("test", "allPlayers is empty")
             return
         }
-        Log.i("test","setting role amounts")
+        Log.i("test", "setting role amounts")
         healerAmount = allTickets.size / 16
         mageAmount = (allTickets.size + 4) / 16
         rogueAmount = (allTickets.size + 12) / 16
@@ -862,7 +1065,7 @@ class EventView : Fragment() {
         if (firstPlayerSelected) {
             deselectPlayer()
         }
-        firstPlayerSelected = true;
+        firstPlayerSelected = true
         ticket.selected = true
         selectedTicket = ticket
     }
@@ -894,7 +1097,9 @@ class EventView : Fragment() {
     }
 
     private fun sortAssignByGroup() {
-        if (assignList.size == 0) { return }
+        if (assignList.size == 0) {
+            return
+        }
 
         assignList = assignList.sortedWith(
             compareBy(
@@ -904,7 +1109,6 @@ class EventView : Fragment() {
             ).reversed()
         ) as MutableList<Ticket>
     }
-
 
     private fun sortCheckInByName() {
         checkInList.sortBy { it.fullName }
@@ -921,7 +1125,6 @@ class EventView : Fragment() {
     private fun sortCheckInByColor() {
         checkInList.sortBy { it.teamColor }
     }
-
 
     private fun sortTeamsByName() {
         blueTeam.sortBy { it.fullName }

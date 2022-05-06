@@ -160,15 +160,6 @@
             android:textStyle="bold" />
 
         <TextView
-            android:id="@+id/assignTeam_BookerEmailHeader"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="5dp"
-            android:layout_weight="1"
-            android:text="Bokare Email"
-            android:textStyle="bold" />
-
-        <TextView
             android:id="@+id/assignTeam_BookingNameHeader"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -177,12 +168,15 @@
             android:text="Bokare Namn"
             android:textStyle="bold" />
 
-        <Space
+        <TextView
+            android:id="@+id/assignTeam_BookerEmailHeader"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginLeft="5dp"
-            android:layout_marginRight="5dp"
-            android:layout_weight="1" />
+            android:layout_weight="1"
+            android:text="Bokare Email"
+            android:textStyle="bold" />
+
     </LinearLayout>
 
     <LinearLayout
@@ -215,15 +209,6 @@
             android:textColor="#000000" />
 
         <TextView
-            android:id="@+id/assignTeam_bookingEmail"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginRight="5dp"
-            android:layout_weight="1"
-            android:text="nameson.booker.very_long_embarassing_adress@email.com"
-            android:textColor="#000000" />
-
-        <TextView
             android:id="@+id/assignTeam_BookerName"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -231,6 +216,66 @@
             android:layout_weight="1"
             android:text="Nameson Booker"
             android:textColor="#000000" />
+
+        <TextView
+            android:id="@+id/assignTeam_bookingEmail"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="5dp"
+            android:layout_weight="1"
+            android:text="nameson.booker.very_long_embarassing_adress@email.com"
+            android:textColor="#000000" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/assignTeam_itemButtons"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/background_green_medium"
+        android:gravity="top"
+        android:orientation="horizontal"
+        android:paddingLeft="5dp"
+        android:paddingRight="5dp"
+        android:visibility="gone">
+
+        <Button
+            android:id="@+id/assignTeam_ConnectButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:layout_marginLeft="5dp"
+            android:layout_marginRight="5dp"
+            android:layout_weight="1"
+            android:backgroundTint="#FFFFFF"
+            android:contentDescription="Connect to group"
+            android:text="Connect To Group"
+            android:textColor="#000000"
+            app:iconGravity="textStart"
+            app:iconPadding="0dp"
+            app:iconSize="25dp"
+            app:iconTint="#000000"
+            app:strokeColor="#000000"
+            app:strokeWidth="2dp" />
+
+        <Button
+            android:id="@+id/assignTeam_LeaveGroupButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:layout_marginLeft="5dp"
+            android:layout_marginRight="5dp"
+            android:layout_weight="1"
+            android:backgroundTint="#FFFFFF"
+            android:contentDescription="Disconnect from group"
+            android:text="Leave Group"
+            android:textColor="#000000"
+            app:iconGravity="textStart"
+            app:iconPadding="0dp"
+            app:iconSize="25dp"
+            app:iconTint="#000000"
+            app:strokeColor="#000000"
+            app:strokeWidth="2dp" />
 
         <Button
             android:id="@+id/assignTeam_HideNoteButton"
@@ -250,6 +295,7 @@
             app:iconTint="#000000"
             app:strokeColor="#000000"
             app:strokeWidth="2dp" />
+
     </LinearLayout>
 
 </LinearLayout>

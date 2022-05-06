@@ -3,34 +3,51 @@ package com.example.heroadmin
 import android.content.Context
 import android.util.Log
 import com.android.volley.Request
+import com.android.volley.Response
 import com.android.volley.toolbox.JsonObjectRequest
+import com.android.volley.toolbox.StringRequest
+import com.android.volley.toolbox.Volley
 import org.json.JSONArray
 import org.json.JSONObject
 
+
 class DatabaseFunctions(var context: Context?) {
     lateinit var currEvent : Event
+    lateinit var currTicket : Ticket
 
-    fun apiBaseCall(
-        method: Int,
+    fun apiCallGet(
         url: String,
         responseFunction: (eventsJson: JSONObject) -> Unit
     ) {
-        val jsonObjectRequest = JsonObjectRequest(
-            method, url, null,
-            { response: JSONObject ->
-                responseFunction(response)
-            },
-            { error ->
-                Log.i("test", "Failed api call to: " + url)
-                Log.i("test", "Error: ".format(error.toString()))
+        val requestQueue = Volley.newRequestQueue(context)
+        val stringRequest = StringRequest(Request.Method.GET, url,
+            { response ->
+            responseFunction(JSONObject(response))
+        },
+            {
+                Log.i("test", "Error! Failed call to api: "+ url)
             }
         )
+        requestQueue.cache.clear()
+        requestQueue.add(stringRequest)
+    }
 
-        context.let {
-            if (it != null) {
-                MySingleton.getInstance(it).addToRequestQueue(jsonObjectRequest)
+    fun apiCallPost(url : String, parcel : HashMap<String, String>){
+        val requestQueue = Volley.newRequestQueue(context)
+        val stringRequest = object : StringRequest(Request.Method.POST, url,
+            Response.Listener { response ->
+                Log.i("test", "Posted parcel to "+ url )
+            },
+            Response.ErrorListener{ error ->
+                Log.i("test", "Error! Failed call to api: "+ url)
+            }
+        ){
+            override fun getParams(): HashMap<String, String> {
+                // When updating data, include id in parcel
+                return parcel
             }
         }
+        requestQueue.add(stringRequest)
     }
 
 
@@ -66,7 +83,6 @@ class DatabaseFunctions(var context: Context?) {
             while (index < length) {
                 val item = array.getJSONObject(index)
                 val id = item.getString("id")
-                Log.i("test", id + " is the id")
                 eventIdArray.add(id)
                 index++
             }
@@ -99,6 +115,7 @@ class DatabaseFunctions(var context: Context?) {
         val list = MutableList(jsonArray.length()) {
             jsonArray.getString(it)
         }
+        Log.i("test", eventJson.getInt("EXP_Blueteam").toString() )
 
         currEvent = Event(
             eventJson.getString("ID"),
@@ -220,37 +237,20 @@ class DatabaseFunctions(var context: Context?) {
         return role
     }
 
-
     fun mergeTicketAndPlayer(player: Player, ticket: Ticket) {
         player.age = ticket.age
         // Add guardian to player
     }
 
-    fun findTicketPlayerId(ticket: Ticket): String {
+    fun getTicketGuardian(ticket: Ticket) {
+        currTicket = ticket
+
         // Find ticket's guardian among previous guardians
         var matchingId = ""
         val phoneNumber = getGuardian(ticket)
-
-        // If no match found, return empty, wait for manual matching
-        if (phoneNumber == "") {
-            return matchingId
-        }
-
-        // Otherwise, find all players connected to guardian
-        val playerArray: Array<String> = getGuardianPlayerArray(phoneNumber)
-
-        // Find matching name among players
-        for (playerId in playerArray) {
-            val name = getPlayerName(playerId)
-            if (name == ticket.fullName) {
-                matchingId = playerId
-            }
-        }
-
-        return matchingId
     }
 
-    fun getGuardian(ticket: Ticket): String {
+    private fun getGuardian(ticket: Ticket) {
         // Find phone nr
         var formattedNumber = formatPhoneNumber(ticket.guardianPhoneNr)
 
@@ -260,37 +260,48 @@ class DatabaseFunctions(var context: Context?) {
 
         if (phone == "") {
             // Hitta i databasen
-            //phone = findGuardianPhoneByEmail(ticket.guardianEmail)
+            //phone = findGuardianPhoneByName(ticket.guardianName)
             phone = "0700000000"
         }
-        return phone
+
+        getPlayersByGuardian(phone)
     }
 
-    fun getGuardianPlayerArray(phoneNumber: String): Array<String> {
-        // hitta i databasen
-        // val ids = getPlayerArray(phoneNumber)
-
-        // placeholder
-        val ids = arrayOf("12345", "12346", "12347")
-
-        return ids
+    private fun getPlayersByGuardian(phoneNumber: String) {
+        apiCallGet("https://talltales.nu/API/api/guardian_players.php?id=$phoneNumber", ::findMatchingPlayers)
     }
 
-    fun formatPhoneNumber(number: String): String {
+    private fun findMatchingPlayers(json: JSONObject) {
+        // Find matching name among players
+        val dataArray: JSONArray = json.getJSONArray("data")
+        val playerList = MutableList(dataArray.length()) {
+            dataArray.getString(it)
+        }
+
+        for (playerId in playerList) {
+            getPlayerName(playerId)
+        }
+    }
+
+    private fun formatPhoneNumber(number: String): String {
         // pls
         return number
     }
 
-    fun getPlayerName(playerId: String): String {
+    private fun getPlayerName(playerId: String){
         // Hitta i databasen
-        // val firstName = getPlayerFirstName(playerId)
-        // val lastName = getPlayerLastName(playerId)
+        apiCallGet("https://talltales.nu/API/api/player.php") { response ->
+            if (response["fullname"] == currTicket.fullName) {
+                currTicket.playerId = playerId
+            }
+        }
+    }
 
-        // Placeholder
-        val firstName = "Bob"
-        val lastName = "Gold"
-        val fullName = "${firstName} ${lastName}"
+    fun updateDBTicket(ticket: Ticket){
+        apiCallGet( "", ::checkSuccess)
+    }
 
-        return fullName
+    private fun checkSuccess(json : JSONObject){
+
     }
 }
