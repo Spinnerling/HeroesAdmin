@@ -8,7 +8,7 @@ class Ticket(
     var lastName: String,
     val age: Int,
     val guardianName: String,
-    val guardianPhoneNr: String,
+    var guardianPhoneNr: String,
     val bookerEmail: String,
     val bookerFullName: String,
     var teamColor: String,

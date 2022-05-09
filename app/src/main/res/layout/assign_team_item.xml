@@ -59,14 +59,13 @@
             android:textColor="#000000"
             android:visibility="visible" />
 
-        <TextView
-            android:id="@+id/assignTeam_GroupName"
+        <Button
+            android:id="@+id/assignTeam_GroupButton"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginRight="5dp"
             android:layout_weight="5"
-            android:textAlignment="center"
-            android:textColor="#000000" />
+            android:text="Group" />
 
         <Button
             android:id="@+id/assignTeam_infoButton"
@@ -147,7 +146,7 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="5dp"
             android:layout_weight="1"
-            android:text="Kontaktperson\nNamn"
+            android:text="Guardian Name"
             android:textStyle="bold" />
 
         <TextView
@@ -156,7 +155,7 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="5dp"
             android:layout_weight="1"
-            android:text="Kontaktperson\nTelefon"
+            android:text="Guardian Phone"
             android:textStyle="bold" />
 
         <TextView
@@ -165,7 +164,7 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="5dp"
             android:layout_weight="1"
-            android:text="Bokare Namn"
+            android:text="Booker Name"
             android:textStyle="bold" />
 
         <TextView
@@ -174,7 +173,7 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="5dp"
             android:layout_weight="1"
-            android:text="Bokare Email"
+            android:text="Booker Email"
             android:textStyle="bold" />
 
     </LinearLayout>
@@ -240,35 +239,15 @@
         android:visibility="gone">
 
         <Button
-            android:id="@+id/assignTeam_ConnectButton"
+            android:id="@+id/assignTeam_editNoteButton"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom"
             android:layout_marginLeft="5dp"
-            android:layout_marginRight="5dp"
             android:layout_weight="1"
             android:backgroundTint="#FFFFFF"
-            android:contentDescription="Connect to group"
-            android:text="Connect To Group"
-            android:textColor="#000000"
-            app:iconGravity="textStart"
-            app:iconPadding="0dp"
-            app:iconSize="25dp"
-            app:iconTint="#000000"
-            app:strokeColor="#000000"
-            app:strokeWidth="2dp" />
-
-        <Button
-            android:id="@+id/assignTeam_LeaveGroupButton"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom"
-            android:layout_marginLeft="5dp"
-            android:layout_marginRight="5dp"
-            android:layout_weight="1"
-            android:backgroundTint="#FFFFFF"
-            android:contentDescription="Disconnect from group"
-            android:text="Leave Group"
+            android:contentDescription="edit note button"
+            android:text="Edit Note"
             android:textColor="#000000"
             app:iconGravity="textStart"
             app:iconPadding="0dp"

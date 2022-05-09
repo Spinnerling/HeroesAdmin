@@ -33,6 +33,13 @@
         <action
             android:id="@+id/action_eventView_to_levelUpFragment"
             app:destination="@id/levelUpFragment" />
+        <action
+            android:id="@+id/action_eventView_to_eventList"
+            app:destination="@id/eventList"
+            app:enterAnim="@anim/in_from_left"
+            app:exitAnim="@anim/out_to_right"
+            app:popEnterAnim="@anim/in_from_right"
+            app:popExitAnim="@anim/out_to_left" />
     </fragment>
     <fragment
         android:id="@+id/levelUpFragment"

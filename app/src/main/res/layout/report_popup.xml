@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:gravity="center"
@@ -64,7 +65,7 @@
             android:text="Attendance Reward" />
 
         <EditText
-            android:id="@+id/editTextTextPersonName"
+            android:id="@+id/rp_attendanceValue"
             android:layout_width="50dp"
             android:layout_height="48dp"
             android:layout_weight="1"
@@ -88,7 +89,7 @@
             android:text="Recruit Reward" />
 
         <EditText
-            android:id="@+id/editTextTextPersonName2"
+            android:id="@+id/rp_recruitValue"
             android:layout_width="50dp"
             android:layout_height="48dp"
             android:layout_weight="1"
@@ -112,7 +113,7 @@
             android:text="Winning Reward" />
 
         <EditText
-            android:id="@+id/editTextTextPersonName3"
+            android:id="@+id/rp_winningValue"
             android:layout_width="50dp"
             android:layout_height="48dp"
             android:layout_weight="1"
@@ -149,6 +150,7 @@
         android:layout_marginBottom="40dp">
 
         <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/rp_reportText"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:hint="Report" />
@@ -161,15 +163,19 @@
 
         <Button
             android:id="@+id/rp_cancelButton"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginRight="40dp"
             android:layout_weight="1"
-            android:text="Close" />
+            android:backgroundTint="#FFFFFF"
+            android:text="Close"
+            android:textColor="#000000"
+            app:strokeColor="#000000"
+            app:strokeWidth="2dp" />
 
         <Button
             android:id="@+id/rp_exitButton"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="End event" />

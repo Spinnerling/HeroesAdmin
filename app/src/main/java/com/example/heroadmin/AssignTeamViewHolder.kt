@@ -16,8 +16,8 @@ class AssignTeamViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView){
     var blueButton: Button = itemView.findViewById(R.id.assignTeam_blueTeamButton)
     var redButton: Button = itemView.findViewById(R.id.assignTeam_redTeamButton)
     var hideNoteButton: Button = itemView.findViewById(R.id.assignTeam_HideNoteButton)
-    var leaveGroupButton: Button = itemView.findViewById(R.id.assignTeam_LeaveGroupButton)
-    var connectGroupButton: Button = itemView.findViewById(R.id.assignTeam_ConnectButton)
+    var editNoteButton: Button = itemView.findViewById(R.id.assignTeam_editNoteButton)
+    var groupName: Button = itemView.findViewById(R.id.assignTeam_GroupButton)
 
     var notePanel : LinearLayout = itemView.findViewById(R.id.assignTeam_notepanel)
     var itemInfoHeaders : LinearLayout = itemView.findViewById(R.id.assignTeam_itemInfoHeaders)
@@ -29,6 +29,5 @@ class AssignTeamViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView){
     var bookerName: TextView = itemView.findViewById(R.id.assignTeam_BookerName)
     var bookerEmailText: TextView = itemView.findViewById(R.id.assignTeam_bookingEmail)
     var note: TextView = itemView.findViewById(R.id.assignTeam_Note)
-    var groupName: TextView = itemView.findViewById(R.id.assignTeam_GroupName)
 
 }

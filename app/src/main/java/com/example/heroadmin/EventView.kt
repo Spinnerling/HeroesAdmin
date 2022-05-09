@@ -41,7 +41,6 @@ class EventView : Fragment() {
     private lateinit var blueTeamAdapter: TeamRecyclerAdapter
     private lateinit var redBenchAdapter: TeamRecyclerAdapter
     private lateinit var blueBenchAdapter: TeamRecyclerAdapter
-    private lateinit var groupAdapter: NameListRecyclerAdapter
     private lateinit var redTeamPowerText: TextView
     private lateinit var blueTeamPowerText: TextView
     private lateinit var redTeamAmountText: TextView
@@ -320,10 +319,12 @@ class EventView : Fragment() {
         binding.assignTeamAutoAssignButton.setOnClickListener {
             autoAssignLoop()
         }
+        binding.endEventButton.setOnClickListener {
+            endEvent()
+        }
     }
 
     private fun getEvent() {
-        Log.i("test", currEventId + " is event")
         DBF.apiCallGet(
             "https://talltales.nu/API/api/event.php?id=" + currEventId,
             ::refreshEvent
@@ -383,8 +384,8 @@ class EventView : Fragment() {
             response.getString("First_Name"),
             response.getString("Last_Name"),
             response.getInt("Age"),
-            response.getString("KP_Phone_Nr"),
             response.getString("KP_Name"),
+            response.getString("KP_Phone_Nr"),
             response.getString("Booking_Mail"),
             response.getString("Booking_Name"),
             response.getString("Team_Color"),
@@ -405,13 +406,14 @@ class EventView : Fragment() {
             response.getString("Player_ID"),
             //response.getString("Group"),
         )
+        Log.i("test", ticket.firstName + "'s ticket team color = " + response.getString("Team_Color") + " and tabard: " + response.getString("Tabard_Nr"))
 
         allTickets.add(ticket)
-        DBF.getTicketGuardian(ticket)
 
         // If this is the last ticket to be parsed, update lists
         if (allTickets.size >= event.tickets.size) {
             updateTicketLists()
+            DBF.getTicketGuardians(allTickets)
         }
     }
 
@@ -433,8 +435,6 @@ class EventView : Fragment() {
         blueTeam = mutableListOf()
         redBench = mutableListOf()
         blueBench = mutableListOf()
-
-        Log.i("test", "updating tickets")
 
         for (ticket in allTickets) {
             if (ticket.teamColor == "None" || ticket.teamColor == "") {
@@ -538,12 +538,12 @@ class EventView : Fragment() {
                         // Randomize new group name and put both in it
                         val nameArray = resources.getStringArray(R.array.groupNames)
                         var randomValue = Random.nextInt(nameArray.size)
-                        var newGroupName: String = nameArray[randomValue]
+                        var newGroupName: String = nameArray[randomValue].lowercase()
 
                         // Check that the name is not already taken
                         while (takenGroupNames.contains(newGroupName)) {
                             randomValue = Random.nextInt(nameArray.size)
-                            newGroupName = nameArray[randomValue]
+                            newGroupName = nameArray[randomValue].lowercase()
                         }
 
                         takenGroupNames.add(newGroupName)
@@ -579,16 +579,23 @@ class EventView : Fragment() {
         }
     }
 
-    fun setGroupColor(group: String, setBlue: Boolean) {
+    fun setGroupColor(group: String, setBlue: Boolean, setDatabase : Boolean) {
         for (ticket in allTickets) {
             if (ticket.group == group) {
+                // Set Color
                 if (setBlue) {
                     ticket.teamColor = "Blue"
                 } else {
                     ticket.teamColor = "Red"
                 }
-                val ticketMap = createTicketMap(ticket)
-                DBF.apiCallPost("https://talltales.nu/API/api/update-ticket.php", ticketMap)
+
+                if (setDatabase){
+                    // Update database
+                    val parcel = DBF.createTicketMap(ticket)
+                    DBF.apiCallPost("https://talltales.nu/API/api/update-ticket.php", parcel)
+                }
+
+                // Check if Ticket is connected to a Player
                 if (ticket.playerId == ""){
                     createNewPlayer(ticket)
                 }
@@ -662,10 +669,10 @@ class EventView : Fragment() {
         }
 
         for (ticket in bestBlueList){
-            ticket.teamColor = "Blue"
+            DBF.setTicketTeamColor(ticket, true)
         }
         for (ticket in bestRedList){
-            ticket.teamColor = "Red"
+            DBF.setTicketTeamColor(ticket, false)
         }
         updateTeamPower()
 
@@ -705,15 +712,17 @@ class EventView : Fragment() {
             statList.add(groupStats)
         }*/
 
+        // Assign all groups
         for (group in groupList) {
             if (bluePowerLevel > redPowerLevel) {
-                setGroupColor(group, false)
+                setGroupColor(group, false, false)
             } else {
-                setGroupColor(group, true)
+                setGroupColor(group, true, false)
             }
             updateTeamPower()
         }
 
+        // Assign all loners
         sortAssignByAge()
 
         for (ticket in assignList){
@@ -727,86 +736,6 @@ class EventView : Fragment() {
             }
             updateTeamPower()
         }
-    }
-
-    private fun createTicketMap(ticket: Ticket) : HashMap<String, String>{
-        val ticketJson = HashMap<String, String>()
-        ticketJson["Ticket_ID"] = ticket.ticketId
-        ticketJson["First_Name"] = ticket.firstName
-        ticketJson["Last_Name"] = ticket.lastName
-        ticketJson["Age"] = ticket.age.toString()
-        ticketJson["KP_Phone_Nr"] = ticket.guardianPhoneNr
-        ticketJson["KP_Name"] = ticket.guardianName
-        ticketJson["Booking_Mail"] = ticket.bookerEmail
-        ticketJson["Booking_Name"] = ticket.bookerFullName
-        ticketJson["Team_Color"] = ticket.teamColor
-        ticketJson["Tabard_Nr"] = ticket.tabardNr.toString()
-        ticketJson["Note"] = ticket.note
-        ticketJson["Checked_In"] = ticket.checkedIn.toString()
-        ticketJson["Recruits"] = ticket.recruits.toString()
-        ticketJson["EXP_Personal"] = ticket.expPersonal.toString()
-        ticketJson["Benched"] = ticket.benched.toString()
-        ticketJson["Guaranteed_Role"] = ticket.guaranteedRole.toString()
-        ticketJson["Rounds_M"] = ticket.roundsMage.toString()
-        ticketJson["Rounds_O"] = ticket.roundsRogue.toString()
-        ticketJson["Rounds_K"] = ticket.roundsWarrior.toString()
-        ticketJson["Rounds_H"] = ticket.roundsHealer.toString()
-        ticketJson["Rounds_R"] = ticket.roundsKnight.toString()
-        ticketJson["Respawns"] = ticket.hasRespawn.toString()
-        ticketJson["Current_Role"] = ticket.currentRole.toString()
-        ticketJson["Player_ID"] = ticket.playerId
-        //ticketMap["Group"] = ticket.group
-        return ticketJson
-    }
-
-    fun addToGroup(ticket : Ticket) {
-        // Create dialogue
-        val dialogView = LayoutInflater.from(context).inflate(R.layout.group_manual_popup, null)
-        val builder = AlertDialog.Builder(context).setView(dialogView)
-        val alertDialog = builder.show()
-
-        // Create list of groups and names
-        val groupList = mutableListOf<String>()
-        val nameList = mutableListOf<String>()
-
-        for (ticket in allTickets){
-            if (ticket.group != "" && !groupList.contains(ticket.group + " " + ticket.groupSize.toString())){
-                groupList.add(ticket.group + " " + ticket.groupSize.toString())
-            }
-            if (!nameList.contains(ticket.fullName)) {
-                nameList.add(ticket.fullName)
-            }
-        }
-
-        groupList.sort()
-        nameList.sort()
-        val recyclerList : MutableList<String> = (groupList + nameList) as MutableList
-
-        /*
-        // Setup dialogue name recycler
-        groupAdapter = NameListRecyclerAdapter(recyclerList)
-        val layoutManager = LinearLayoutManager(v.context)
-        val nameRecycler : RecyclerView = dialogView.findViewById(R.id.groupRecycler)
-        nameRecycler.layoutManager = layoutManager
-        nameRecycler.itemAnimator = DefaultItemAnimator()
-        nameRecycler.adapter = groupAdapter
-
-        // Setup other info
-        val nameText : TextView = dialogView.findViewById(R.id.gm_ticketName)
-        nameText.text = ticket.fullName
-        val amountText : TextView = dialogView.findViewById(R.id.gm_ticketsFound)
-        amountText.text = "${groupList.size} groups and ${nameList.size} players found"
-
-        dialogView.findViewById<Button>(R.id.gm_acceptButton).setOnClickListener {
-
-            alertDialog.dismiss()
-        }
-        dialogView.findViewById<Button>(R.id.gm_cancelButton).setOnClickListener {
-            Toast.makeText(context, "Cancelled", Toast.LENGTH_SHORT).show()
-            alertDialog.dismiss()
-        }
-
-         */
     }
 
     private fun updateTeamPower() {
@@ -976,6 +905,11 @@ class EventView : Fragment() {
             if (number != "") {
                 ticket.tabardNr = number.toInt()
                 ticket.checkedIn = 1
+
+                // Update database
+                val parcel = DBF.createTicketMap(ticket)
+                DBF.apiCallPost("https://talltales.nu/API/api/update-ticket.php", parcel)
+
                 updateTicketLists()
 
                 alertDialog.dismiss()
@@ -1079,7 +1013,125 @@ class EventView : Fragment() {
     private fun endEvent() {
         // Find eventId
         // Go to report screen
-        // Pass along eventId
+        var team = 0;
+
+        val dialogView = LayoutInflater.from(context).inflate(R.layout.report_popup, null)
+
+        val builder = AlertDialog.Builder(context)
+            .setView(dialogView)
+
+        val alertDialog = builder.show()
+
+        // Set texts
+        val title: TextView = dialogView.findViewById(R.id.rp_titleText)
+        title.text = event.title
+
+        val dateText: TextView = dialogView.findViewById(R.id.rp_dateText)
+        dateText.text = event.actualDate
+
+        val timeText: TextView = dialogView.findViewById(R.id.rp_timeText)
+        timeText.text = event.actualStartTime
+
+        val venueText: TextView = dialogView.findViewById(R.id.rp_venueText)
+        venueText.text = event.venue
+
+        val attendanceValue: EditText = dialogView.findViewById(R.id.rp_attendanceValue)
+        attendanceValue.setText(event.ExpAttendanceValue)
+
+        val recruitValue: EditText = dialogView.findViewById(R.id.rp_recruitValue)
+        recruitValue.setText(event.ExpRecruitValue)
+
+        //val winningValue: EditText = dialogView.findViewById(R.id.rp_winningValue)
+        //winningValue.setText(event.ExpWinValue)
+
+        val winningTeam: Button = dialogView.findViewById(R.id.rp_teamButton)
+        winningTeam.setOnClickListener {
+            if (team == 0 || team == 2){
+                winningTeam.setBackgroundColor(requireContext().resources.getColor(R.color.teamBlueColor))
+                team = 1
+            }
+            else if (team == 1){
+                winningTeam.setBackgroundColor(requireContext().resources.getColor(R.color.teamRedColor))
+                team = 2
+            }
+        }
+
+        dialogView.findViewById<Button>(R.id.rp_exitButton).setOnClickListener {
+            event.ExpAttendanceValue = attendanceValue.text.toString().toInt()
+            event.ExpRecruitValue = recruitValue.text.toString().toInt()
+            //event.ExpWinningValue = winningValue.text.toString().toInt()
+
+            alertDialog.dismiss()
+            findNavController().navigate(EventViewDirections.actionEventViewToEventList(currEventId))
+        }
+
+        dialogView.findViewById<Button>(R.id.rp_cancelButton).setOnClickListener {
+            Toast.makeText(context, "Cancelled", Toast.LENGTH_SHORT).show()
+            alertDialog.dismiss()
+        }
+    }
+
+    fun setGroupName(ticket: Ticket){
+        // Open popup
+
+        val dialogView = LayoutInflater.from(context).inflate(R.layout.group_popup, null)
+
+        val builder = AlertDialog.Builder(context)
+            .setView(dialogView)
+
+        val alertDialog = builder.show()
+        val name: TextView = dialogView.findViewById(R.id.groupPopup_nameText)
+        name.text = ticket.fullName
+
+        val editText = dialogView.findViewById<EditText>(R.id.groupPopup_EditName)
+        if (ticket.group == ""){
+            editText.setText("Group", TextView.BufferType.EDITABLE)
+        }
+        editText.setText(ticket.group, TextView.BufferType.EDITABLE)
+        editText.requestFocus()
+
+        dialogView.findViewById<Button>(R.id.groupPopup_acceptButton).setOnClickListener {
+            val groupName = editText.text.toString().lowercase()
+            if (groupName != "") {
+                ticket.group = groupName
+                updateTicketLists()
+                alertDialog.dismiss()
+            }
+        }
+        dialogView.findViewById<Button>(R.id.groupPopup_cancelButton).setOnClickListener {
+            Toast.makeText(context, "Cancelled", Toast.LENGTH_SHORT).show()
+            alertDialog.dismiss()
+        }
+    }
+
+    fun editNote(ticket: Ticket){
+        // Open popup
+
+        val dialogView = LayoutInflater.from(context).inflate(R.layout.add_note, null)
+
+        val builder = AlertDialog.Builder(context)
+            .setView(dialogView)
+
+        val alertDialog = builder.show()
+        val name: TextView = dialogView.findViewById(R.id.an_nameText)
+        name.text = ticket.fullName
+
+        val editText = dialogView.findViewById<EditText>(R.id.an_editNoteText)
+        editText.setText(ticket.note, TextView.BufferType.EDITABLE)
+        editText.requestFocus()
+
+        dialogView.findViewById<Button>(R.id.an_acceptButton).setOnClickListener {
+            val newNote = editText.text.toString().lowercase()
+            if (newNote != "") {
+                ticket.note = newNote
+                updateTicketLists()
+                alertDialog.dismiss()
+            }
+        }
+        dialogView.findViewById<Button>(R.id.an_cancelButton).setOnClickListener {
+            Toast.makeText(context, "Cancelled", Toast.LENGTH_SHORT).show()
+            alertDialog.dismiss()
+        }
     }
 
 // SORTING FUNCTIONS
@@ -1146,6 +1198,8 @@ class EventView : Fragment() {
         redTeam.sortBy { it.currentRole }
         redBench.sortBy { it.currentRole }
     }
+
+    // PICK ROLES
 
     private fun randomizeRoles() {
         val redSuccess = pickTeamRoles(redTeam)

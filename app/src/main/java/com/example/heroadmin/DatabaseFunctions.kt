@@ -1,6 +1,7 @@
 package com.example.heroadmin
 
 import android.content.Context
+import android.telephony.PhoneNumberUtils
 import android.util.Log
 import com.android.volley.Request
 import com.android.volley.Response
@@ -12,8 +13,9 @@ import org.json.JSONObject
 
 
 class DatabaseFunctions(var context: Context?) {
-    lateinit var currEvent : Event
-    lateinit var currTicket : Ticket
+    lateinit var currEvent: Event
+    lateinit var currTicket: Ticket
+    lateinit var allTickets: MutableList<Ticket>
 
     fun apiCallGet(
         url: String,
@@ -22,32 +24,49 @@ class DatabaseFunctions(var context: Context?) {
         val requestQueue = Volley.newRequestQueue(context)
         val stringRequest = StringRequest(Request.Method.GET, url,
             { response ->
-            responseFunction(JSONObject(response))
-        },
-            {
-                Log.i("test", "Error! Failed call to api: "+ url)
+                responseFunction(JSONObject(response))
+            },
+            { error ->
+                Log.i("test", "Error! Failed call to api: " + url)
             }
         )
         requestQueue.cache.clear()
         requestQueue.add(stringRequest)
     }
 
-    fun apiCallPost(url : String, parcel : HashMap<String, String>){
+    fun apiCallPost(url: String, parcel: JSONObject) {
         val requestQueue = Volley.newRequestQueue(context)
-        val stringRequest = object : StringRequest(Request.Method.POST, url,
-            Response.Listener { response ->
-                Log.i("test", "Posted parcel to "+ url )
-            },
-            Response.ErrorListener{ error ->
-                Log.i("test", "Error! Failed call to api: "+ url)
+        Log.i("test", "Checked in: " + parcel.getString("Checked_In"))
+        val putRequest: JsonObjectRequest =
+            object : JsonObjectRequest(
+                Method.PUT, url, parcel,
+                Response.Listener { response ->
+                    // response
+                    Log.i("Put Success", "$response")
+
+                },
+                Response.ErrorListener { error ->
+                    // error
+                    Log.i("Put Error", "$error")
+                }
+            ) {
+
+                override fun getHeaders(): Map<String, String> {
+                    val headers: MutableMap<String, String> =
+                        HashMap()
+                    headers["Content-Type"] = "application/json"
+                    headers["Accept"] = "application/json"
+                    return headers
+                }
+
+                override fun getBody(): ByteArray {
+                    Log.i("json", parcel.toString())
+                    return parcel.toString().toByteArray(charset("UTF-8"))
+                }
+
             }
-        ){
-            override fun getParams(): HashMap<String, String> {
-                // When updating data, include id in parcel
-                return parcel
-            }
-        }
-        requestQueue.add(stringRequest)
+
+        requestQueue.add(putRequest)
     }
 
 
@@ -115,7 +134,8 @@ class DatabaseFunctions(var context: Context?) {
         val list = MutableList(jsonArray.length()) {
             jsonArray.getString(it)
         }
-        Log.i("test", eventJson.getInt("EXP_Blueteam").toString() )
+
+        Log.i("test", "Event: " + eventJson.getString("Event_Start_date"))
 
         currEvent = Event(
             eventJson.getString("ID"),
@@ -175,8 +195,7 @@ class DatabaseFunctions(var context: Context?) {
             listOf(4, 3, 1),
             listOf(1, 0, 0),
             mutableListOf("0767667090", "+46738255553"),
-
-            )
+        )
 
         return Player(
             arrayContents[0] as String,         // playerId
@@ -242,66 +261,119 @@ class DatabaseFunctions(var context: Context?) {
         // Add guardian to player
     }
 
-    fun getTicketGuardian(ticket: Ticket) {
-        currTicket = ticket
+    fun getTicketGuardians(ticketList: MutableList<Ticket>) {
+        allTickets = ticketList
 
-        // Find ticket's guardian among previous guardians
-        var matchingId = ""
-        val phoneNumber = getGuardian(ticket)
+        for (ticket in allTickets) {
+            if (ticket.playerId != "") {
+                continue
+            }
+
+            // Find ticket's guardian among previous guardians by their phone number
+            val formattedNumber = formatPhoneNumber(ticket.guardianPhoneNr)
+            ticket.guardianPhoneNr = formattedNumber
+            apiCallGet(
+                "https://talltales.nu/API/api/guardian_players.php?id=$formattedNumber",
+                ::findPlayersByGuardian
+            )
+            apiCallGet(
+                "https://talltales.nu/API/api/guardian_players.php?id=$formattedNumber",
+                ::findGuardiansByName
+            )
+        }
     }
 
-    private fun getGuardian(ticket: Ticket) {
-        // Find phone nr
-        var formattedNumber = formatPhoneNumber(ticket.guardianPhoneNr)
-
-        // Hitta i databasen
-        // var phone = findGuardianByPhone(formattedNumber)
-        var phone = ""
-
-        if (phone == "") {
-            // Hitta i databasen
-            //phone = findGuardianPhoneByName(ticket.guardianName)
-            phone = "0700000000"
+    private fun findGuardiansByName(response: JSONObject) {
+        val dataArray: JSONArray = response.getJSONArray("data")
+        val guardianList = MutableList(dataArray.length()) {
+            dataArray.getJSONObject(it)
         }
 
-        getPlayersByGuardian(phone)
+        // Get all the guardian's players
+        for (guardian in guardianList) {
+            apiCallGet(
+                "https://talltales.nu/API/api/guardian.php?Name=${guardian.getString("GuardianID")}",
+                ::findPlayersByGuardian
+            )
+        }
     }
 
-    private fun getPlayersByGuardian(phoneNumber: String) {
-        apiCallGet("https://talltales.nu/API/api/guardian_players.php?id=$phoneNumber", ::findMatchingPlayers)
-    }
-
-    private fun findMatchingPlayers(json: JSONObject) {
-        // Find matching name among players
-        val dataArray: JSONArray = json.getJSONArray("data")
+    private fun findPlayersByGuardian(response: JSONObject) {
+        val dataArray: JSONArray = response.getJSONArray("data")
         val playerList = MutableList(dataArray.length()) {
             dataArray.getString(it)
         }
 
+        // Get all the guardian's players
         for (playerId in playerList) {
-            getPlayerName(playerId)
+            apiCallGet("https://talltales.nu/API/api/player.php", ::compareNames)
         }
     }
 
-    private fun formatPhoneNumber(number: String): String {
-        // pls
-        return number
-    }
+    private fun compareNames(response: JSONObject) {
+        val dataArray: JSONArray = response.getJSONArray("data")
+        val playerList = MutableList(dataArray.length()) {
+            dataArray.getJSONObject(it)
+        }
 
-    private fun getPlayerName(playerId: String){
-        // Hitta i databasen
-        apiCallGet("https://talltales.nu/API/api/player.php") { response ->
-            if (response["fullname"] == currTicket.fullName) {
-                currTicket.playerId = playerId
+        // Compare names
+        for (player in playerList) {
+            for (ticket in allTickets) {
+                if (ticket.playerId != "") {
+                    continue
+                }
+
+                if (player.getString("First_Name") == ticket.firstName && player["Last_Name"] == ticket.lastName) {
+                    ticket.playerId = player.getString("PlayerId")
+                }
             }
         }
     }
 
-    fun updateDBTicket(ticket: Ticket){
-        apiCallGet( "", ::checkSuccess)
+    private fun formatPhoneNumber(number: String): String {
+        return PhoneNumberUtils.formatNumber(number)
     }
 
-    private fun checkSuccess(json : JSONObject){
+    fun setTicketTeamColor(ticket: Ticket, setBlue: Boolean) {
+        if (setBlue) {
+            ticket.teamColor = "Blue"
+        } else {
+            ticket.teamColor = "Red"
+        }
 
+        // Update database
+        val parcel = createTicketMap(ticket)
+        apiCallPost("https://talltales.nu/API/api/update-ticket.php", parcel)
+    }
+
+
+    fun createTicketMap(ticket: Ticket): JSONObject {
+        val parcel = JSONObject()
+        parcel.put("Ticket_ID", ticket.ticketId)
+        parcel.put("First_Name", ticket.firstName)
+        parcel.put("Last_Name", ticket.lastName)
+        parcel.put("Age", ticket.age.toString())
+        parcel.put("KP_Phone_Nr", ticket.guardianPhoneNr)
+        parcel.put("KP_Name", ticket.guardianName)
+        parcel.put("Booking_Mail", ticket.bookerEmail)
+        parcel.put("Booking_Name", ticket.bookerFullName)
+        parcel.put("Team_Color", ticket.teamColor)
+        parcel.put("Tabard_Nr", ticket.tabardNr)
+        parcel.put("Note", ticket.note)
+        parcel.put("Checked_In", ticket.checkedIn)
+        parcel.put("Recruits", ticket.recruits)
+        parcel.put("EXP_Personal", ticket.expPersonal)
+        parcel.put("Benched", ticket.benched)
+        parcel.put("Guaranteed_Role", ticket.guaranteedRole)
+        parcel.put("Rounds_M", ticket.roundsMage)
+        parcel.put("Rounds_O", ticket.roundsRogue)
+        parcel.put("Rounds_K", ticket.roundsWarrior)
+        parcel.put("Rounds_H", ticket.roundsHealer)
+        parcel.put("Rounds_R", ticket.roundsKnight)
+        parcel.put("Respawns", ticket.hasRespawn)
+        parcel.put("Current_Role", ticket.currentRole)
+        parcel.put("Player_ID", ticket.playerId)
+
+        return parcel
     }
 }

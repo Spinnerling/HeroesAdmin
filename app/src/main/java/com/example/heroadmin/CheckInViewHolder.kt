@@ -14,8 +14,10 @@ class CheckInViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     var infoButton: Button = itemView.findViewById(R.id.checkin_infoButton)
     var teamButton: Button = itemView.findViewById(R.id.checkin_teamButton)
     var checkInButton: Button = itemView.findViewById(R.id.checkin_checkinButton)
-    var removeButton: Button = itemView.findViewById(R.id.checkin_removeButton)
+    var hideNoteButton: Button = itemView.findViewById(R.id.checkin_HideNoteButton)
+    var editNoteButton: Button = itemView.findViewById(R.id.checkin_editNoteButton)
 
+    var notePanel : LinearLayout = itemView.findViewById(R.id.checkin_notepanel)
     var itemInfoHeaders : LinearLayout = itemView.findViewById(R.id.checkIn_itemInfoHeaders)
     var itemInfoTexts : LinearLayout = itemView.findViewById(R.id.checkIn_itemInfoTexts)
 
@@ -23,4 +25,6 @@ class CheckInViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     var contactPhone: TextView = itemView.findViewById(R.id.checkin_ContactPhone)
     var bookerEmail: TextView = itemView.findViewById(R.id.checkin_BookerEmail)
     var bookerName: TextView = itemView.findViewById(R.id.checkin_BookerName)
+
+    var groupButton: Button = itemView.findViewById(R.id.checkin_groupButton)
 }

@@ -1,15 +1,14 @@
 package com.example.heroadmin
 
 import android.content.Context
-import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.content.res.ResourcesCompat.getColor
 import androidx.recyclerview.widget.RecyclerView
 
 
 class CheckInRecyclerAdapter(private var ticketArray: MutableList<Ticket>, private val eventView : EventView) : RecyclerView.Adapter< CheckInViewHolder>(){
+    private val DBF = DatabaseFunctions(eventView.context)
     private lateinit var view : View
     private lateinit var context : Context
 
@@ -38,6 +37,9 @@ class CheckInRecyclerAdapter(private var ticketArray: MutableList<Ticket>, priva
         holder.bookerName.text = ticket.bookerFullName
         holder.bookerEmail.text = ticket.bookerEmail
 
+        if (holder.note.text != "" && !ticket.noteHandled) {
+            holder.notePanel.visibility = View.VISIBLE
+        }
 
         holder.infoButton.setOnClickListener{
             if (holder.itemInfoHeaders.visibility == View.VISIBLE){
@@ -52,26 +54,28 @@ class CheckInRecyclerAdapter(private var ticketArray: MutableList<Ticket>, priva
 
         holder.checkInButton.setOnClickListener{
             eventView.setTicketTabardNumber(ticket)
+
             eventView.autoSetRoleAmounts()
         }
 
         holder.teamButton.setOnClickListener{
             if (ticket.teamColor == "Blue"){
                 if (ticket.group == ""){
-                    ticket.teamColor = "Red"
+                    DBF.setTicketTeamColor(ticket, false)
                 }
                 else {
-                    eventView.setGroupColor(ticket.group, false)
+                    eventView.setGroupColor(ticket.group, false, true)
                 }
             }
             else {
                 if (ticket.group == ""){
-                    ticket.teamColor = "Blue"
+                    DBF.setTicketTeamColor(ticket, true)
                 }
                 else {
-                    eventView.setGroupColor(ticket.group, true)
+                    eventView.setGroupColor(ticket.group, true, true)
                 }
             }
+
             eventView.updateTicketLists()
         }
 
@@ -80,6 +84,28 @@ class CheckInRecyclerAdapter(private var ticketArray: MutableList<Ticket>, priva
         }
         else if (ticket.teamColor == "Red"){
             holder.teamButton.setBackgroundColor(context.resources.getColor(R.color.teamRedColor))
+        }
+
+        holder.groupButton.setOnClickListener{
+            eventView.setGroupName(ticket)
+        }
+
+        holder.hideNoteButton.setOnClickListener {
+            ticket.noteHandled = !ticket.noteHandled
+            if (ticket.noteHandled){
+                holder.notePanel.visibility = View.GONE
+                holder.hideNoteButton.text = "SHOW NOTE"
+            }
+            else {
+                holder.hideNoteButton.text = "HIDE NOTE"
+                if (ticket.note != "") {
+                    holder.notePanel.visibility = View.VISIBLE
+                }
+            }
+        }
+
+        holder.editNoteButton.setOnClickListener {
+            eventView.editNote(ticket)
         }
     }
 }
