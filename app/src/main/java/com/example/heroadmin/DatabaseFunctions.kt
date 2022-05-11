@@ -36,7 +36,11 @@ class DatabaseFunctions(var context: Context?) {
 
     fun apiCallPost(url: String, parcel: JSONObject) {
         val requestQueue = Volley.newRequestQueue(context)
-        Log.i("test", "Checked in: " + parcel.getString("Checked_In"))
+        Log.i("test", "Sending Parcel with info:\n" +
+                "Name: " + parcel.getString("First_Name") + "\n" +
+                "Team Color: " + parcel.getString("Team_Color") + "\n" +
+                "Checked in: " + parcel.getString("Checked_In") + "\n" +
+                "Tabard Nr: " + parcel.getString("Tabard_Nr"))
         val putRequest: JsonObjectRequest =
             object : JsonObjectRequest(
                 Method.PUT, url, parcel,

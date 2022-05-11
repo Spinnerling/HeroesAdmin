@@ -1036,13 +1036,13 @@ class EventView : Fragment() {
         venueText.text = event.venue
 
         val attendanceValue: EditText = dialogView.findViewById(R.id.rp_attendanceValue)
-        attendanceValue.setText(event.ExpAttendanceValue)
+        attendanceValue.setText(event.ExpAttendanceValue.toString())
 
         val recruitValue: EditText = dialogView.findViewById(R.id.rp_recruitValue)
-        recruitValue.setText(event.ExpRecruitValue)
+        recruitValue.setText(event.ExpRecruitValue.toString())
 
         //val winningValue: EditText = dialogView.findViewById(R.id.rp_winningValue)
-        //winningValue.setText(event.ExpWinValue)
+        //winningValue.setText(event.ExpWinValue.toString())
 
         val winningTeam: Button = dialogView.findViewById(R.id.rp_teamButton)
         winningTeam.setOnClickListener {

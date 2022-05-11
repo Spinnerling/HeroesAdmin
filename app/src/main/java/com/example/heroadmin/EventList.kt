@@ -44,7 +44,7 @@ class EventList : Fragment() {
             "https://talltales.nu/API/api/eventlist.php",
             ::getEvents
         )
-        setEventAdapter()
+        //setEventAdapter()
     }
 
     private fun getEvents(eventsJson: JSONObject) {
@@ -73,6 +73,11 @@ class EventList : Fragment() {
                 }
             }
         }
+        Log.i("test", "GetEvent run. Venues: " + venues.size.toString() + " " + eventListList.size.toString())
+    }
+
+    private fun noEventConnection() {
+
     }
 
     private fun setEventAdapter() {
