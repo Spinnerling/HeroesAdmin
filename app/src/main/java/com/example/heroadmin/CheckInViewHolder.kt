@@ -20,6 +20,7 @@ class CheckInViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     var notePanel : LinearLayout = itemView.findViewById(R.id.checkin_notepanel)
     var itemInfoHeaders : LinearLayout = itemView.findViewById(R.id.checkIn_itemInfoHeaders)
     var itemInfoTexts : LinearLayout = itemView.findViewById(R.id.checkIn_itemInfoTexts)
+    var buttonPanel : LinearLayout = itemView.findViewById(R.id.checkin_buttonPanel)
 
     var contactName: TextView = itemView.findViewById(R.id.checkin_ContactName)
     var contactPhone: TextView = itemView.findViewById(R.id.checkin_ContactPhone)

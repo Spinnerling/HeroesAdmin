@@ -19,7 +19,8 @@ class DatabaseFunctions(var context: Context?) {
 
     fun apiCallGet(
         url: String,
-        responseFunction: (eventsJson: JSONObject) -> Unit
+        responseFunction: (eventsJson: JSONObject) -> Unit,
+        errorFunction: () -> Unit
     ) {
         val requestQueue = Volley.newRequestQueue(context)
         val stringRequest = StringRequest(Request.Method.GET, url,
@@ -27,6 +28,7 @@ class DatabaseFunctions(var context: Context?) {
                 responseFunction(JSONObject(response))
             },
             { error ->
+                errorFunction()
                 Log.i("test", "Error! Failed call to api: " + url)
             }
         )
@@ -71,6 +73,12 @@ class DatabaseFunctions(var context: Context?) {
             }
 
         requestQueue.add(putRequest)
+    }
+
+
+
+    fun connectionLost() {
+
     }
 
 
@@ -278,11 +286,11 @@ class DatabaseFunctions(var context: Context?) {
             ticket.guardianPhoneNr = formattedNumber
             apiCallGet(
                 "https://talltales.nu/API/api/guardian_players.php?id=$formattedNumber",
-                ::findPlayersByGuardian
+                ::findPlayersByGuardian, {}
             )
             apiCallGet(
                 "https://talltales.nu/API/api/guardian_players.php?id=$formattedNumber",
-                ::findGuardiansByName
+                ::findGuardiansByName, {}
             )
         }
     }
@@ -297,7 +305,7 @@ class DatabaseFunctions(var context: Context?) {
         for (guardian in guardianList) {
             apiCallGet(
                 "https://talltales.nu/API/api/guardian.php?Name=${guardian.getString("GuardianID")}",
-                ::findPlayersByGuardian
+                ::findPlayersByGuardian, {}
             )
         }
     }
@@ -310,7 +318,7 @@ class DatabaseFunctions(var context: Context?) {
 
         // Get all the guardian's players
         for (playerId in playerList) {
-            apiCallGet("https://talltales.nu/API/api/player.php", ::compareNames)
+            apiCallGet("https://talltales.nu/API/api/player.php", ::compareNames, {})
         }
     }
 

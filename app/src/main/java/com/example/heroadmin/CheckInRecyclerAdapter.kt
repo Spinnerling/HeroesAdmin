@@ -41,14 +41,21 @@ class CheckInRecyclerAdapter(private var ticketArray: MutableList<Ticket>, priva
             holder.notePanel.visibility = View.VISIBLE
         }
 
+        if (ticket.note == ""){
+            holder.hideNoteButton.visibility = View.INVISIBLE
+            holder.editNoteButton.text = "Add Note"
+        }
+
         holder.infoButton.setOnClickListener{
             if (holder.itemInfoHeaders.visibility == View.VISIBLE){
                 holder.itemInfoHeaders.visibility = View.GONE
                 holder.itemInfoTexts.visibility = View.GONE
+                holder.buttonPanel.visibility = View.GONE
             }
             else {
                 holder.itemInfoHeaders.visibility = View.VISIBLE
                 holder.itemInfoTexts.visibility = View.VISIBLE
+                holder.buttonPanel.visibility = View.VISIBLE
             }
         }
 

@@ -225,7 +225,7 @@
                     <LinearLayout
                         android:id="@+id/assign_team_list"
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
+                        android:layout_height="wrap_content"
                         android:orientation="vertical"
                         android:padding="10dp">
 
@@ -356,7 +356,7 @@
                     <LinearLayout
                         android:id="@+id/check_in_list"
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
+                        android:layout_height="wrap_content"
                         android:orientation="vertical"
                         android:padding="10dp">
 
@@ -433,7 +433,7 @@
                 <LinearLayout
                     android:id="@+id/teams_panel"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
+                    android:layout_height="wrap_content"
                     android:orientation="horizontal">
 
                     <LinearLayout
@@ -505,7 +505,7 @@
                         <androidx.recyclerview.widget.RecyclerView
                             android:id="@+id/blueTeamRecycler"
                             android:layout_width="match_parent"
-                            android:layout_height="match_parent" />
+                            android:layout_height="wrap_content" />
 
                         <ImageView
                             android:id="@+id/role_list_separator1"
@@ -518,7 +518,7 @@
                         <androidx.recyclerview.widget.RecyclerView
                             android:id="@+id/blueBenchedRecycler"
                             android:layout_width="match_parent"
-                            android:layout_height="match_parent" />
+                            android:layout_height="wrap_content" />
 
                     </LinearLayout>
 
@@ -595,7 +595,7 @@
                         <androidx.recyclerview.widget.RecyclerView
                             android:id="@+id/redTeamRecycler"
                             android:layout_width="match_parent"
-                            android:layout_height="match_parent" />
+                            android:layout_height="wrap_content" />
 
                         <ImageView
                             android:id="@+id/name_list_separator2"
@@ -608,7 +608,7 @@
                         <androidx.recyclerview.widget.RecyclerView
                             android:id="@+id/redBenchedRecycler"
                             android:layout_width="match_parent"
-                            android:layout_height="match_parent" />
+                            android:layout_height="wrap_content" />
 
                     </LinearLayout>
                 </LinearLayout>

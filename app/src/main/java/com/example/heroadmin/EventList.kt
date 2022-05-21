@@ -13,7 +13,6 @@ import androidx.databinding.DataBindingUtil
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.android.volley.Request
 import com.example.heroadmin.databinding.FragmentEventListBinding
 import org.json.JSONObject
 
@@ -42,7 +41,7 @@ class EventList : Fragment() {
 
         DBF.apiCallGet(
             "https://talltales.nu/API/api/eventlist.php",
-            ::getEvents
+            ::getEvents, {}
         )
         //setEventAdapter()
     }

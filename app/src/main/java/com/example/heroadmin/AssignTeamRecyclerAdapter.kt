@@ -57,6 +57,15 @@ class AssignTeamRecyclerAdapter (private val ticketArray: MutableList<Ticket>, p
             holder.playerIdText.visibility = View.VISIBLE
         }
 
+        if (ticket.note == ""){
+            holder.hideNoteButton.visibility = View.INVISIBLE
+            holder.editNoteButton.text = "Add Note"
+        }
+
+        holder.checkIdButton.setOnClickListener {
+            eventView.manualPlayerLink(ticket)
+        }
+
         holder.infoButton.setOnClickListener{
             if (holder.itemInfoHeaders.visibility == View.VISIBLE){
                 holder.itemInfoHeaders.visibility = View.GONE

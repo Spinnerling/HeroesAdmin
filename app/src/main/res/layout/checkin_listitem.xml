@@ -82,7 +82,7 @@
     <LinearLayout
         android:id="@+id/checkin_notepanel"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:background="@color/background_green_extralight"
         android:orientation="horizontal"
         android:padding="5dp"
@@ -201,8 +201,9 @@
     </LinearLayout>
 
     <LinearLayout
+        android:id="@+id/checkin_buttonPanel"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:background="@color/background_green_medium"
         android:orientation="horizontal"
         android:visibility="gone">

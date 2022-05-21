@@ -58,6 +58,7 @@ class EventView : Fragment() {
     private lateinit var bottomPanelPlayer: LinearLayout
     private lateinit var bottomPanelNewRound: LinearLayout
     private lateinit var playerRoleButtonPanel: LinearLayout
+    private lateinit var loadingDialogue: AlertDialog
     private var healerAmount: Int = 0
     private var rogueAmount: Int = 0
     private var mageAmount: Int = 0
@@ -128,6 +129,7 @@ class EventView : Fragment() {
         bottomPanelPlayer = binding.bottomPanelPlayer
         playerRoleButtonPanel = binding.playerRoleButtonPanel
 
+        loadingPopup()
         getAllTickets(event)
 
         // Set variables
@@ -186,8 +188,8 @@ class EventView : Fragment() {
             }
         }
 
-        playerOnOffSwitch.setOnCheckedChangeListener { _, isChecked ->
-            if (isChecked) {
+        playerOnOffSwitch.setOnClickListener {
+            if (selectedTicket.benched == 0) {
                 selectedTicket.benched = 1
             } else {
                 selectedTicket.benched = 0
@@ -315,6 +317,8 @@ class EventView : Fragment() {
         }
         binding.refreshButton.setOnClickListener {
             getEvent()
+            binding.refreshButton.isEnabled = false
+            loadingDialogue.show()
         }
         binding.assignTeamAutoAssignButton.setOnClickListener {
             autoAssignLoop()
@@ -324,10 +328,20 @@ class EventView : Fragment() {
         }
     }
 
+    private fun loadingPopup() {
+        val dialogView = LayoutInflater.from(context).inflate(R.layout.loading_popup, null)
+
+        val builder =
+            AlertDialog.Builder(context, android.R.style.Theme_DeviceDefault_NoActionBar_Fullscreen)
+                .setView(dialogView)
+
+        loadingDialogue = builder.show()
+    }
+
     private fun getEvent() {
         DBF.apiCallGet(
             "https://talltales.nu/API/api/event.php?id=" + currEventId,
-            ::refreshEvent
+            ::refreshEvent, {}
         )
     }
 
@@ -374,7 +388,7 @@ class EventView : Fragment() {
         // Find ticket in database by ticketId, return an array of its contents
         DBF.apiCallGet(
             "https://talltales.nu/API/api/ticket.php?id=$ticketId",
-            ::parseTicket
+            ::parseTicket, {}
         )
     }
 
@@ -406,7 +420,6 @@ class EventView : Fragment() {
             response.getString("Player_ID"),
             //response.getString("Group"),
         )
-        Log.i("test", ticket.firstName + "'s ticket team color = " + response.getString("Team_Color") + " and tabard: " + response.getString("Tabard_Nr"))
 
         allTickets.add(ticket)
 
@@ -414,6 +427,9 @@ class EventView : Fragment() {
         if (allTickets.size >= event.tickets.size) {
             updateTicketLists()
             DBF.getTicketGuardians(allTickets)
+
+            loadingDialogue.dismiss()
+            binding.refreshButton.isEnabled = true
         }
     }
 
@@ -514,7 +530,7 @@ class EventView : Fragment() {
         for (i in assignList.indices) {
             val ticket1 = assignList[i]
 
-            if(ticket1.group == "SELF"){
+            if (ticket1.group == "SELF") {
                 continue
             }
 
@@ -579,7 +595,7 @@ class EventView : Fragment() {
         }
     }
 
-    fun setGroupColor(group: String, setBlue: Boolean, setDatabase : Boolean) {
+    fun setGroupColor(group: String, setBlue: Boolean, setDatabase: Boolean) {
         for (ticket in allTickets) {
             if (ticket.group == group) {
                 // Set Color
@@ -589,14 +605,14 @@ class EventView : Fragment() {
                     ticket.teamColor = "Red"
                 }
 
-                if (setDatabase){
+                if (setDatabase) {
                     // Update database
                     val parcel = DBF.createTicketMap(ticket)
                     DBF.apiCallPost("https://talltales.nu/API/api/update-ticket.php", parcel)
                 }
 
                 // Check if Ticket is connected to a Player
-                if (ticket.playerId == ""){
+                if (ticket.playerId == "") {
                     createNewPlayer(ticket)
                 }
             }
@@ -626,14 +642,14 @@ class EventView : Fragment() {
         return playerId
     }
 
-    private fun autoAssignLoop(){
+    private fun autoAssignLoop() {
         var loop = 0
         var bestDifference = 1000
-        var originalList : MutableList<Ticket> = assignList
-        var bestBlueList : MutableList<Ticket> = mutableListOf()
-        var bestRedList : MutableList<Ticket> = mutableListOf()
+        var originalList: MutableList<Ticket> = assignList
+        var bestBlueList: MutableList<Ticket> = mutableListOf()
+        var bestRedList: MutableList<Ticket> = mutableListOf()
 
-        while (loop < 50){
+        while (loop < 50) {
             // Randomize and save version of list
             //assignList.shuffle()
             val currList = originalList
@@ -643,7 +659,7 @@ class EventView : Fragment() {
 
             // Check how well that went
             val difference = abs(bluePowerLevel - redPowerLevel)
-            if (difference < bestDifference){
+            if (difference < bestDifference) {
 
                 // If better than before, save that version of team lists
                 bestDifference = difference
@@ -651,27 +667,26 @@ class EventView : Fragment() {
                 bestRedList = mutableListOf()
                 bestBlueList = mutableListOf()
 
-                for (ticket in assignList){
-                    if (ticket.teamColor == "Blue"){
+                for (ticket in assignList) {
+                    if (ticket.teamColor == "Blue") {
                         bestBlueList.add(ticket)
-                    }
-                    else {
+                    } else {
                         bestRedList.add(ticket)
                     }
                 }
 
                 // If already found best difference, break out of loop
-                if (bestDifference == 0){
+                if (bestDifference == 0) {
                     break
                 }
             }
             loop++
         }
 
-        for (ticket in bestBlueList){
+        for (ticket in bestBlueList) {
             DBF.setTicketTeamColor(ticket, true)
         }
-        for (ticket in bestRedList){
+        for (ticket in bestRedList) {
             DBF.setTicketTeamColor(ticket, false)
         }
         updateTeamPower()
@@ -725,12 +740,11 @@ class EventView : Fragment() {
         // Assign all loners
         sortAssignByAge()
 
-        for (ticket in assignList){
-            if (ticket.group == ""){
+        for (ticket in assignList) {
+            if (ticket.group == "") {
                 if (bluePowerLevel > redPowerLevel) {
                     ticket.teamColor = "Red"
-                }
-                else {
+                } else {
                     ticket.teamColor = "Blue"
                 }
             }
@@ -903,14 +917,14 @@ class EventView : Fragment() {
         dialogView.findViewById<Button>(R.id.checkinAcceptButton).setOnClickListener {
             val number = userNo.text.toString()
             if (number != "") {
+                // Update locally
                 ticket.tabardNr = number.toInt()
                 ticket.checkedIn = 1
+                updateTicketLists()
 
                 // Update database
                 val parcel = DBF.createTicketMap(ticket)
                 DBF.apiCallPost("https://talltales.nu/API/api/update-ticket.php", parcel)
-
-                updateTicketLists()
 
                 alertDialog.dismiss()
             }
@@ -962,13 +976,17 @@ class EventView : Fragment() {
         val alertDialog = builder.show()
         val name: TextView = dialogView.findViewById(R.id.ae_playerNameText)
         name.text = ticket.fullName
-        val userNo: EditText = dialogView.findViewById(R.id.ae_expAmount)
-        userNo.requestFocus()
+        val expAmount: EditText = dialogView.findViewById(R.id.ae_expAmount)
+        expAmount.requestFocus()
 
         dialogView.findViewById<Button>(R.id.ae_acceptButton).setOnClickListener {
-            val number = userNo.text.toString()
+            val number = expAmount.text.toString()
             if (number != "") {
                 ticket.expPersonal += number.toInt()
+
+                // Update database
+                val parcel = DBF.createTicketMap(selectedTicket)
+                DBF.apiCallPost("https://talltales.nu/API/api/update-ticket.php", parcel)
 
                 alertDialog.dismiss()
             }
@@ -981,10 +999,9 @@ class EventView : Fragment() {
 
     fun autoSetRoleAmounts() {
         if (allTickets.isEmpty()) {
-            Log.i("test", "allPlayers is empty")
+            Log.i("test", "allTickets is empty")
             return
         }
-        Log.i("test", "setting role amounts")
         healerAmount = allTickets.size / 16
         mageAmount = (allTickets.size + 4) / 16
         rogueAmount = (allTickets.size + 12) / 16
@@ -1005,9 +1022,14 @@ class EventView : Fragment() {
     }
 
     private fun switchTeam() {
+        // Update locally
         selectedTicket.teamColor = "None"
         updateTicketLists()
         deselectPlayer()
+
+        // Update database
+        val parcel = DBF.createTicketMap(selectedTicket)
+        DBF.apiCallPost("https://talltales.nu/API/api/update-ticket.php", parcel)
     }
 
     private fun endEvent() {
@@ -1046,11 +1068,10 @@ class EventView : Fragment() {
 
         val winningTeam: Button = dialogView.findViewById(R.id.rp_teamButton)
         winningTeam.setOnClickListener {
-            if (team == 0 || team == 2){
+            if (team == 0 || team == 2) {
                 winningTeam.setBackgroundColor(requireContext().resources.getColor(R.color.teamBlueColor))
                 team = 1
-            }
-            else if (team == 1){
+            } else if (team == 1) {
                 winningTeam.setBackgroundColor(requireContext().resources.getColor(R.color.teamRedColor))
                 team = 2
             }
@@ -1071,7 +1092,7 @@ class EventView : Fragment() {
         }
     }
 
-    fun setGroupName(ticket: Ticket){
+    fun setGroupName(ticket: Ticket) {
         // Open popup
 
         val dialogView = LayoutInflater.from(context).inflate(R.layout.group_popup, null)
@@ -1084,7 +1105,7 @@ class EventView : Fragment() {
         name.text = ticket.fullName
 
         val editText = dialogView.findViewById<EditText>(R.id.groupPopup_EditName)
-        if (ticket.group == ""){
+        if (ticket.group == "") {
             editText.setText("Group", TextView.BufferType.EDITABLE)
         }
         editText.setText(ticket.group, TextView.BufferType.EDITABLE)
@@ -1104,7 +1125,7 @@ class EventView : Fragment() {
         }
     }
 
-    fun editNote(ticket: Ticket){
+    fun editNote(ticket: Ticket) {
         // Open popup
 
         val dialogView = LayoutInflater.from(context).inflate(R.layout.add_note, null)
@@ -1121,15 +1142,102 @@ class EventView : Fragment() {
         editText.requestFocus()
 
         dialogView.findViewById<Button>(R.id.an_acceptButton).setOnClickListener {
+            // Update locally
             val newNote = editText.text.toString().lowercase()
-            if (newNote != "") {
-                ticket.note = newNote
-                updateTicketLists()
-                alertDialog.dismiss()
-            }
+            ticket.note = newNote
+            updateTicketLists()
+
+            // Update database
+            val parcel = DBF.createTicketMap(ticket)
+            DBF.apiCallPost("https://talltales.nu/API/api/update-ticket.php", parcel)
+
+            alertDialog.dismiss()
         }
         dialogView.findViewById<Button>(R.id.an_cancelButton).setOnClickListener {
             Toast.makeText(context, "Cancelled", Toast.LENGTH_SHORT).show()
+            alertDialog.dismiss()
+        }
+    }
+
+    @SuppressLint("SetTextI18n")
+    fun manualPlayerLink(ticket: Ticket) {
+        var playerId = ""
+        var playerList = mutableListOf<Player>()
+
+        val dialogView = LayoutInflater.from(context).inflate(R.layout.manual_player_link, null)
+
+        val builder = AlertDialog.Builder(context)
+            .setView(dialogView)
+
+        val alertDialog = builder.show()
+
+        val playerLayout: LinearLayout = dialogView.findViewById(R.id.mpl_playerLayout)
+
+        val name: TextView = dialogView.findViewById(R.id.mpl_ticketNameText)
+        name.text = ticket.fullName
+
+        val age: TextView = dialogView.findViewById(R.id.mpl_ageText)
+        age.text = ticket.age.toString()
+
+        val bookerName: TextView = dialogView.findViewById(R.id.mpl_bookerNameText)
+        bookerName.text = ticket.bookerFullName
+
+        val bookerEmail: TextView = dialogView.findViewById(R.id.mpl_bookerEmailText)
+        bookerEmail.text = ticket.bookerEmail
+
+        val guardianName: TextView = dialogView.findViewById(R.id.mpl_guardianNameText)
+        guardianName.text = ticket.guardianName
+
+        val guardianPhone: TextView = dialogView.findViewById(R.id.mpl_guardianPhoneText)
+        guardianPhone.text = ticket.guardianPhoneNr
+
+        val noEntriesText = dialogView.findViewById<TextView>(R.id.mpl_noEntriesText)
+
+        val acceptButton = dialogView.findViewById<TextView>(R.id.mpl_acceptButton)
+
+        val cancelButton = dialogView.findViewById<TextView>(R.id.mpl_cancelButton)
+
+        val radioGroup = RadioGroup(context)
+        radioGroup.orientation = LinearLayout.VERTICAL
+        radioGroup.layoutDirection = View.LAYOUT_DIRECTION_RTL
+
+        var layoutParams: RadioGroup.LayoutParams
+
+        for (player in playerList) {
+            val radioButton = RadioButton(context)
+            radioButton.text = player.fullName + ", " + player.age + "år"
+            radioButton.setPadding(20, 0, 0, 0)
+
+            layoutParams = RadioGroup.LayoutParams(
+                RadioGroup.LayoutParams.MATCH_PARENT,
+                RadioGroup.LayoutParams.MATCH_PARENT
+            )
+            layoutParams.setMargins(0, 20, 0, 0)
+            radioGroup.addView(radioButton, layoutParams)
+        }
+
+        playerLayout.addView(radioGroup)
+
+        if (playerList.size == 0) {
+            noEntriesText.visibility = View.VISIBLE
+        } else {
+            noEntriesText.visibility = View.GONE
+        }
+
+        radioGroup.setOnCheckedChangeListener { group, checkedId ->
+            val checkedRadioButton = radioGroup.findViewById<View>(checkedId) as RadioButton
+            val checkedRadioButtonId = radioGroup.indexOfChild(checkedRadioButton)
+            val checkedRadioButtonText = checkedRadioButton.text.toString()
+        }
+
+        cancelButton.setOnClickListener {
+            Toast.makeText(context, "Cancelled", Toast.LENGTH_SHORT).show()
+            alertDialog.dismiss()
+        }
+
+        acceptButton.setOnClickListener {
+            ticket.playerId = playerId
+            updateTicketLists()
             alertDialog.dismiss()
         }
     }
