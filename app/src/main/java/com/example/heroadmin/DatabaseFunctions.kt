@@ -150,19 +150,19 @@ class DatabaseFunctions(var context: Context?) {
         Log.i("test", "Event: " + eventJson.getString("Event_Start_date"))
 
         currEvent = Event(
-            eventJson.getString("ID"),
-            eventJson.getString("Event_Title"),
-            eventJson.getString("Event_Start_date"),
-            eventJson.getString("Event_End_Date"),
-            eventJson.getString("Venue_ID"),
-            eventJson.getString("Report_Text"),
-            eventJson.getString("Description"),
-            eventJson.getInt("EXP_Blueteam"),
-            eventJson.getInt("EXP_Redteam"),
-            eventJson.getInt("EXP_Attendance"),
-            eventJson.getInt("EXP_Recruit"),
-            eventJson.getInt("Round"),
-            eventJson.getString("Status"),
+            eventJson.optString("ID") ?: "noID",
+            eventJson.optString("Event_Title") ?: "noTitle",
+            eventJson.optString("Event_Start_date") ?: "noStartDate",
+            eventJson.optString("Event_End_Date") ?: "noEndDate",
+            eventJson.optString("Venue_ID") ?: "noVenue",
+            eventJson.optString("Report_Text") ?: "noReport",
+            eventJson.optString("Description") ?: "noDesc",
+            eventJson.optInt("EXP_Blueteam") ?: 0,
+            eventJson.optInt("EXP_Redteam") ?: 0,
+            eventJson.optInt("EXP_Attendance") ?: 0,
+            eventJson.optInt("EXP_Recruit") ?: 0,
+            eventJson.optInt("Round") ?: 0,
+            eventJson.optString("Status") ?: "noStatus",
             list
         )
 
