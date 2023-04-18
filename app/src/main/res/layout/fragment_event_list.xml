@@ -40,14 +40,6 @@
 
             </com.google.android.material.textfield.TextInputLayout>
 
-            <Button
-                android:id="@+id/create_event_button"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_marginStart="5dp"
-                android:layout_weight="1"
-                android:text="Create Event" />
-
         </LinearLayout>
 
         <LinearLayout

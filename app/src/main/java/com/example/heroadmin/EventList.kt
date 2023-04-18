@@ -1,8 +1,10 @@
 package com.example.heroadmin
 
+import android.content.Context
+import android.content.Context.MODE_PRIVATE
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -10,11 +12,13 @@ import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
 import androidx.databinding.DataBindingUtil
+import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.heroadmin.databinding.FragmentEventListBinding
 import org.json.JSONObject
+import androidx.appcompat.app.AppCompatActivity
 
 class EventList : Fragment() {
     // Initialize the binding object
@@ -26,36 +30,77 @@ class EventList : Fragment() {
     private lateinit var venues: Array<String>
     private lateinit var dropdownMenu: AutoCompleteTextView
     private lateinit var DBF : DatabaseFunctions
+    private var displayPastEvents: Boolean = false
+    private val SHARED_PREFS = "sharedPrefs"
+    private val VENUE_KEY = "venue"
+
+    private lateinit var sharedPreferences: SharedPreferences
 
     override fun onResume() {
         super.onResume()
+
+        sharedPreferences = requireActivity().getSharedPreferences(SHARED_PREFS, Context.MODE_PRIVATE)
 
         dropdownMenu = binding.dropDownMenu
         venues = resources.getStringArray(R.array.venues)
         val venuesArrayAdapter = ArrayAdapter(v.context, R.layout.dropdown_item, venues)
         dropdownMenu.setAdapter(venuesArrayAdapter)
 
-        dropdownMenu.onItemClickListener = AdapterView.OnItemClickListener { _, _, _, _ ->
-            setEventAdapter()
-        }
 
         DBF.apiCallGet(
             "https://talltales.nu/API/api/eventlist.php",
             ::getEvents, {}
         )
         //setEventAdapter()
+
+        // Load the saved venue, if any
+        loadVenue()
+
+        // Set an onItemSelectedListener for the dropdownMenu
+        dropdownMenu.onItemClickListener = AdapterView.OnItemClickListener { parent, _, position, _ ->
+            val selectedVenue = parent.getItemAtPosition(position).toString()
+            saveVenue(selectedVenue)
+            setEventAdapter(selectedVenue)
+        }
+
+        // Set click listeners for the buttons
+        binding.mainActivityBtComingEvents.setOnClickListener {
+            setEventAdapter(dropdownMenu.text.toString(), displayPastEvents = false)
+        }
+        binding.mainActivityBtPastEvents.setOnClickListener {
+            setEventAdapter(dropdownMenu.text.toString(), displayPastEvents = true)
+        }
+    }
+
+    private fun saveVenue(venue: String) {
+        val editor = sharedPreferences.edit()
+        editor.putString(VENUE_KEY, venue)
+        editor.apply()
+        Log.d("EventList", "Saved venue: $venue")
+    }
+
+    private fun loadVenue() {
+        val savedVenue = sharedPreferences.getString(VENUE_KEY, null)
+        Log.d("EventList", "Loaded venue: $savedVenue")
+        savedVenue?.let {
+            dropdownMenu.setText(it, false)
+        }
     }
 
     private fun getEvents(eventsJson: JSONObject) {
         eventArray = DBF.getEventArray(eventsJson)
 
-        // Create an empty event list for each venue, put into ListList
+        // Create an empty event list for each venue and type (past and future), put into ListList
         for (venue in venues) {
-            val list: MutableList<Event> = mutableListOf()
-            eventListList.add(list)
+            val pastList: MutableList<Event> = mutableListOf()
+            val futureList: MutableList<Event> = mutableListOf()
+            eventListList.add(pastList)
+            eventListList.add(futureList)
         }
 
-        // Divvy up all the events into correct event list
+        val currentTime = System.currentTimeMillis()
+
+        // Divvy up all the events into correct event list (past or future)
         for (event in eventArray) {
 
             // Fix venue name
@@ -66,11 +111,20 @@ class EventList : Fragment() {
             }
 
             for (i in venues.indices) {
-                // If event's venue is correct for the list, add event to list
+                // If event's venue is correct for the list, add event to past or future list
                 if (event.venue == venues[i]) {
-                    eventListList[i].add(event)
+                    if (event.startTime < currentTime) {
+                        eventListList[i * 2].add(event) // Add to past list
+                    } else {
+                        eventListList[i * 2 + 1].add(event) // Add to future list
+                    }
                 }
             }
+        }
+        // Call setEventAdapter() with the loaded venue
+        val loadedVenue = sharedPreferences.getString(VENUE_KEY, null)
+        loadedVenue?.let {
+            setEventAdapter(it)
         }
         Log.i("test", "GetEvent run. Venues: " + venues.size.toString() + " " + eventListList.size.toString())
     }
@@ -79,7 +133,7 @@ class EventList : Fragment() {
 
     }
 
-    private fun setEventAdapter() {
+    private fun setEventAdapter(venue: String) {
         // Create an empty list to be replaced
         var list = mutableListOf<Event>()
 
@@ -87,8 +141,11 @@ class EventList : Fragment() {
         for (i in venues.indices) {
             var string = dropdownMenu.text.toString()
             if (string == venues[i]) {
-                Log.i("test", string + " is venue")
-                list = eventListList[i]
+                list = if (displayPastEvents) {
+                    eventListList[i * 2] // Use past event list
+                } else {
+                    eventListList[i * 2 + 1] // Use future event list
+                }
             }
         }
 

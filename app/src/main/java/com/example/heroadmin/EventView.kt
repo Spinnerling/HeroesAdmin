@@ -113,8 +113,8 @@ class EventView : Fragment() {
         val switchTeamButton = binding.switchTeamButton
         val switchTeamButton2 = binding.switchTeamButton2
         val spendExpButton = binding.spendExpButton
-        playerExpText = binding.playerExpText
 
+        playerExpText = binding.playerExpText
         redTeamPowerText = binding.redTeamPowerText
         blueTeamPowerText = binding.blueTeamPowerText
         redTeamAmountText = binding.redTeamAmountText
