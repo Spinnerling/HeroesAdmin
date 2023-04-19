@@ -18,4 +18,15 @@
     <color name="background_green_light">#9DE498</color>
     <color name="background_green_extralight">#E0FFD5</color>
 
+    <color name="primary_green">#2ecc71</color>
+    <color name="secondary_purple">#9b59b6</color>
+    <color name="accent_yellow">#f1c40f</color>
+    <color name="text_white">#FFFFFF</color>
+    <color name="winning_red">#e74c3c</color>
+    <color name="winning_blue">#3498db</color>
+    <color name="button_background">#F5F5F5</color>
+    <color name="button_text">#2ecc71</color>
+    <color name="button_text_dark">#27b062</color>
+
+
 </resources>
