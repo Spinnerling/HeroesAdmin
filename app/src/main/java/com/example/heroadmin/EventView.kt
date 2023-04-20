@@ -348,9 +348,9 @@ class EventView : Fragment() {
     private fun refreshEvent(response: JSONObject) {
         val dataArray: JSONArray = response.getJSONArray("data")
         val eventJson: JSONObject = dataArray.getJSONObject(0)
-        val jsonArray: JSONArray = eventJson.getJSONArray("TicketIDs")
-        val list = MutableList(jsonArray.length()) {
-            jsonArray.getString(it)
+        val ticketIdJsonArray: JSONArray = eventJson.getJSONArray("TicketIDs")
+        val ticketIdList = MutableList(ticketIdJsonArray.length()) {
+            ticketIdJsonArray.getString(it)
         }
 
         event = Event(
@@ -367,7 +367,7 @@ class EventView : Fragment() {
             eventJson.getInt("EXP_Recruit"),
             eventJson.getInt("Round"),
             eventJson.getString("Status"),
-            list
+            ticketIdList
         )
 
         getAllTickets(event)
@@ -379,9 +379,45 @@ class EventView : Fragment() {
 
         // Create an array of the players connected to the tickets
         allTickets = mutableListOf()
-        for (i in allTicketIds.indices) {
-            getTicket(allTicketIds[i])
-        }
+//        for (i in allTicketIds.indices) {
+//            getTicket(allTicketIds[i])
+//        }
+
+        //Temporary faux Tickets
+        val ticket = Ticket(
+            "1234",
+            "",
+            "",
+            12,
+            "",
+            "",
+            "",
+            "",
+            "",
+            1,
+            "",
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            ""
+
+        )
+        
+        allTickets.add(ticket)
+        updateTicketLists()
+        DBF.getTicketGuardians(allTickets)
+
+        loadingDialogue.dismiss()
+        binding.refreshButton.isEnabled = true
     }
 
     private fun getTicket(ticketId: String) {
