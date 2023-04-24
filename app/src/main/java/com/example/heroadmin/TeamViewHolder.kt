@@ -1,5 +1,6 @@
 package com.example.heroadmin
 
+import Ticket
 import android.graphics.Color
 import android.util.Log
 import android.view.View

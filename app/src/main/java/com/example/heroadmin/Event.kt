@@ -1,29 +1,38 @@
 package com.example.heroadmin
 
-class Event (
+import kotlinx.serialization.Serializable
+
+@Serializable
+data class Event (
     val eventId: String,
-    var title: String,
-    val startTime: String,
-    val endTime: String,
-    var venue: String,
-    var reportText: String,
-    var description: String,
-    var ExpBlueTeamTotal: Int,
-    var ExpRedTeamTotal: Int,
-    var ExpAttendanceValue: Int,
-    var ExpRecruitValue: Int,
-    var round: Int,
-    var status: String,
-    val tickets: MutableList<String>,
-        ) {
-    var time = offsetTime(startTime.substring(11, 16))
-    var actualStartTime: String = time
+    var title: String? = null,
+    val startTime: String? = null,
+    val endTime: String? = null,
+    var venueId: String? = null,
+    var venue: String? = null,
+    var reportText: String? = "",
+    var description: String? = "",
+    var winner: String? = "",
+    var ExpBlueTeamTotal: Int? = null,
+    var ExpRedTeamTotal: Int? = null,
+    var ExpAttendanceValue: Int? = null,
+    var ExpWinningValue: Int? = null,
+    var ExpTeamChangeValue: Int? = null,
+    var ExpRecruitValue: Int? = null,
+    var round: Int? = 0,
+    var redRound: Int? = 0,
+    var blueRound: Int? = 0,
+    var status: String? = null
+) {
+    var tickets: MutableList<String> = mutableListOf()
+    var time = startTime?.substring(11, 16)?.let { offsetTime(it) }
+    var actualStartTime: String? = time
 
-    private val month = setMonth(startTime.substring(5, 7).toInt())
-    private val date = startTime.substring(8, 10)
-    var actualDate: String = "$date $month"
+    private val month = startTime?.substring(5, 7)?.toInt()?.let { setMonth(it) }
+    private val date = startTime?.substring(8, 10)
+    var actualDate: String? = date?.let { month?.let { m -> "$it $m" } }
 
-    var playerAmount = tickets.size
+    var playerAmount = tickets?.size ?: 0
     var playerMax = 99
 
     private fun offsetTime(time : String) : String{

@@ -29,9 +29,9 @@ class AssignTeamRecyclerAdapter (private val ticketArray: MutableList<Ticket>, p
         holder.ageText.text = ticket.age.toString()
         holder.playerIdText.text = ticket.playerId
         holder.bookerEmailText.text = ticket.bookerEmail
-        holder.contactName.text = ticket.guardianName
-        holder.contactPhone.text = ticket.guardianPhoneNr
-        holder.bookerName.text = ticket.bookerFullName
+        holder.contactName.text = ticket.bookerName
+        holder.contactPhone.text = ticket.bookerPhoneNr
+        holder.bookerName.text = ticket.bookerName
         holder.note.text = ticket.note
 
         if (ticket.groupSize > 1 && ticket.group != "SELF"){

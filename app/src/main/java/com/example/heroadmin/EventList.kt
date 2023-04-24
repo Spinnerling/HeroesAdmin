@@ -60,15 +60,15 @@ class EventList : Fragment() {
         dropdownMenu.onItemClickListener = AdapterView.OnItemClickListener { parent, _, position, _ ->
             val selectedVenue = parent.getItemAtPosition(position).toString()
             saveVenue(selectedVenue)
-            setEventAdapter(selectedVenue)
+            setEventAdapter(selectedVenue, displayPastEvents)
         }
 
-        // Set click listeners for the buttons
         binding.mainActivityBtComingEvents.setOnClickListener {
-            setEventAdapter(dropdownMenu.text.toString(), displayPastEvents = false)
+            setEventAdapter(dropdownMenu.text.toString(), false)
         }
+
         binding.mainActivityBtPastEvents.setOnClickListener {
-            setEventAdapter(dropdownMenu.text.toString(), displayPastEvents = true)
+            setEventAdapter(dropdownMenu.text.toString(), true)
         }
     }
 
@@ -113,7 +113,7 @@ class EventList : Fragment() {
             for (i in venues.indices) {
                 // If event's venue is correct for the list, add event to past or future list
                 if (event.venue == venues[i]) {
-                    if (event.startTime < currentTime) {
+                    if (event.startTime!! < currentTime.toString()) {
                         eventListList[i * 2].add(event) // Add to past list
                     } else {
                         eventListList[i * 2 + 1].add(event) // Add to future list
@@ -124,7 +124,7 @@ class EventList : Fragment() {
         // Call setEventAdapter() with the loaded venue
         val loadedVenue = sharedPreferences.getString(VENUE_KEY, null)
         loadedVenue?.let {
-            setEventAdapter(it)
+            setEventAdapter(it, displayPastEvents)
         }
         Log.i("test", "GetEvent run. Venues: " + venues.size.toString() + " " + eventListList.size.toString())
     }
@@ -133,7 +133,7 @@ class EventList : Fragment() {
 
     }
 
-    private fun setEventAdapter(venue: String) {
+    private fun setEventAdapter(venue: String, displayPastEvents: Boolean) {
         // Create an empty list to be replaced
         var list = mutableListOf<Event>()
 

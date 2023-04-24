@@ -269,7 +269,7 @@ class DatabaseFunctions(var context: Context?) {
     }
 
     fun mergeTicketAndPlayer(player: Player, ticket: Ticket) {
-        player.age = ticket.age
+        player.age = ticket.age ?:0
         // Add guardian to player
     }
 
@@ -282,8 +282,8 @@ class DatabaseFunctions(var context: Context?) {
             }
 
             // Find ticket's guardian among previous guardians by their phone number
-            val formattedNumber = formatPhoneNumber(ticket.guardianPhoneNr)
-            ticket.guardianPhoneNr = formattedNumber
+            val formattedNumber = ticket.bookerPhoneNr?.let { formatPhoneNumber(it) }
+            ticket.bookerPhoneNr = formattedNumber
             apiCallGet(
                 "https://talltales.nu/API/api/guardian_players.php?id=$formattedNumber",
                 ::findPlayersByGuardian, {}
@@ -365,10 +365,10 @@ class DatabaseFunctions(var context: Context?) {
         parcel.put("First_Name", ticket.firstName)
         parcel.put("Last_Name", ticket.lastName)
         parcel.put("Age", ticket.age.toString())
-        parcel.put("KP_Phone_Nr", ticket.guardianPhoneNr)
-        parcel.put("KP_Name", ticket.guardianName)
+        parcel.put("KP_Phone_Nr", ticket.bookerPhoneNr)
+        parcel.put("KP_Name", ticket.bookerName)
         parcel.put("Booking_Mail", ticket.bookerEmail)
-        parcel.put("Booking_Name", ticket.bookerFullName)
+        parcel.put("Booking_Name", ticket.bookerName)
         parcel.put("Team_Color", ticket.teamColor)
         parcel.put("Tabard_Nr", ticket.tabardNr)
         parcel.put("Note", ticket.note)

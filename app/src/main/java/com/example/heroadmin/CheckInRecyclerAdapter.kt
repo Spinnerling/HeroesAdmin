@@ -31,10 +31,10 @@ class CheckInRecyclerAdapter(private var ticketArray: MutableList<Ticket>, priva
         holder.ageText.text = ticket.age.toString()
         holder.note.text = ticket.note
 
-        holder.contactName.text = ticket.guardianName
-        holder.contactPhone.text = ticket.guardianPhoneNr
+        holder.contactName.text = ticket.bookerName
+        holder.contactPhone.text = ticket.bookerPhoneNr
 
-        holder.bookerName.text = ticket.bookerFullName
+        holder.bookerName.text = ticket.bookerName
         holder.bookerEmail.text = ticket.bookerEmail
 
         if (holder.note.text != "" && !ticket.noteHandled) {

@@ -1,43 +1,48 @@
 package com.example.heroadmin
 
 import android.util.Log
+import kotlinx.serialization.Serializable
 
-class Player(
-    var playerId : String,
-    var firstName : String,
-    var lastName : String,
-    var age : Int,
-    var totalExp : Int,
-    var healerLevels : MutableList<Int>,
-    var rogueLevels : MutableList<Int>,
-    var mageLevels : MutableList<Int>,
-    var knightLevels : MutableList<Int>,
-    var warriorLevels : MutableList<Int>,
-    var guardians : List<String>, // List of phoneNumbers
+@Serializable
+data class Player(
+    var playerId : String? = null,
+    var firstName : String? = null,
+    var lastName : String? = null,
+    var age : Int? = null,
+    var exp2021 : Int? = null,
+    var exp2022 : Int? = null,
+    var extraExp : Int? = null,
+    var healerLevels : MutableList<Int?>? = null,
+    var rogueLevels : MutableList<Int?>? = null,
+    var mageLevels : MutableList<Int?>? = null,
+    var knightLevels : MutableList<Int?>? = null,
+    var warriorLevels : MutableList<Int?>? = null,
+    var guardians : List<String?>? = null,
 ) {
     var fullName = "$firstName $lastName"
+    var totalExp = 0
     var usedExp = 0
     var remExp = totalExp - usedExp
     var classLevelsArray = mutableListOf(healerLevels, rogueLevels, mageLevels, knightLevels)
-    var upgradeExpCosts : Array<Array<Array<Int>>> = arrayOf()
-    lateinit var healerExpArray : Array<Array<Int>>
-    lateinit var rogueExpArray : Array<Array<Int>>
-    lateinit var mageExpArray : Array<Array<Int>>
-    lateinit var knightExpArray : Array<Array<Int>>
+    var upgradeExpCosts : Array<Array<Array<Int?>?>>? = null
+    lateinit var healerExpArray : Array<Array<Int?>?>
+    lateinit var rogueExpArray : Array<Array<Int?>?>
+    lateinit var mageExpArray : Array<Array<Int?>?>
+    lateinit var knightExpArray : Array<Array<Int?>?>
 
-    fun setSubclassLevel(classNo : Int, subclassNo : Int, amount : Int){
+    fun setSubclassLevel(classNo : Int, subclassNo : Int, amount : Int?){
         when (classNo){
             0 -> {
-                healerLevels[subclassNo] = amount
+                healerLevels?.set(subclassNo, amount)
             }
             1 -> {
-                rogueLevels[subclassNo] = amount
+                rogueLevels?.set(subclassNo, amount)
             }
             2 -> {
-                mageLevels[subclassNo] = amount
+                mageLevels?.set(subclassNo, amount)
             }
             3 -> {
-                knightLevels[subclassNo] = amount
+                knightLevels?.set(subclassNo, amount)
             }
         }
     }
@@ -49,18 +54,18 @@ class Player(
         // if the player's subclass level is larger than the index of the item you're at, add the item's value
         // eg. if your class(i) 0, subclass(j) 0 is on 3rd level, add cost until you're at i0, j0, k2, then stop
 
-        for (i in upgradeExpCosts.indices){
-            for (j in upgradeExpCosts[i].indices){
-                for (k in upgradeExpCosts[i][j].indices){
-                    if (classLevelsArray[i][j] > k){
-                        cost += upgradeExpCosts[i][j][k]
-                        Log.i("test", "if classLevelsArray: " + classLevelsArray[i][j] + " is larger than: " + k)
+        for (i in upgradeExpCosts?.indices ?: 0 until 0){
+            for (j in upgradeExpCosts?.get(i)?.indices ?: 0 until 0){
+                for (k in upgradeExpCosts?.get(i)?.get(j)?.indices ?: 0 until 0){
+                    if (classLevelsArray[i]?.get(j) ?: 0 > k){
+                        cost += upgradeExpCosts?.get(i)?.get(j)?.get(k) ?: 0
+                        Log.i("test", "if classLevelsArray: " + classLevelsArray[i]?.get(j) + " is larger than: " + k)
                     }
                 }
             }
         }
         usedExp = cost
-        remExp = totalExp - usedExp
+        remExp = totalExp ?: 0 - usedExp
         Log.i("test", "Player's exp updated. Total exp: " + totalExp + ", used exp: " + usedExp + ", rem exp: " + remExp)
     }
 

@@ -14,10 +14,12 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.heroadmin.databinding.FragmentEventViewBinding
+import kotlinx.serialization.decodeFromString
 import org.json.JSONArray
 import org.json.JSONObject
 import kotlin.math.abs
 import kotlin.random.Random
+import kotlinx.serialization.json.Json
 
 
 class EventView : Fragment() {
@@ -28,6 +30,7 @@ class EventView : Fragment() {
     private lateinit var args: EventViewArgs
     private lateinit var currEventId: String
     private lateinit var event: Event
+    val ticketDatabase = LocalDatabase(Ticket.serializer())
     private lateinit var allTickets: MutableList<Ticket>
     private lateinit var redTeam: MutableList<Ticket>
     private lateinit var blueTeam: MutableList<Ticket>
@@ -89,6 +92,7 @@ class EventView : Fragment() {
         currEventId = args.passedEventId
         currActivity = (activity as MainActivity)
         event = currActivity.event
+        loadTestData()
 
         return binding.root
     }
@@ -225,7 +229,7 @@ class EventView : Fragment() {
         spendExpButton.setOnClickListener {
             findNavController().navigate(
                 EventViewDirections.actionEventViewToLevelUpFragment(
-                    selectedTicket.playerId
+                    selectedTicket.playerId ?: ""
                 )
             )
         }
@@ -346,6 +350,7 @@ class EventView : Fragment() {
     }
 
     private fun refreshEvent(response: JSONObject) {
+<<<<<<< Updated upstream
         val dataArray: JSONArray = response.getJSONArray("data")
         val eventJson: JSONObject = dataArray.getJSONObject(0)
         val ticketIdJsonArray: JSONArray = eventJson.getJSONArray("TicketIDs")
@@ -369,11 +374,20 @@ class EventView : Fragment() {
             eventJson.getString("Status"),
             ticketIdList
         )
+=======
+        event = Json.decodeFromString<Event>(response.toString())
+        val jsonArray = response.getJSONArray("data").getJSONObject(0).getJSONArray("TicketIDs")
+        val list = MutableList(jsonArray.length()) {
+            jsonArray.getString(it)
+        }
+        event.tickets?.addAll(list)
+>>>>>>> Stashed changes
 
         getAllTickets(event)
     }
 
     private fun getAllTickets(event: Event) {
+<<<<<<< Updated upstream
         // Get the event's ticket ids
         val allTicketIds: MutableList<String> = event.tickets
 
@@ -418,6 +432,20 @@ class EventView : Fragment() {
 
         loadingDialogue.dismiss()
         binding.refreshButton.isEnabled = true
+=======
+        // Get the event's ticket ids safely
+        event.tickets?.let { allTicketIds ->
+            // Create an array of the players connected to the tickets
+            allTickets = mutableListOf()
+            for (i in allTicketIds.indices) {
+                getTicket(allTicketIds[i])
+            }
+        } ?: run {
+            // Handle the case when event.tickets is null
+            // e.g., show an error message or set allTickets to an empty list
+            allTickets = mutableListOf()
+        }
+>>>>>>> Stashed changes
     }
 
     private fun getTicket(ticketId: String) {
@@ -429,38 +457,13 @@ class EventView : Fragment() {
     }
 
     private fun parseTicket(response: JSONObject) {
-        val ticket = Ticket(
-            response.getString("Ticket_ID"),
-            response.getString("First_Name"),
-            response.getString("Last_Name"),
-            response.getInt("Age"),
-            response.getString("KP_Name"),
-            response.getString("KP_Phone_Nr"),
-            response.getString("Booking_Mail"),
-            response.getString("Booking_Name"),
-            response.getString("Team_Color"),
-            response.getInt("Tabard_Nr"),
-            response.getString("Note"),
-            response.getInt("Checked_In"),
-            response.getInt("Recruits"),
-            response.getInt("EXP_Personal"),
-            response.getInt("Benched"),
-            response.getInt("Guaranteed_Role"),
-            response.getInt("Rounds_M"),
-            response.getInt("Rounds_O"),
-            response.getInt("Rounds_K"),
-            response.getInt("Rounds_H"),
-            response.getInt("Rounds_R"),
-            response.getInt("Respawns"),
-            response.getInt("Current_Role"),
-            response.getString("Player_ID"),
-            //response.getString("Group"),
-        )
+        // Deserialize the JSONObject into a Ticket object
+        val ticket = Json.decodeFromString<Ticket>(response.toString())
 
         allTickets.add(ticket)
 
         // If this is the last ticket to be parsed, update lists
-        if (allTickets.size >= event.tickets.size) {
+        if (allTickets.size >= (event.tickets?.size ?: 0)) {
             updateTicketLists()
             DBF.getTicketGuardians(allTickets)
 
@@ -514,12 +517,15 @@ class EventView : Fragment() {
             0 -> {
                 sortAssignByName()
             }
+
             1 -> {
                 sortAssignByAge()
             }
+
             2 -> {
                 sortAssignByUserId()
             }
+
             3 -> {
                 sortAssignByGroup()
             }
@@ -529,12 +535,15 @@ class EventView : Fragment() {
             0 -> {
                 sortCheckInByName()
             }
+
             1 -> {
                 sortCheckInByAge()
             }
+
             2 -> {
                 sortCheckInByNote()
             }
+
             3 -> {
                 sortCheckInByColor()
             }
@@ -544,9 +553,7 @@ class EventView : Fragment() {
             0 -> {
                 sortTeamsByName()
             }
-            1 -> {
-                sortTeamsByNumber()
-            }
+
             2 -> {
                 sortTeamsByRole()
             }
@@ -659,9 +666,9 @@ class EventView : Fragment() {
     private fun createNewPlayer(ticket: Ticket) {
         val player = Player(
             getNewPlayerId(),
-            ticket.firstName,
-            ticket.lastName,
-            ticket.age,
+            ticket.firstName ?: "",
+            ticket.lastName ?: "",
+            ticket.age ?: 0,
             0,
             mutableListOf(1, 0, 0),
             mutableListOf(1, 0, 0),
@@ -742,26 +749,26 @@ class EventView : Fragment() {
             }
         }
 
-/*
-        // Find group stats
-        val statList: MutableList<MutableList<Any>> = mutableListOf()
+        /*
+                // Find group stats
+                val statList: MutableList<MutableList<Any>> = mutableListOf()
 
-        for (group in groupList) {
-            val groupStats: MutableList<Any> = mutableListOf("", 0, 0, 0, 0)
-            for (ticket in assignList) {
-                if (ticket.group == group) {
-                    groupStats[0] = group
-                    groupStats[1] = groupStats[1] as Int + ticket.powerLevel
-                    groupStats[2] = groupStats[2] as Int + 1
-                    if (ticket.age > 12) {
-                        groupStats[3] = groupStats[3] as Int + 1
-                    } else if (ticket.age < 7) {
-                        groupStats[4] = groupStats[4] as Int + 1
+                for (group in groupList) {
+                    val groupStats: MutableList<Any> = mutableListOf("", 0, 0, 0, 0)
+                    for (ticket in assignList) {
+                        if (ticket.group == group) {
+                            groupStats[0] = group
+                            groupStats[1] = groupStats[1] as Int + ticket.powerLevel
+                            groupStats[2] = groupStats[2] as Int + 1
+                            if (ticket.age > 12) {
+                                groupStats[3] = groupStats[3] as Int + 1
+                            } else if (ticket.age < 7) {
+                                groupStats[4] = groupStats[4] as Int + 1
+                            }
+                        }
                     }
-                }
-            }
-            statList.add(groupStats)
-        }*/
+                    statList.add(groupStats)
+                }*/
 
         // Assign all groups
         for (group in groupList) {
@@ -801,7 +808,7 @@ class EventView : Fragment() {
         for (ticket in allTickets) {
             if (ticket.teamColor == "Red" && ticket.benched == 0) {
                 redPowerLevel += ticket.powerLevel
-                if (ticket.age > 12) {
+                if (ticket.age!! > 12) {
                     redTeenAmount++
                 } else if (ticket.age < 8) {
                     redTiniesAmount++
@@ -810,7 +817,7 @@ class EventView : Fragment() {
 
             } else if (ticket.teamColor == "Blue" && ticket.benched == 0) {
                 bluePowerLevel += ticket.powerLevel
-                if (ticket.age > 12) {
+                if (ticket.age!! > 12) {
                     blueTeenAmount++
                 } else if (ticket.age < 8) {
                     blueTiniesAmount++
@@ -921,7 +928,7 @@ class EventView : Fragment() {
             }
 
             playerExpText.text = "${selectedPlayer.totalExp} EXP kvar"
-            val roleInText = DBF.getRoleByNumber(selectedTicket.currentRole)
+            val roleInText = DBF.getRoleByNumber(selectedTicket.currentRole ?: 0)
             binding.ticketRoleText.text = roleInText
 
             if (selectedTicket.benched == 0) {
@@ -954,7 +961,6 @@ class EventView : Fragment() {
             val number = userNo.text.toString()
             if (number != "") {
                 // Update locally
-                ticket.tabardNr = number.toInt()
                 ticket.checkedIn = 1
                 updateTicketLists()
 
@@ -988,11 +994,11 @@ class EventView : Fragment() {
         val ticketNote: TextView = dialogView.findViewById(R.id.ti_Note)
         ticketNote.text = ticket.note
         val guardianName: TextView = dialogView.findViewById(R.id.ti_guardianName)
-        guardianName.text = ticket.guardianName
+        guardianName.text = ticket.bookerName
         val guardianPhone: TextView = dialogView.findViewById(R.id.ti_guardianPhone)
-        guardianPhone.text = ticket.guardianPhoneNr
+        guardianPhone.text = ticket.bookerPhoneNr
         val bookerName: TextView = dialogView.findViewById(R.id.ti_bookerName)
-        bookerName.text = ticket.bookerFullName
+        bookerName.text = ticket.bookerName
         val bookerEmail: TextView = dialogView.findViewById(R.id.ti_bookerEmail)
         bookerEmail.text = ticket.bookerEmail
 
@@ -1018,7 +1024,7 @@ class EventView : Fragment() {
         dialogView.findViewById<Button>(R.id.ae_acceptButton).setOnClickListener {
             val number = expAmount.text.toString()
             if (number != "") {
-                ticket.expPersonal += number.toInt()
+                ticket.expPersonal = ticket.expPersonal?.plus(number.toInt())
 
                 // Update database
                 val parcel = DBF.createTicketMap(selectedTicket)
@@ -1216,16 +1222,16 @@ class EventView : Fragment() {
         age.text = ticket.age.toString()
 
         val bookerName: TextView = dialogView.findViewById(R.id.mpl_bookerNameText)
-        bookerName.text = ticket.bookerFullName
+        bookerName.text = ticket.bookerName
 
         val bookerEmail: TextView = dialogView.findViewById(R.id.mpl_bookerEmailText)
         bookerEmail.text = ticket.bookerEmail
 
         val guardianName: TextView = dialogView.findViewById(R.id.mpl_guardianNameText)
-        guardianName.text = ticket.guardianName
+        guardianName.text = ticket.bookerName
 
         val guardianPhone: TextView = dialogView.findViewById(R.id.mpl_guardianPhoneText)
-        guardianPhone.text = ticket.guardianPhoneNr
+        guardianPhone.text = ticket.bookerPhoneNr
 
         val noEntriesText = dialogView.findViewById<TextView>(R.id.mpl_noEntriesText)
 
@@ -1329,13 +1335,6 @@ class EventView : Fragment() {
         redBench.sortBy { it.fullName }
     }
 
-    private fun sortTeamsByNumber() {
-        blueTeam.sortBy { it.tabardNr }
-        blueBench.sortBy { it.tabardNr }
-        redTeam.sortBy { it.tabardNr }
-        redBench.sortBy { it.tabardNr }
-    }
-
     private fun sortTeamsByRole() {
         blueTeam.sortBy { it.currentRole }
         blueBench.sortBy { it.currentRole }
@@ -1386,22 +1385,27 @@ class EventView : Fragment() {
                     finishedHealers.add(ticket)
                     healerAmount--
                 }
+
                 2 -> {
                     finishedrogue.add(ticket)
                     rogueAmount--
                 }
+
                 3 -> {
                     finishedmage.add(ticket)
                     mageAmount--
                 }
+
                 4 -> {
                     finishedknight.add(ticket)
                     knightAmount--
                 }
+
                 5 -> {
                     finishedspecialA.add(ticket)
                     specialAAmount--
                 }
+
                 6 -> {
                     finishedspecialB.add(ticket)
                     specialBAmount--
@@ -1424,7 +1428,7 @@ class EventView : Fragment() {
         val thirdList = mutableListOf<Ticket>()
         for (ticket in secondList) {
             if (ticket.guaranteedRole != 0) {
-                setRole(ticket, ticket.guaranteedRole)
+                setRole(ticket, ticket.guaranteedRole ?: 0)
             } else {
                 thirdList.add(ticket)
             }
@@ -1451,16 +1455,16 @@ class EventView : Fragment() {
 
             // Put each player in the role lists they're allowed to be
             for (ticket in thirdList) {
-                if (ticket.roundsHealer < ticket.allowedTimesPerRole) {
+                if (ticket.roundsHealer!! < ticket.allowedTimesPerRole) {
                     tempHealers.add(ticket)
                 }
-                if (ticket.roundsRogue < ticket.allowedTimesPerRole) {
+                if (ticket.roundsRogue!! < ticket.allowedTimesPerRole) {
                     temprogue.add(ticket)
                 }
-                if (ticket.roundsMage < ticket.allowedTimesPerRole) {
+                if (ticket.roundsMage!! < ticket.allowedTimesPerRole) {
                     tempmage.add(ticket)
                 }
-                if (ticket.roundsKnight < ticket.allowedTimesPerRole) {
+                if (ticket.roundsKnight!! < ticket.allowedTimesPerRole) {
                     tempknight.add(ticket)
                 }
                 if (ticket.roundsSpecial < ticket.allowedTimesPerRole) {
@@ -1568,7 +1572,7 @@ class EventView : Fragment() {
                 ticket.guaranteedRole = 0
             }
             if (ticket.currentRole != 7) {
-                ticket.roundsSpecialRole++
+                ticket.roundsSpecialRole = ticket.roundsSpecialRole!! + 1
             }
         }
 
@@ -1578,5 +1582,69 @@ class EventView : Fragment() {
         bottomPanel.visibility = View.VISIBLE
         bottomPanelNewRound.visibility = View.GONE
         return true
+    }
+
+    fun loadTestData() {
+        // Generate sample players
+        val tickets = listOf(
+            Ticket(
+                "T1", "John", "Doe", 25, "Jane Doe", "555-123-4567",
+                "123 Main St", "Springfield", "john@example.com", null, "Red", 1, 0, 10, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, "P1", "E1"
+            ),
+            Ticket(
+                "T2", "Jane", "Doe", 23, "John Doe", "555-987-6543",
+                "456 Elm St", "Springfield", "jane@example.com", null, "Blue", 1, 0, 8, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, "P2", "E1"
+            ),
+            Ticket(
+                "T3", "Alice", "Smith", 30, "Bob Smith", "555-456-7890",
+                "789 Oak St", "Springfield", "alice@example.com", null, "Red", 1, 0, 12, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, "P3", "E1"
+            ),
+            Ticket(
+                "T4", "Bob", "Brown", 28, "Alice Brown", "555-321-0987",
+                "321 Birch St", "Springfield", "bob@example.com", null, "Red", 1, 0, 9, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, "P4", "E1"
+            ),
+            Ticket(
+                "T5", "Charlie", "Johnson", 21, "Diana Johnson", "555-654-3210",
+                "654 Pine St", "Springfield", "charlie@example.com", null, "Blue", 1, 0, 6, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, "P5", "E1"
+            ),
+            Ticket(
+                "T6", "Diana", "Miller", 19, "Charlie Miller", "555-852-1470",
+                "852 Maple St", "Springfield", "diana@example.com", null, "Blue", 1, 0, 5, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, "P6", "E1"
+            ),
+            Ticket(
+                "T7", "Eva", "Taylor", 33, "David Taylor", "555-555-5555",
+                "10 Oak St", "Springfield", "eva@example.com", null, "Red", 1, 0, 11, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, "P7", "E1"
+            ),
+            Ticket(
+                "T7", "Edward", "Wilson", 29, "Emma Wilson", "555-789-4561",
+                "741 Vine St", "Springfield", "edward@example.com", null, "Blue", 1, 0, 7, 0, 2,
+                2, 1, 2, 1, 1, 0, 1, "P7", "E1"
+            ),
+            Ticket(
+                "T8", "Frank", "Adams", 33, "Frank Adams", "555-123-7890",
+                "369 Oak St", "Springfield", "frank@example.com", null, "Red", 1, 0, 10, 0, 3,
+                1, 2, 2, 1, 1, 0, 1, "P8", "E2"
+            ),
+            Ticket(
+                "T9", "George", "Garcia", 26, "George Garcia", "555-456-1234",
+                "852 Chestnut St", "Springfield", "george@example.com", null, "Blue", 1, 0, 9, 0, 4,
+                2, 1, 1, 2, 1, 0, 1, "P9", "E2"
+            ),
+            Ticket(
+                "T10", "Hannah", "Scott", 31, "Henry Scott", "555-789-0123",
+                "753 Main St", "Springfield", "hannah@example.com", null, "Red", 1, 0, 12, 0, 2,
+                3, 1, 2, 2, 1, 0, 1, "P10", "E2"
+            )
+        )
+
+        // Insert sample players into the playerDatabase
+        tickets.forEach { ticketDatabase.insert(it) }
     }
 }

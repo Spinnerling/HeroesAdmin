@@ -7,8 +7,13 @@ buildscript {
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:8.0.0'
+
+        // Navigation
         def nav_version = "2.5.3"
         classpath "androidx.navigation:navigation-safe-args-gradle-plugin:$nav_version"
+
+        // Kotlinx.serialization
+        classpath 'org.jetbrains.kotlin:kotlin-serialization:1.6.21'
     }
 }
 

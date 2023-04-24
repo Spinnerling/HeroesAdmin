@@ -1,52 +1,55 @@
 package com.example.heroadmin
-
+import kotlinx.serialization.Serializable
 import kotlin.math.floor
 
-class Ticket(
+@Serializable
+data class Ticket(
     val ticketId: String,
-    var firstName: String,
-    var lastName: String,
-    val age: Int,
-    val guardianName: String,
-    var guardianPhoneNr: String,
-    val bookerEmail: String,
-    val bookerFullName: String,
-    var teamColor: String,
-    var tabardNr : Int,
-    var note : String,
-    var checkedIn: Int,
-    var recruits: Int,
-    var expPersonal: Int,
-    var benched: Int,
-    var currentRole: Int,   // 0 = Undecided, 1 = Healer, 2 = Rogue, 3 = Mage, 4 = Knight, 5 = SpecialA, 6 = SpecialB, 7 = Warrior
-    var roundsMage: Int,
-    var roundsRogue: Int,
-    var roundsWarrior: Int,
-    var roundsHealer: Int,
-    var roundsKnight: Int,
-    var hasRespawn: Int,
-    var guaranteedRole: Int, // 0 = Undecided, 1 = Healer, 2 = Rogue, 3 = Mage, 4 = Knight, 5 = SpecialA, 6 = SpecialB, 7 = Warrior
-    var playerId: String,
-    //var group: String
+    var firstName: String? = null,
+    var lastName: String? = null,
+    val age: Int? = null,
+    val bookerName: String? = null,
+    var bookerPhoneNr: String? = null,
+    val bookerAdress: String? = null,
+    val bookerPostort: String? = null,
+    val bookerEmail: String? = null,
+    var note: String? = null,
+    var teamColor: String? = null,
+    var checkedIn: Int? = 0,
+    var recruits: Int? = 0,
+    var expPersonal: Int? = 0,
+    var benched: Int? = 0,
+    var currentRole: Int? = 0,
+    var roundsMage: Int? = 0,
+    var roundsRogue: Int? = 0,
+    var roundsWarrior: Int? = 0,
+    var roundsHealer: Int? = 0,
+    var roundsKnight: Int? = 0,
+    var roundsSpecialRole: Int? = 0,
+    var guaranteedRole: Int? = 0,
+    var playerId: String? = null,
+    val eventId: String? = null
 ) {
-    var fullName = "$firstName $lastName"
+    val fullName: String
+        get() = "${firstName ?: ""} ${lastName ?: ""}"
     var selected = false
-    var roundsSpecialRole = 0
-    var allowedTimesPerRole = 1 // How many times they're allowed to be Healer, Knight, etc as well as Special
+    var allowedTimesPerRole = 1
     var roundsSpecial = 0
-    var powerLevel : Int = checkPowerLevel()
+    val powerLevel: Int
+        get() = checkPowerLevel()
     var noteHandled = false
     var groupSize = 1
     var group = ""
 
     private fun checkPowerLevel(): Int {
-        var multiplier : Float = 1.0F
-        if (age >= 13) {
-            multiplier = 1.5F
+        var multiplier: Float = 1.0F
+        age?.let {
+            if (it >= 13) {
+                multiplier = 1.5F
+            } else if (it <= 6) {
+                multiplier = 0.75F
+            }
         }
-        else if (age <= 6){
-            multiplier = 0.75F
-        }
-        return floor((age * multiplier).toDouble()).toInt()
+        return floor((age?.toFloat() ?: 0.0F) * multiplier).toInt()
     }
 }

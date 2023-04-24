@@ -1,5 +1,6 @@
 package com.example.heroadmin
 
+import Ticket
 import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -28,7 +29,7 @@ class TeamRecyclerAdapter (private val ticketArray: MutableList<Ticket>, private
         val number = ticket.tabardNr
         holder.numberText.text = number.toString()
         val role = ticket.currentRole
-        val roleInText = DBF.getRoleByNumber(role)
+        val roleInText = DBF.getRoleByNumber(role ?:0)
         holder.roleText.text = roleInText
 
         if (ticket.selected){
