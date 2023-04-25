@@ -15,7 +15,6 @@ import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.heroadmin.databinding.FragmentEventViewBinding
 import kotlinx.serialization.decodeFromString
-import org.json.JSONArray
 import org.json.JSONObject
 import kotlin.math.abs
 import kotlin.random.Random
@@ -350,89 +349,17 @@ class EventView : Fragment() {
     }
 
     private fun refreshEvent(response: JSONObject) {
-<<<<<<< Updated upstream
-        val dataArray: JSONArray = response.getJSONArray("data")
-        val eventJson: JSONObject = dataArray.getJSONObject(0)
-        val ticketIdJsonArray: JSONArray = eventJson.getJSONArray("TicketIDs")
-        val ticketIdList = MutableList(ticketIdJsonArray.length()) {
-            ticketIdJsonArray.getString(it)
-        }
-
-        event = Event(
-            eventJson.getString("ID"),
-            eventJson.getString("Event_Title"),
-            eventJson.getString("Event_Start_date"),
-            eventJson.getString("Event_End_Date"),
-            eventJson.getString("Venue_ID"),
-            eventJson.getString("Report_Text"),
-            eventJson.getString("Description"),
-            eventJson.getInt("EXP_Blueteam"),
-            eventJson.getInt("EXP_Redteam"),
-            eventJson.getInt("EXP_Attendance"),
-            eventJson.getInt("EXP_Recruit"),
-            eventJson.getInt("Round"),
-            eventJson.getString("Status"),
-            ticketIdList
-        )
-=======
         event = Json.decodeFromString<Event>(response.toString())
         val jsonArray = response.getJSONArray("data").getJSONObject(0).getJSONArray("TicketIDs")
         val list = MutableList(jsonArray.length()) {
             jsonArray.getString(it)
         }
         event.tickets?.addAll(list)
->>>>>>> Stashed changes
 
         getAllTickets(event)
     }
 
     private fun getAllTickets(event: Event) {
-<<<<<<< Updated upstream
-        // Get the event's ticket ids
-        val allTicketIds: MutableList<String> = event.tickets
-
-        // Create an array of the players connected to the tickets
-        allTickets = mutableListOf()
-//        for (i in allTicketIds.indices) {
-//            getTicket(allTicketIds[i])
-//        }
-
-        //Temporary faux Tickets
-        val ticket = Ticket(
-            "1234",
-            "",
-            "",
-            12,
-            "",
-            "",
-            "",
-            "",
-            "",
-            1,
-            "",
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            ""
-
-        )
-        
-        allTickets.add(ticket)
-        updateTicketLists()
-        DBF.getTicketGuardians(allTickets)
-
-        loadingDialogue.dismiss()
-        binding.refreshButton.isEnabled = true
-=======
         // Get the event's ticket ids safely
         event.tickets?.let { allTicketIds ->
             // Create an array of the players connected to the tickets
@@ -445,7 +372,6 @@ class EventView : Fragment() {
             // e.g., show an error message or set allTickets to an empty list
             allTickets = mutableListOf()
         }
->>>>>>> Stashed changes
     }
 
     private fun getTicket(ticketId: String) {
@@ -669,13 +595,9 @@ class EventView : Fragment() {
             ticket.firstName ?: "",
             ticket.lastName ?: "",
             ticket.age ?: 0,
-            0,
-            mutableListOf(1, 0, 0),
-            mutableListOf(1, 0, 0),
-            mutableListOf(1, 0, 0),
-            mutableListOf(1, 0, 0),
-            mutableListOf(1, 0, 0),
-            mutableListOf("", "", ""),
+            0,0,0,0,
+            1,1,1,1,
+            0,0,0,0
         )
         ticket.playerId = player.playerId
     }

@@ -8,11 +8,15 @@ import com.android.volley.Response
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
 import org.json.JSONArray
 import org.json.JSONObject
+import kotlinx.serialization.encodeToString
+import com.android.volley.NoConnectionError
 
 
-class DatabaseFunctions(var context: Context?) {
+class DatabaseFunctions(private val context: Context) {
     lateinit var currEvent: Event
     lateinit var currTicket: Ticket
     lateinit var allTickets: MutableList<Ticket>
@@ -36,51 +40,48 @@ class DatabaseFunctions(var context: Context?) {
         requestQueue.add(stringRequest)
     }
 
-    fun apiCallPost(url: String, parcel: JSONObject) {
-        val requestQueue = Volley.newRequestQueue(context)
-        Log.i("test", "Sending Parcel with info:\n" +
-                "Name: " + parcel.getString("First_Name") + "\n" +
-                "Team Color: " + parcel.getString("Team_Color") + "\n" +
-                "Checked in: " + parcel.getString("Checked_In") + "\n" +
-                "Tabard Nr: " + parcel.getString("Tabard_Nr"))
-        val putRequest: JsonObjectRequest =
-            object : JsonObjectRequest(
-                Method.PUT, url, parcel,
-                Response.Listener { response ->
-                    // response
-                    Log.i("Put Success", "$response")
+    fun apiCallPost(url: String, jsonString: String) {
+        val mySingleton = MySingleton.getInstance(context)
+        Log.i("test", "Sending JSON string: $jsonString")
 
-                },
-                Response.ErrorListener { error ->
-                    // error
-                    Log.i("Put Error", "$error")
+        val putRequest: StringRequest = object : StringRequest(
+            Method.PUT, url,
+            Response.Listener { response ->
+                // response
+                Log.i("Put Success", "$response")
+            },
+            Response.ErrorListener { error ->
+                // error
+                Log.i("Put Error", "$error")
+
+                if (error is NoConnectionError) {
+                    // Handle no connection error
+                    Log.i("Put Error", "No internet connection")
+                    connectionLost()
+                } else {
+                    // Handle other error types
                 }
-            ) {
-
-                override fun getHeaders(): Map<String, String> {
-                    val headers: MutableMap<String, String> =
-                        HashMap()
-                    headers["Content-Type"] = "application/json"
-                    headers["Accept"] = "application/json"
-                    return headers
-                }
-
-                override fun getBody(): ByteArray {
-                    Log.i("json", parcel.toString())
-                    return parcel.toString().toByteArray(charset("UTF-8"))
-                }
-
+            }
+        ) {
+            override fun getHeaders(): Map<String, String> {
+                val headers: MutableMap<String, String> = HashMap()
+                headers["Content-Type"] = "application/json"
+                headers["Accept"] = "application/json"
+                return headers
             }
 
-        requestQueue.add(putRequest)
+            override fun getBody(): ByteArray {
+                Log.i("json", jsonString)
+                return jsonString.toByteArray(charset("UTF-8"))
+            }
+        }
+
+        mySingleton.addToRequestQueue(putRequest)
     }
-
-
 
     fun connectionLost() {
 
     }
-
 
     fun getEventIds(context: Context?): List<String> {
         // Find array of events in database
@@ -141,33 +142,11 @@ class DatabaseFunctions(var context: Context?) {
     }
 
     private fun parseEventJson(eventJson: JSONObject): Event {
-        // Create list of Ticket IDs
-        val jsonArray = eventJson.getJSONArray("TicketIDs")
-        val list = MutableList(jsonArray.length()) {
-            jsonArray.getString(it)
-        }
+        // Deserialize the JSON to the Event class
+        val event = Json.decodeFromString<Event>(eventJson.toString())
 
-        Log.i("test", "Event: " + eventJson.getString("Event_Start_date"))
-
-        currEvent = Event(
-            eventJson.optString("ID") ?: "noID",
-            eventJson.optString("Event_Title") ?: "noTitle",
-            eventJson.optString("Event_Start_date") ?: "noStartDate",
-            eventJson.optString("Event_End_Date") ?: "noEndDate",
-            eventJson.optString("Venue_ID") ?: "noVenue",
-            eventJson.optString("Report_Text") ?: "noReport",
-            eventJson.optString("Description") ?: "noDesc",
-            eventJson.optInt("EXP_Blueteam") ?: 0,
-            eventJson.optInt("EXP_Redteam") ?: 0,
-            eventJson.optInt("EXP_Attendance") ?: 0,
-            eventJson.optInt("EXP_Recruit") ?: 0,
-            eventJson.optInt("Round") ?: 0,
-            eventJson.optString("Status") ?: "noStatus",
-            list
-        )
-
-        // Create an event out of the JSON data
-        return currEvent
+        // Return the event
+        return event
     }
 
     fun getAllPlayers(event: Event): MutableList<Player> {
@@ -190,38 +169,32 @@ class DatabaseFunctions(var context: Context?) {
     }
 
     fun getPlayer(playerId: String): Player {
+        // Find player in the database by playerId, and get the JSON string of the player's data
+        // This will be replaced with the actual JSON string from the database
+        val jsonString = """
+        {
+            "playerId": "player123",
+            "firstName": "Bobb",
+            "lastName": "Polo",
+            "age": 16,
+            "exp2021": 1830,
+            "exp2022": 1830,
+            "exp2023": 0,
+            "healerLevel": 1,
+            "mageLevel": 1,
+            "rogueLevel": 1,
+            "knightLevel": 1,
+            "warriorHealer": 0,
+            "warriorRogue": 0,
+            "warriorMage": 0,
+            "warriorKnight": 0
+        }
+    """
 
-        // Find player in database by playerId, return an array of its contents
-        // val arrayContents = [insert code here]
+        // Deserialize the JSON string to a Player object
+        val player = Json.decodeFromString<Player>(jsonString)
 
-        // Placeholder "found" player
-        val arrayContents = mutableListOf(
-            "player123",
-            "Bobb",
-            "Polo",
-            16,
-            1830,
-            listOf(1, 2, 3),
-            listOf(2, 0, 0),
-            listOf(3, 1, 4),
-            listOf(4, 3, 1),
-            listOf(1, 0, 0),
-            mutableListOf("0767667090", "+46738255553"),
-        )
-
-        return Player(
-            arrayContents[0] as String,         // playerId
-            arrayContents[1] as String,         // first name
-            arrayContents[2] as String,         // last name
-            arrayContents[3] as Int,            // age
-            arrayContents[4] as Int,            // total exp
-            arrayContents[5] as MutableList<Int>,      // healer levels
-            arrayContents[6] as MutableList<Int>,      // mage levels
-            arrayContents[7] as MutableList<Int>,      // rogue levels
-            arrayContents[8] as MutableList<Int>,      // knight levels
-            arrayContents[9] as MutableList<Int>,      // warrior levels
-            arrayContents[10] as MutableList<String>,  // guardian phone numbers
-        )
+        return player
     }
 
     fun getPlayerEXP(playerId: String): Int {
@@ -347,45 +320,14 @@ class DatabaseFunctions(var context: Context?) {
     }
 
     fun setTicketTeamColor(ticket: Ticket, setBlue: Boolean) {
-        if (setBlue) {
-            ticket.teamColor = "Blue"
-        } else {
-            ticket.teamColor = "Red"
-        }
+        ticket.teamColor = if (setBlue) "Blue" else "Red"
 
         // Update database
-        val parcel = createTicketMap(ticket)
-        apiCallPost("https://talltales.nu/API/api/update-ticket.php", parcel)
+        val jsonString = createTicketJsonString(ticket)
+        apiCallPost( "https://talltales.nu/API/api/update-ticket.php", jsonString)
     }
 
-
-    fun createTicketMap(ticket: Ticket): JSONObject {
-        val parcel = JSONObject()
-        parcel.put("Ticket_ID", ticket.ticketId)
-        parcel.put("First_Name", ticket.firstName)
-        parcel.put("Last_Name", ticket.lastName)
-        parcel.put("Age", ticket.age.toString())
-        parcel.put("KP_Phone_Nr", ticket.bookerPhoneNr)
-        parcel.put("KP_Name", ticket.bookerName)
-        parcel.put("Booking_Mail", ticket.bookerEmail)
-        parcel.put("Booking_Name", ticket.bookerName)
-        parcel.put("Team_Color", ticket.teamColor)
-        parcel.put("Tabard_Nr", ticket.tabardNr)
-        parcel.put("Note", ticket.note)
-        parcel.put("Checked_In", ticket.checkedIn)
-        parcel.put("Recruits", ticket.recruits)
-        parcel.put("EXP_Personal", ticket.expPersonal)
-        parcel.put("Benched", ticket.benched)
-        parcel.put("Guaranteed_Role", ticket.guaranteedRole)
-        parcel.put("Rounds_M", ticket.roundsMage)
-        parcel.put("Rounds_O", ticket.roundsRogue)
-        parcel.put("Rounds_K", ticket.roundsWarrior)
-        parcel.put("Rounds_H", ticket.roundsHealer)
-        parcel.put("Rounds_R", ticket.roundsKnight)
-        parcel.put("Respawns", ticket.hasRespawn)
-        parcel.put("Current_Role", ticket.currentRole)
-        parcel.put("Player_ID", ticket.playerId)
-
-        return parcel
+    fun createTicketJsonString(ticket: Ticket): String {
+        return Json.encodeToString(ticket)
     }
 }
