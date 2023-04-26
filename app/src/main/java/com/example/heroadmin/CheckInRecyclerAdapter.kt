@@ -8,7 +8,7 @@ import androidx.recyclerview.widget.RecyclerView
 
 
 class CheckInRecyclerAdapter(private var ticketArray: MutableList<Ticket>, private val eventView : EventView) : RecyclerView.Adapter< CheckInViewHolder>(){
-    private val DBF = DatabaseFunctions(eventView.context)
+    private val DBF = eventView.context?.let { DatabaseFunctions(it) }
     private lateinit var view : View
     private lateinit var context : Context
 
@@ -33,12 +33,20 @@ class CheckInRecyclerAdapter(private var ticketArray: MutableList<Ticket>, priva
 
         holder.contactName.text = ticket.bookerName
         holder.contactPhone.text = ticket.bookerPhoneNr
-
-        holder.bookerName.text = ticket.bookerName
         holder.bookerEmail.text = ticket.bookerEmail
 
         if (holder.note.text != "" && !ticket.noteHandled) {
             holder.notePanel.visibility = View.VISIBLE
+        }
+
+        if (ticket.groupSize > 1 && ticket.group != "SELF"){
+            holder.groupName.text = "(${ticket.groupSize}) ${ticket.group}"
+        }
+        else if (ticket.group != "") {
+            holder.groupName.text = "(${ticket.groupSize}) ${ticket.group}"
+        }
+        else {
+            holder.groupName.text = "Group"
         }
 
         if (ticket.note == ""){
@@ -68,7 +76,7 @@ class CheckInRecyclerAdapter(private var ticketArray: MutableList<Ticket>, priva
         holder.teamButton.setOnClickListener{
             if (ticket.teamColor == "Blue"){
                 if (ticket.group == ""){
-                    DBF.setTicketTeamColor(ticket, false)
+                    DBF?.setTicketTeamColor(ticket, false)
                 }
                 else {
                     eventView.setGroupColor(ticket.group, false, true)
@@ -76,7 +84,7 @@ class CheckInRecyclerAdapter(private var ticketArray: MutableList<Ticket>, priva
             }
             else {
                 if (ticket.group == ""){
-                    DBF.setTicketTeamColor(ticket, true)
+                    DBF?.setTicketTeamColor(ticket, true)
                 }
                 else {
                     eventView.setGroupColor(ticket.group, true, true)

@@ -6,7 +6,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 
 class AssignTeamRecyclerAdapter (private val ticketArray: MutableList<Ticket>, private val eventView : EventView) : RecyclerView.Adapter<AssignTeamViewHolder>() {
-    private val DBF = DatabaseFunctions(eventView.context)
+    private val DBF = eventView.context?.let { DatabaseFunctions(it) }
 
     override fun getItemCount(): Int {
         return if (ticketArray.isEmpty()) 0 else ticketArray.size
@@ -81,7 +81,7 @@ class AssignTeamRecyclerAdapter (private val ticketArray: MutableList<Ticket>, p
 
         holder.blueButton.setOnClickListener{
             if (ticket.group == ""){
-                DBF.setTicketTeamColor(ticket, true)
+                DBF?.setTicketTeamColor(ticket, true)
             }
             else {
                 eventView.setGroupColor(ticket.group, true, true)
@@ -96,7 +96,7 @@ class AssignTeamRecyclerAdapter (private val ticketArray: MutableList<Ticket>, p
 
         holder.redButton.setOnClickListener{
             if (ticket.group == ""){
-                DBF.setTicketTeamColor(ticket, false)
+                DBF?.setTicketTeamColor(ticket, false)
             }
             else {
                 eventView.setGroupColor(ticket.group, false, true)

@@ -11,7 +11,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/background_green_medium"
-        android:text="Check In"
+        android:text="Checking In..."
         android:textAlignment="center"
         android:textColor="#FFFFFF"
         android:textSize="20sp" />
@@ -26,24 +26,13 @@
         android:textAlignment="center"
         android:textSize="26sp" />
 
-    <EditText
-        android:id="@+id/checkInPopupEditText"
-        android:layout_width="150dp"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="25dp"
-        android:ems="10"
-        android:hint="Tabard#"
-        android:inputType="number"
-        android:textAlignment="center"
-        android:textSize="24sp" />
-
     <TextView
         android:id="@+id/textView8"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="5dp"
+        android:layout_marginBottom="8dp"
         android:background="@color/background_green_medium"
-        android:text="Recruited Friends"
+        android:text="Recruits"
         android:textAlignment="center"
         android:textColor="#FFFFFF" />
 

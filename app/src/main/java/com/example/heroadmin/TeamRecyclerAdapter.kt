@@ -1,6 +1,5 @@
 package com.example.heroadmin
 
-import Ticket
 import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -21,15 +20,13 @@ class TeamRecyclerAdapter (private val ticketArray: MutableList<Ticket>, private
 
     override fun onBindViewHolder(holder: TeamViewHolder, position: Int) {
         // is called to attach data to a ViewHolder. Here you change the text, color, whatever needs to be done to the list item views according to the data being displayed. I created a bind function in the ViewHolder earlier for convenience which I use here, if you want you could do everything in the bind function here instead.
-        val DBF = DatabaseFunctions(eventView.context)
+        val DBF = eventView.context?.let { DatabaseFunctions(it) }
         val ticket = ticketArray[position]
         holder.ticket = ticket
         val name = ticket.fullName
         holder.nameText.text = name
-        val number = ticket.tabardNr
-        holder.numberText.text = number.toString()
         val role = ticket.currentRole
-        val roleInText = DBF.getRoleByNumber(role ?:0)
+        val roleInText = DBF?.getRoleByNumber(role ?:0)
         holder.roleText.text = roleInText
 
         if (ticket.selected){

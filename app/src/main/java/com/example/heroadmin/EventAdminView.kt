@@ -11,12 +11,16 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.json.JSONObject
 import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 
 class EventAdminFragment : Fragment() {
     private lateinit var DBF: DatabaseFunctions
     private var _binding: FragmentEventAdminBinding? = null
     private val binding get() = _binding!!
     private lateinit var v: View
+    private lateinit var currActivity: MainActivity
+    private lateinit var event: Event
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -24,6 +28,10 @@ class EventAdminFragment : Fragment() {
     ): View? {
         _binding = FragmentEventAdminBinding.inflate(inflater, container, false)
         v = inflater.inflate(R.layout.fragment_event_admin, container, false)
+
+        currActivity = (activity as MainActivity)
+        event = currActivity.event
+
         return binding.root
     }
 
@@ -69,19 +77,16 @@ class EventAdminFragment : Fragment() {
 
     private fun saveInfo() {
         CoroutineScope(Dispatchers.IO).launch {
-            val data = JSONObject().apply {
-                put("name", binding.eventAdminEventNameText.text.toString())
-                put("venue", binding.eventAdminEventVenue.text.toString())
-                put("date", binding.eventAdminEventDate.text.toString())
-                put("time", binding.eventAdminEventTime.text.toString())
-                put("attendance_value", binding.eventAdminAttendanceValue.text.toString())
-                put("recruitment_value", binding.eventAdminRecruitmentValue.text.toString())
-                put("winning_value", binding.eventAdminWinningValue.text.toString())
-                put("changing_team_value", binding.eventAdminTeamChangeValue.text.toString())
-                put("report_text", binding.eventAdminReportText.text.toString())
+            event.apply {
+                reportText = binding.eventAdminReportText.text.toString()
+                ExpAttendanceValue = binding.eventAdminAttendanceValue.text.toString().toInt()
+                ExpRecruitValue = binding.eventAdminRecruitmentValue.text.toString().toInt()
+                ExpWinningValue = binding.eventAdminWinningValue.text.toString().toInt()
+                ExpTeamChangeValue = binding.eventAdminTeamChangeValue.text.toString().toInt()
             }
 
-            this@EventAdminFragment.DBF.apiCallPost("<API_URL>", data)
+            val jsonData = Json.encodeToString(event)
+            this@EventAdminFragment.DBF.apiCallPost("<API_URL>", jsonData)
         }
     }
 

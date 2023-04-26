@@ -16,8 +16,8 @@ class LocalDatabase<T : Any>(private val serializer: KSerializer<T>) {
         return storage[id]
     }
 
-    fun getAll(): List<T> {
-        return storage.values.toList()
+    fun getAll(): MutableList<T> {
+        return storage.values.toMutableList()
     }
 
     fun insert(obj: T, id: Int? = null): Int {

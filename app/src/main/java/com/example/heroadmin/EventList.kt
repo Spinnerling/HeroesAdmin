@@ -1,7 +1,6 @@
 package com.example.heroadmin
 
 import android.content.Context
-import android.content.Context.MODE_PRIVATE
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
@@ -18,7 +17,7 @@ import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.heroadmin.databinding.FragmentEventListBinding
 import org.json.JSONObject
-import androidx.appcompat.app.AppCompatActivity
+import kotlinx.serialization.json.Json
 
 class EventList : Fragment() {
     // Initialize the binding object
@@ -30,6 +29,7 @@ class EventList : Fragment() {
     private lateinit var venues: Array<String>
     private lateinit var dropdownMenu: AutoCompleteTextView
     private lateinit var DBF : DatabaseFunctions
+    private val json = Json { ignoreUnknownKeys = true }
     private var displayPastEvents: Boolean = false
     private val SHARED_PREFS = "sharedPrefs"
     private val VENUE_KEY = "venue"
@@ -40,7 +40,6 @@ class EventList : Fragment() {
         super.onResume()
 
         sharedPreferences = requireActivity().getSharedPreferences(SHARED_PREFS, Context.MODE_PRIVATE)
-
         dropdownMenu = binding.dropDownMenu
         venues = resources.getStringArray(R.array.venues)
         val venuesArrayAdapter = ArrayAdapter(v.context, R.layout.dropdown_item, venues)
@@ -49,7 +48,8 @@ class EventList : Fragment() {
 
         DBF.apiCallGet(
             "https://talltales.nu/API/api/eventlist.php",
-            ::getEvents, {}
+            { eventsJson -> getEvents(eventsJson, json) },
+            {}
         )
         //setEventAdapter()
 
@@ -87,8 +87,8 @@ class EventList : Fragment() {
         }
     }
 
-    private fun getEvents(eventsJson: JSONObject) {
-        eventArray = DBF.getEventArray(eventsJson)
+    private fun getEvents(eventsJson: JSONObject, json: Json) {
+        eventArray = DBF.getEventArray(eventsJson, json)
 
         // Create an empty event list for each venue and type (past and future), put into ListList
         for (venue in venues) {
@@ -113,6 +113,7 @@ class EventList : Fragment() {
             for (i in venues.indices) {
                 // If event's venue is correct for the list, add event to past or future list
                 if (event.venue == venues[i]) {
+                    Log.d("asdasdasd", "${event.title}")
                     if (event.startTime!! < currentTime.toString()) {
                         eventListList[i * 2].add(event) // Add to past list
                     } else {

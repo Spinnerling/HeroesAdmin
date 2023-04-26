@@ -47,9 +47,9 @@ class LevelUpFragment : Fragment() {
         args = LevelUpFragmentArgs.fromBundle(requireArguments())
         currPlayerId = args.passedPlayerId
         player = DBF.getPlayer(currPlayerId)
-        player.getExpCosts()
+        //player.getExpCosts()
         player.updateExp()
-        subClassLevels = player.classLevelsArray
+        //subClassLevels = player.classLevelsArray
 
         binding.levelUpPlayerNameText.text = player.fullName
         updateExpText()
@@ -170,7 +170,7 @@ class LevelUpFragment : Fragment() {
             // If your level in subclass i (ex 1) is larger than the button index j you clicked (0)
             if (subClassLevels[currSection][i] >= j + 1){
                 // remove upgrade
-                player.setSubclassLevel(currSection, i, j)
+                //player.setSubclassLevel(currSection, i, j)
                 updateUpgrades()
                 updateExpText()
             }
@@ -178,7 +178,7 @@ class LevelUpFragment : Fragment() {
                 // if enough exp, add upgrade
                 if (player.remExp >= expArray[i][j]) {
                     subClassLevels[currSection][i] = j + 1
-                    player.setSubclassLevel(currSection, i, subClassLevels[currSection][i])
+                    //player.setSubclassLevel(currSection, i, subClassLevels[currSection][i])
                     updateUpgrades()
                     updateExpText()
                 }
@@ -223,7 +223,7 @@ class LevelUpFragment : Fragment() {
 
 
     private fun healerSection() {
-        expArray = player.healerExpArray
+        //expArray = player.healerExpArray
         binding.subclassTitle1.text = "Templar"
         binding.subclassTitle2.text = "Fältskär"
         binding.subclassTitle3.text = "Väktare"
@@ -234,7 +234,7 @@ class LevelUpFragment : Fragment() {
     }
 
     private fun rogueSection() {
-        expArray = player.rogueExpArray
+        //expArray = player.rogueExpArray
         binding.subclassTitle1.text = "Tjuv"
         binding.subclassTitle2.text = "Ninja"
         binding.subclassTitle3.text = "Rövare"
@@ -245,7 +245,7 @@ class LevelUpFragment : Fragment() {
     }
 
     private fun mageSection() {
-        expArray = player.mageExpArray
+        //expArray = player.mageExpArray
         binding.subclassTitle1.text = "Mystiker"
         binding.subclassTitle2.text = "Gycklare"
         binding.subclassTitle3.text = ""
@@ -256,7 +256,7 @@ class LevelUpFragment : Fragment() {
     }
 
     private fun knightSection() {
-        expArray = player.knightExpArray
+        //expArray = player.knightExpArray
         binding.subclassTitle1.text = "Förkämpe"
         binding.subclassTitle2.text = "Paladin"
         binding.subclassTitle3.text = "Knekt"

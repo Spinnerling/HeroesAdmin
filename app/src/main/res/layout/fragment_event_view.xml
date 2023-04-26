@@ -475,19 +475,6 @@
                                 app:strokeWidth="1dp" />
 
                             <Button
-                                android:id="@+id/team_number_button1"
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1.5"
-                                android:backgroundTint="#FFFFFF"
-                                android:text="#"
-                                android:textAlignment="viewStart"
-                                android:textColor="#000000"
-                                android:textSize="12sp"
-                                app:strokeColor="#000000"
-                                app:strokeWidth="1dp" />
-
-                            <Button
                                 android:id="@+id/team_role_button1"
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
@@ -558,19 +545,6 @@
                                 android:layout_weight="4.5"
                                 android:backgroundTint="#FFFFFF"
                                 android:text="Name"
-                                android:textAlignment="viewStart"
-                                android:textColor="#000000"
-                                android:textSize="12sp"
-                                app:strokeColor="#000000"
-                                app:strokeWidth="1dp" />
-
-                            <Button
-                                android:id="@+id/team_number_button2"
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1.5"
-                                android:backgroundTint="#FFFFFF"
-                                android:text="#"
                                 android:textAlignment="viewStart"
                                 android:textColor="#000000"
                                 android:textSize="12sp"

@@ -122,39 +122,40 @@ class DatabaseFunctions(private val context: Context) {
         return eventIdArray
     }
 
-    fun getEventArray(response: JSONObject): MutableList<Event> {
-        val eventArray = mutableListOf<Event>()
-        val array: JSONArray = response.getJSONArray("data")
-        val listLength = array.length()
-        if (listLength > 0) {
-            var listIndex = 0
-            while (listIndex < listLength) {
+    fun getEventArray(responseJson: JSONObject, json: Json): MutableList<Event> {
+        val eventList = mutableListOf<Event>()
 
-                val eventJson = array.getJSONObject(listIndex)
+        if (responseJson.has("data")) {
+            Log.d("DatabaseFunctions", "Received JSON: $responseJson")
+            val eventsJsonArray = responseJson.getJSONArray("data")
 
-                val event = parseEventJson(eventJson)
-
-                eventArray.add(event)
-                listIndex++
+            // Add the while loop here
+            var i = 0
+            while (i < eventsJsonArray.length()) {
+                val eventJson = eventsJsonArray.getJSONObject(i)
+                val event: Event = json.decodeFromString(Event.serializer(), eventJson.toString())
+                eventList.add(event)
+                Log.d("DatabaseFunctions", "Added event: " + event.title)
+                i++
             }
+        } else {
+            Log.e("DatabaseFunctions", "No 'data' key found in the JSON response")
         }
-        return eventArray
+
+        return eventList
     }
 
-    private fun parseEventJson(eventJson: JSONObject): Event {
+    fun parseEventJson(jsonString: String, json: Json): Event {
         // Deserialize the JSON to the Event class
-        val event = Json.decodeFromString<Event>(eventJson.toString())
-
-        // Return the event
-        return event
+        return json.decodeFromString(Event.serializer(), jsonString)
     }
 
     fun getAllPlayers(event: Event): MutableList<Player> {
         // Get the event's tickets
         var allTicketIds = mutableListOf<String>()
 
-        if (event.tickets.isNotEmpty()) {
-            allTicketIds = event.tickets
+        if (event.ticketIDs.isNotEmpty()) {
+            allTicketIds = event.ticketIDs
         }
 
         // Create an array of the players connected to the tickets

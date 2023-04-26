@@ -20,7 +20,6 @@ import kotlin.math.abs
 import kotlin.random.Random
 import kotlinx.serialization.json.Json
 
-
 class EventView : Fragment() {
     private lateinit var currActivity: MainActivity
     private lateinit var binding: FragmentEventViewBinding
@@ -294,10 +293,6 @@ class EventView : Fragment() {
             teamSorting = 0
             updateTicketLists()
         }
-        binding.teamNumberButton1.setOnClickListener {
-            teamSorting = 1
-            updateTicketLists()
-        }
         binding.teamRoleButton1.setOnClickListener {
             teamSorting = 2
             updateTicketLists()
@@ -305,10 +300,6 @@ class EventView : Fragment() {
 
         binding.teamNameButton2.setOnClickListener {
             teamSorting = 0
-            updateTicketLists()
-        }
-        binding.teamNumberButton2.setOnClickListener {
-            teamSorting = 1
             updateTicketLists()
         }
         binding.teamRoleButton2.setOnClickListener {
@@ -354,48 +345,91 @@ class EventView : Fragment() {
         val list = MutableList(jsonArray.length()) {
             jsonArray.getString(it)
         }
-        event.tickets?.addAll(list)
+        event.ticketIDs?.addAll(list)
 
         getAllTickets(event)
     }
 
     private fun getAllTickets(event: Event) {
         // Get the event's ticket ids safely
-        event.tickets?.let { allTicketIds ->
-            // Create an array of the players connected to the tickets
-            allTickets = mutableListOf()
-            for (i in allTicketIds.indices) {
-                getTicket(allTicketIds[i])
-            }
-        } ?: run {
-            // Handle the case when event.tickets is null
-            // e.g., show an error message or set allTickets to an empty list
-            allTickets = mutableListOf()
-        }
+//        event.tickets.let { allTicketIds ->
+//            // Create an array of the players connected to the tickets
+//            allTickets = mutableListOf()
+//
+//            CoroutineScope(Dispatchers.IO).launch {
+//                val ticketJobs = allTicketIds.map { ticketId ->
+//                    async {
+//                        val result = CompletableDeferred<Ticket?>()
+//                        getTicket(ticketId) { ticket ->
+//                            result.complete(ticket)
+//                        }
+//                        result.await()
+//                    }
+//                }
+//
+//                val fetchedTickets = ticketJobs.awaitAll().filterNotNull()
+//                allTickets.clear()
+//                allTickets.addAll(fetchedTickets)
+//
+//                // Update UI with the new ticket list
+//            withContext(Dispatchers.Main) {
+//                updateTicketLists()
+//                DBF.getTicketGuardians(allTickets)
+//                loadingDialogue.dismiss()
+//                binding.refreshButton.isEnabled = true
+//            }
+//            }
+//        } ?: run {
+//            // Handle the case when event.tickets is null
+//            // e.g., show an error message or set allTickets to an empty list
+//            allTickets = mutableListOf()
+//        }
+
+
+
+        // Temporary code
+        allTickets = ticketDatabase.getAll()
+        event.ticketIDs = allTickets.map { it.ticketId }.toMutableList()
+        updateTicketLists()
+        DBF.getTicketGuardians(allTickets)
+        loadingDialogue.dismiss()
+        binding.refreshButton.isEnabled = true
     }
 
-    private fun getTicket(ticketId: String) {
+    private fun getTicket(ticketId: String, onComplete: (Ticket?) -> Unit) {
         // Find ticket in database by ticketId, return an array of its contents
         DBF.apiCallGet(
             "https://talltales.nu/API/api/ticket.php?id=$ticketId",
-            ::parseTicket, {}
+            { response ->
+                val ticket = parseTicket(response)
+                onComplete(ticket)
+            },
+            {
+                // Handle error case here
+                onComplete(null)
+            }
         )
     }
 
-    private fun parseTicket(response: JSONObject) {
+    private fun parseTicket2(response: JSONObject) {
         // Deserialize the JSONObject into a Ticket object
         val ticket = Json.decodeFromString<Ticket>(response.toString())
 
         allTickets.add(ticket)
 
         // If this is the last ticket to be parsed, update lists
-        if (allTickets.size >= (event.tickets?.size ?: 0)) {
+        if (allTickets.size >= (event.ticketIDs?.size ?: 0)) {
             updateTicketLists()
             DBF.getTicketGuardians(allTickets)
 
             loadingDialogue.dismiss()
             binding.refreshButton.isEnabled = true
         }
+    }
+
+    private fun parseTicket(response: JSONObject): Ticket {
+        // Deserialize the JSONObject into a Ticket object
+        return Json.decodeFromString(response.toString())
     }
 
     private fun deselectPlayer() {
@@ -576,7 +610,7 @@ class EventView : Fragment() {
 
                 if (setDatabase) {
                     // Update database
-                    val parcel = DBF.createTicketMap(ticket)
+                    val parcel = DBF.createTicketJsonString(ticket)
                     DBF.apiCallPost("https://talltales.nu/API/api/update-ticket.php", parcel)
                 }
 
@@ -876,22 +910,17 @@ class EventView : Fragment() {
             name.setBackgroundResource(R.color.teamRedColor)
         }
 
-        val userNo = dialogView.findViewById<EditText>(R.id.checkInPopupEditText)
-        userNo.requestFocus()
-
         dialogView.findViewById<Button>(R.id.checkinAcceptButton).setOnClickListener {
-            val number = userNo.text.toString()
-            if (number != "") {
                 // Update locally
                 ticket.checkedIn = 1
                 updateTicketLists()
 
                 // Update database
-                val parcel = DBF.createTicketMap(ticket)
+                val parcel = DBF.createTicketJsonString(ticket)
                 DBF.apiCallPost("https://talltales.nu/API/api/update-ticket.php", parcel)
 
                 alertDialog.dismiss()
-            }
+
         }
         dialogView.findViewById<Button>(R.id.checkinCancelButton).setOnClickListener {
             Toast.makeText(context, "Cancelled", Toast.LENGTH_SHORT).show()
@@ -949,7 +978,7 @@ class EventView : Fragment() {
                 ticket.expPersonal = ticket.expPersonal?.plus(number.toInt())
 
                 // Update database
-                val parcel = DBF.createTicketMap(selectedTicket)
+                val parcel = DBF.createTicketJsonString(selectedTicket)
                 DBF.apiCallPost("https://talltales.nu/API/api/update-ticket.php", parcel)
 
                 alertDialog.dismiss()
@@ -987,12 +1016,12 @@ class EventView : Fragment() {
 
     private fun switchTeam() {
         // Update locally
-        selectedTicket.teamColor = "None"
+        if (selectedTicket.teamColor == "Red") selectedTicket.teamColor = "Blue" else selectedTicket.teamColor = "Red"
         updateTicketLists()
         deselectPlayer()
 
         // Update database
-        val parcel = DBF.createTicketMap(selectedTicket)
+        val parcel = DBF.createTicketJsonString(selectedTicket)
         DBF.apiCallPost("https://talltales.nu/API/api/update-ticket.php", parcel)
     }
 
@@ -1112,7 +1141,7 @@ class EventView : Fragment() {
             updateTicketLists()
 
             // Update database
-            val parcel = DBF.createTicketMap(ticket)
+            val parcel = DBF.createTicketJsonString(ticket)
             DBF.apiCallPost("https://talltales.nu/API/api/update-ticket.php", parcel)
 
             alertDialog.dismiss()
@@ -1510,59 +1539,59 @@ class EventView : Fragment() {
         // Generate sample players
         val tickets = listOf(
             Ticket(
-                "T1", "John", "Doe", 25, "Jane Doe", "555-123-4567",
-                "123 Main St", "Springfield", "john@example.com", null, "Red", 1, 0, 10, 0, 0,
+                "T1", "John", "Doe", 15, "Jane Doe", "555-123-4567",
+                "123 Main St", "Springfield", "john@example.com", null, "", 0, 0, 10, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, "P1", "E1"
             ),
             Ticket(
-                "T2", "Jane", "Doe", 23, "John Doe", "555-987-6543",
-                "456 Elm St", "Springfield", "jane@example.com", null, "Blue", 1, 0, 8, 0, 0,
+                "T2", "Jane", "Doe", 14, "John Doe", "555-987-6543",
+                "456 Elm St", "Springfield", "john@example.com", null, "", 0, 0, 8, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, "P2", "E1"
             ),
             Ticket(
-                "T3", "Alice", "Smith", 30, "Bob Smith", "555-456-7890",
-                "789 Oak St", "Springfield", "alice@example.com", null, "Red", 1, 0, 12, 0, 0,
+                "T3", "Alice", "Smith", 13, "Bob Smith", "555-456-7890",
+                "789 Oak St", "Springfield", "alice@example.com", null, "", 0, 0, 12, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, "P3", "E1"
             ),
             Ticket(
-                "T4", "Bob", "Brown", 28, "Alice Brown", "555-321-0987",
-                "321 Birch St", "Springfield", "bob@example.com", null, "Red", 1, 0, 9, 0, 0,
+                "T4", "Bob", "Brown", 12, "Alice Brown", "555-321-0987",
+                "321 Birch St", "Springfield", "alice@example.com", null, "", 0, 0, 9, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, "P4", "E1"
             ),
             Ticket(
-                "T5", "Charlie", "Johnson", 21, "Diana Johnson", "555-654-3210",
-                "654 Pine St", "Springfield", "charlie@example.com", null, "Blue", 1, 0, 6, 0, 0,
+                "T5", "Charlie", "Johnson", 11, "Diana Johnson", "555-654-3210",
+                "654 Pine St", "Springfield", "alice@example.com", null, "", 0, 0, 6, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, "P5", "E1"
             ),
             Ticket(
-                "T6", "Diana", "Miller", 19, "Charlie Miller", "555-852-1470",
-                "852 Maple St", "Springfield", "diana@example.com", null, "Blue", 1, 0, 5, 0, 0,
+                "T6", "Diana", "Miller", 10, "Charlie Miller", "555-852-1470",
+                "852 Maple St", "Springfield", "diana@example.com", null, "", 0, 0, 5, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, "P6", "E1"
             ),
             Ticket(
-                "T7", "Eva", "Taylor", 33, "David Taylor", "555-555-5555",
-                "10 Oak St", "Springfield", "eva@example.com", null, "Red", 1, 0, 11, 0, 0,
+                "T7", "Eva", "Taylor", 9, "David Taylor", "555-555-5555",
+                "10 Oak St", "Springfield", "eva@example.com", null, "", 0, 0, 11, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, "P7", "E1"
             ),
             Ticket(
-                "T7", "Edward", "Wilson", 29, "Emma Wilson", "555-789-4561",
-                "741 Vine St", "Springfield", "edward@example.com", null, "Blue", 1, 0, 7, 0, 2,
-                2, 1, 2, 1, 1, 0, 1, "P7", "E1"
+                "T7", "Edward", "Wilson", 8, "Emma Wilson", "555-789-4561",
+                "741 Vine St", "Springfield", "edward@example.com", null, "", 0, 0, 7, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, "P7", "E1"
             ),
             Ticket(
-                "T8", "Frank", "Adams", 33, "Frank Adams", "555-123-7890",
-                "369 Oak St", "Springfield", "frank@example.com", null, "Red", 1, 0, 10, 0, 3,
-                1, 2, 2, 1, 1, 0, 1, "P8", "E2"
+                "T8", "Frank", "Adams", 7, "Frank Adams", "555-123-7890",
+                "369 Oak St", "Springfield", "edward@example.com", null, "", 0, 0, 10, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, "P8", "E2"
             ),
             Ticket(
-                "T9", "George", "Garcia", 26, "George Garcia", "555-456-1234",
-                "852 Chestnut St", "Springfield", "george@example.com", null, "Blue", 1, 0, 9, 0, 4,
-                2, 1, 1, 2, 1, 0, 1, "P9", "E2"
+                "T9", "George", "Garcia", 6, "George Garcia", "555-456-1234",
+                "852 Chestnut St", "Springfield", "george@example.com", null, "", 0, 0, 9, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, "P9", "E2"
             ),
             Ticket(
-                "T10", "Hannah", "Scott", 31, "Henry Scott", "555-789-0123",
-                "753 Main St", "Springfield", "hannah@example.com", null, "Red", 1, 0, 12, 0, 2,
-                3, 1, 2, 2, 1, 0, 1, "P10", "E2"
+                "T10", "Hannah", "Scott", 5, "Henry Scott", "555-789-0123",
+                "753 Main St", "Springfield", "hannah@example.com", null, "", 0, 0, 12, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, "P10", "E2"
             )
         )
 

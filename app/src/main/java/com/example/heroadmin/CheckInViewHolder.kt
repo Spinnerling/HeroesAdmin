@@ -10,6 +10,7 @@ class CheckInViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     var nameText: TextView = itemView.findViewById(R.id.checkin_nameText)
     var ageText: TextView = itemView.findViewById(R.id.checkin_ageText)
     var note: TextView = itemView.findViewById(R.id.checkin_noteText)
+    var groupName: Button = itemView.findViewById(R.id.checkin_groupButton)
 
     var infoButton: Button = itemView.findViewById(R.id.checkin_infoButton)
     var teamButton: Button = itemView.findViewById(R.id.checkin_teamButton)

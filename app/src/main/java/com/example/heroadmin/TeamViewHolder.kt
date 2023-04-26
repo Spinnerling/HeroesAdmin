@@ -1,8 +1,6 @@
 package com.example.heroadmin
 
-import Ticket
 import android.graphics.Color
-import android.util.Log
 import android.view.View
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -14,7 +12,6 @@ class TeamViewHolder(
     private val eventView : EventView
 ) : RecyclerView.ViewHolder(itemView), View.OnClickListener {
     var nameText: TextView = itemView.findViewById(R.id.team_nameText)
-    var numberText: TextView = itemView.findViewById(R.id.team_tabardNr)
     var roleText: TextView = itemView.findViewById(R.id.team_roleText)
     var background : LinearLayout = itemView.findViewById(R.id.teamItemBackground)
     lateinit var ticket : Ticket

@@ -1,20 +1,19 @@
 package com.example.heroadmin
 
+import android.util.Log
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
 data class Event (
-    val eventId: String,
-    var title: String? = null,
-    val startTime: String? = null,
-    val endTime: String? = null,
-    var venueId: String? = null,
-    var venue: String? = null,
+    @SerialName("ID") var eventId: String,
+    @SerialName("Event_Title") var title: String,
+    @SerialName("Event_Start_date") var startTime: String,
+    @SerialName("Event_End_Date") var endTime: String,
+    @SerialName("Venue_ID") var venue: String,
     var reportText: String? = "",
     var description: String? = "",
     var winner: String? = "",
-    var ExpBlueTeamTotal: Int? = null,
-    var ExpRedTeamTotal: Int? = null,
     var ExpAttendanceValue: Int? = null,
     var ExpWinningValue: Int? = null,
     var ExpTeamChangeValue: Int? = null,
@@ -24,7 +23,7 @@ data class Event (
     var blueRound: Int? = 0,
     var status: String? = null
 ) {
-    var tickets: MutableList<String> = mutableListOf()
+    var ticketIDs: MutableList<String> = mutableListOf()
     var time = startTime?.substring(11, 16)?.let { offsetTime(it) }
     var actualStartTime: String? = time
 
@@ -32,7 +31,7 @@ data class Event (
     private val date = startTime?.substring(8, 10)
     var actualDate: String? = date?.let { month?.let { m -> "$it $m" } }
 
-    var playerAmount = tickets?.size ?: 0
+    var playerAmount = ticketIDs?.size ?: 0
     var playerMax = 99
 
     private fun offsetTime(time : String) : String{
@@ -41,6 +40,7 @@ data class Event (
         val minute = time.substring(3, 5)
 
         return "$hour:$minute"
+        Log.d("Event", "StartTime: $startTime, actualStartTime: $actualStartTime")
     }
 
     private fun setMonth(number : Int) : String {
