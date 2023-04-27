@@ -49,4 +49,24 @@ data class Player(
                 warriorHealerExp + warriorRogueExp + warriorMageExp + warriorKnightExp
         remExp = totalExp - usedExp
     }
+
+    fun getClassLevel(classIndex: Int): Int {
+        return when (classIndex) {
+            0 -> healerLevel
+            1 -> rogueLevel
+            2 -> mageLevel
+            3 -> knightLevel
+            4 -> 0 // Warrior upgrades start at level 0
+            else -> throw IllegalArgumentException("Invalid class index: $classIndex")
+        }
+    }
+    fun isWarriorUpgradeUnlocked(upgrade: String): Boolean {
+        return when (upgrade) {
+            "warriorHealer" -> warriorHealer == 1
+            "warriorRogue" -> warriorRogue == 1
+            "warriorMage" -> warriorMage == 1
+            "warriorKnight" -> warriorKnight == 1
+            else -> false
+        }
+    }
 }

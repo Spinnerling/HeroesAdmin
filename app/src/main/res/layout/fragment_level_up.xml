@@ -95,52 +95,9 @@
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_marginLeft="25dp"
                 android:layout_marginRight="50dp"
                 android:layout_weight="1"
-                android:gravity="center"
-                android:orientation="vertical">
-
-                <TextView
-                    android:id="@+id/extraLifeTitleText"
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_weight="1"
-                    android:background="#77000000"
-                    android:gravity="center"
-                    android:text="EXTRALIV"
-                    android:textAlignment="center"
-                    android:textColor="#FFFFFF"
-                    android:textSize="16sp" />
-
-                <ImageButton
-                    android:id="@+id/extraLifeButton"
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_weight="3"
-                    android:backgroundTint="@color/background_green_extralight"
-                    android:contentDescription="button"
-                    android:src="@mipmap/ic_tiger_foreground"
-                    tools:ignore="SpeakableTextPresentCheck" />
-
-                <TextView
-                    android:id="@+id/extraLifeCostText"
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_weight="1"
-                    android:background="#77000000"
-                    android:gravity="center"
-                    android:text="10 EXP"
-                    android:textAlignment="center"
-                    android:textColor="#FFFFFF"
-                    android:textSize="16sp" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_marginRight="50dp"
-                android:layout_weight="1"
+                android:background="@color/background_green_extralight"
                 android:gravity="center"
                 android:orientation="vertical">
 
@@ -173,7 +130,7 @@
                     android:layout_weight="1"
                     android:background="#77000000"
                     android:gravity="center"
-                    android:text="50 EXP"
+                    android:text="X EXP"
                     android:textAlignment="center"
                     android:textColor="#FFFFFF"
                     android:textSize="16sp" />
@@ -258,6 +215,16 @@
                 android:contentDescription="button"
                 android:text="Riddare"
                 android:textColor="#000000" />
+
+            <Button
+                android:id="@+id/levelUpWarriorButton"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:backgroundTint="#964B00"
+                android:contentDescription="button"
+                android:text="Krigare"
+                android:textColor="#FFFFFF" />
         </LinearLayout>
 
         <LinearLayout
@@ -266,42 +233,29 @@
             android:layout_height="0dp"
             android:layout_weight="8"
             android:background="@color/background_green_light"
-            android:orientation="horizontal">
+            android:orientation="vertical">
 
             <LinearLayout
-                android:id="@+id/subclassList1"
-                android:layout_width="wrap_content"
+                android:id="@+id/specialClassList"
+                android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_marginRight="5dp"
                 android:layout_weight="1"
-                android:gravity="center_horizontal|top"
-                android:orientation="vertical">
-
-                <TextView
-                    android:id="@+id/subclassTitle1"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="#A8FFFFFF"
-                    android:gravity="center"
-                    android:paddingTop="5dp"
-                    android:paddingBottom="5dp"
-                    android:text="Subclass 1"
-                    android:textAlignment="center"
-                    android:textColor="#292929"
-                    android:textSize="20sp" />
+                android:gravity="center_horizontal"
+                android:orientation="vertical"
+                android:visibility="gone">
 
                 <ImageButton
-                    android:id="@+id/subclass1button1"
-                    android:layout_width="130dp"
-                    android:layout_height="130dp"
+                    android:id="@+id/upgrade1button"
+                    android:layout_width="110dp"
+                    android:layout_height="110dp"
                     android:backgroundTint="#FFFFFF"
                     android:contentDescription="button"
                     android:src="@mipmap/ic_tiger_foreground"
                     tools:ignore="SpeakableTextPresentCheck" />
 
                 <TextView
-                    android:id="@+id/subclass1Exp1"
-                    android:layout_width="130dp"
+                    android:id="@+id/upgrade1exp"
+                    android:layout_width="110dp"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="10dp"
                     android:background="#77FFFFFF"
@@ -313,17 +267,17 @@
                     android:textSize="16sp" />
 
                 <ImageButton
-                    android:id="@+id/subclass1button2"
-                    android:layout_width="130dp"
-                    android:layout_height="130dp"
+                    android:id="@+id/upgrade2button"
+                    android:layout_width="110dp"
+                    android:layout_height="110dp"
                     android:backgroundTint="#FFFFFF"
                     android:contentDescription="button"
                     android:src="@mipmap/ic_tiger_foreground"
                     tools:ignore="SpeakableTextPresentCheck" />
 
                 <TextView
-                    android:id="@+id/subclass1Exp2"
-                    android:layout_width="130dp"
+                    android:id="@+id/upgrade2exp"
+                    android:layout_width="110dp"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="10dp"
                     android:background="#77FFFFFF"
@@ -335,17 +289,17 @@
                     android:textSize="16sp" />
 
                 <ImageButton
-                    android:id="@+id/subclass1button3"
-                    android:layout_width="130dp"
-                    android:layout_height="130dp"
+                    android:id="@+id/upgrade3button"
+                    android:layout_width="110dp"
+                    android:layout_height="110dp"
                     android:backgroundTint="#FFFFFF"
                     android:contentDescription="button"
                     android:src="@mipmap/ic_tiger_foreground"
                     tools:ignore="SpeakableTextPresentCheck" />
 
                 <TextView
-                    android:id="@+id/subclass1Exp3"
-                    android:layout_width="130dp"
+                    android:id="@+id/upgrade3exp"
+                    android:layout_width="110dp"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="10dp"
                     android:background="#77FFFFFF"
@@ -356,250 +310,218 @@
                     android:textColor="#191919"
                     android:textSize="16sp" />
 
-                <ImageButton
-                    android:id="@+id/subclass1button4"
-                    android:layout_width="130dp"
-                    android:layout_height="130dp"
-                    android:backgroundTint="#FFFFFF"
-                    android:contentDescription="button"
-                    android:src="@mipmap/ic_tiger_foreground"
-                    tools:ignore="SpeakableTextPresentCheck" />
-
-                <TextView
-                    android:id="@+id/subclass1Exp4"
-                    android:layout_width="130dp"
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="10dp"
-                    android:background="#77FFFFFF"
-                    android:gravity="center"
-                    android:padding="5dp"
-                    android:text="100 EXP"
-                    android:textAlignment="center"
-                    android:textColor="#191919"
-                    android:textSize="16sp" />
+                    android:layout_weight="1"
+                    android:gravity="center_horizontal|top"
+                    android:orientation="horizontal">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center_horizontal|top"
+                        android:orientation="vertical">
+
+                        <ImageButton
+                            android:id="@+id/upgrade4button"
+                            android:layout_width="110dp"
+                            android:layout_height="110dp"
+                            android:backgroundTint="#FFFFFF"
+                            android:contentDescription="button"
+                            android:src="@mipmap/ic_tiger_foreground"
+                            tools:ignore="SpeakableTextPresentCheck" />
+
+                        <TextView
+                            android:id="@+id/upgrade4exp"
+                            android:layout_width="110dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="10dp"
+                            android:background="#77FFFFFF"
+                            android:gravity="center"
+                            android:padding="5dp"
+                            android:text="100 EXP"
+                            android:textAlignment="center"
+                            android:textColor="#191919"
+                            android:textSize="16sp" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center_horizontal|top"
+                        android:orientation="vertical">
+
+                        <ImageButton
+                            android:id="@+id/upgrade5button"
+                            android:layout_width="110dp"
+                            android:layout_height="110dp"
+                            android:backgroundTint="#FFFFFF"
+                            android:contentDescription="button"
+                            android:src="@mipmap/ic_tiger_foreground"
+                            tools:ignore="SpeakableTextPresentCheck" />
+
+                        <TextView
+                            android:id="@+id/upgrade5exp"
+                            android:layout_width="110dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="10dp"
+                            android:background="#77FFFFFF"
+                            android:gravity="center"
+                            android:padding="5dp"
+                            android:text="100 EXP"
+                            android:textAlignment="center"
+                            android:textColor="#191919"
+                            android:textSize="16sp" />
+                    </LinearLayout>
+                </LinearLayout>
             </LinearLayout>
 
             <LinearLayout
-                android:id="@+id/subclassList2"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_marginRight="5dp"
-                android:layout_weight="1"
-                android:gravity="center_horizontal|top"
-                android:orientation="vertical">
-
-                <TextView
-                    android:id="@+id/subclassTitle2"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="#A8FFFFFF"
-                    android:gravity="center"
-                    android:paddingTop="5dp"
-                    android:paddingBottom="5dp"
-                    android:text="Subclass 2"
-                    android:textAlignment="center"
-                    android:textColor="#292929"
-                    android:textSize="20sp" />
-
-                <ImageButton
-                    android:id="@+id/subclass2button1"
-                    android:layout_width="130dp"
-                    android:layout_height="130dp"
-                    android:backgroundTint="#FFFFFF"
-                    android:contentDescription="button"
-                    android:src="@mipmap/ic_tiger_foreground"
-                    tools:ignore="SpeakableTextPresentCheck" />
-
-                <TextView
-                    android:id="@+id/subclass2Exp1"
-                    android:layout_width="130dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="10dp"
-                    android:background="#77FFFFFF"
-                    android:gravity="center"
-                    android:padding="5dp"
-                    android:text="100 EXP"
-                    android:textAlignment="center"
-                    android:textColor="#191919"
-                    android:textSize="16sp" />
-
-                <ImageButton
-                    android:id="@+id/subclass2button2"
-                    android:layout_width="130dp"
-                    android:layout_height="130dp"
-                    android:backgroundTint="#FFFFFF"
-                    android:contentDescription="button"
-                    android:src="@mipmap/ic_tiger_foreground"
-                    tools:ignore="SpeakableTextPresentCheck" />
-
-                <TextView
-                    android:id="@+id/subclass2Exp2"
-                    android:layout_width="130dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="10dp"
-                    android:background="#77FFFFFF"
-                    android:gravity="center"
-                    android:padding="5dp"
-                    android:text="50 EXP"
-                    android:textAlignment="center"
-                    android:textColor="#191919"
-                    android:textSize="16sp" />
-
-                <ImageButton
-                    android:id="@+id/subclass2button3"
-                    android:layout_width="130dp"
-                    android:layout_height="130dp"
-                    android:backgroundTint="#FFFFFF"
-                    android:contentDescription="button"
-                    android:src="@mipmap/ic_tiger_foreground"
-                    tools:ignore="SpeakableTextPresentCheck" />
-
-                <TextView
-                    android:id="@+id/subclass2Exp3"
-                    android:layout_width="130dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="10dp"
-                    android:background="#77FFFFFF"
-                    android:gravity="center"
-                    android:padding="5dp"
-                    android:text="75 EXP"
-                    android:textAlignment="center"
-                    android:textColor="#191919"
-                    android:textSize="16sp" />
-
-                <ImageButton
-                    android:id="@+id/subclass2button4"
-                    android:layout_width="130dp"
-                    android:layout_height="130dp"
-                    android:backgroundTint="#FFFFFF"
-                    android:contentDescription="button"
-                    android:src="@mipmap/ic_tiger_foreground"
-                    tools:ignore="SpeakableTextPresentCheck" />
-
-                <TextView
-                    android:id="@+id/subclass2Exp4"
-                    android:layout_width="130dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="10dp"
-                    android:background="#77FFFFFF"
-                    android:gravity="center"
-                    android:padding="5dp"
-                    android:text="100 EXP"
-                    android:textAlignment="center"
-                    android:textColor="#191919"
-                    android:textSize="16sp" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/subclassList3"
-                android:layout_width="wrap_content"
+                android:id="@+id/warriorList"
+                android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:gravity="center_horizontal|top"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:visibility="visible">
+
+                <ImageButton
+                    android:id="@+id/warrior1button"
+                    android:layout_width="110dp"
+                    android:layout_height="110dp"
+                    android:backgroundTint="#FFFFFF"
+                    android:contentDescription="button"
+                    android:src="@mipmap/ic_tiger_foreground"
+                    tools:ignore="SpeakableTextPresentCheck" />
 
                 <TextView
-                    android:id="@+id/subclassTitle3"
+                    android:id="@+id/warrior1exp"
+                    android:layout_width="110dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="10dp"
+                    android:background="#77FFFFFF"
+                    android:gravity="center"
+                    android:padding="5dp"
+                    android:text="Owned"
+                    android:textAlignment="center"
+                    android:textColor="#191919"
+                    android:textSize="16sp" />
+
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="#A8FFFFFF"
-                    android:gravity="center"
-                    android:paddingTop="5dp"
-                    android:paddingBottom="5dp"
-                    android:text="Subclass 3"
-                    android:textAlignment="center"
-                    android:textColor="#292929"
-                    android:textSize="20sp" />
+                    android:layout_weight="1"
+                    android:gravity="center_horizontal|top"
+                    android:orientation="horizontal">
 
-                <ImageButton
-                    android:id="@+id/subclass3button1"
-                    android:layout_width="130dp"
-                    android:layout_height="130dp"
-                    android:backgroundTint="#FFFFFF"
-                    android:contentDescription="button"
-                    android:src="@mipmap/ic_tiger_foreground"
-                    tools:ignore="SpeakableTextPresentCheck" />
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:gravity="center_horizontal"
+                        android:orientation="vertical">
 
-                <TextView
-                    android:id="@+id/subclass3Exp1"
-                    android:layout_width="130dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="10dp"
-                    android:background="#77FFFFFF"
-                    android:gravity="center"
-                    android:padding="5dp"
-                    android:text="100 EXP"
-                    android:textAlignment="center"
-                    android:textColor="#191919"
-                    android:textSize="16sp" />
+                        <ImageButton
+                            android:id="@+id/warrior2button"
+                            android:layout_width="110dp"
+                            android:layout_height="110dp"
+                            android:backgroundTint="#FFFFFF"
+                            android:contentDescription="button"
+                            android:src="@mipmap/ic_tiger_foreground"
+                            tools:ignore="SpeakableTextPresentCheck" />
 
-                <ImageButton
-                    android:id="@+id/subclass3button2"
-                    android:layout_width="130dp"
-                    android:layout_height="130dp"
-                    android:backgroundTint="#FFFFFF"
-                    android:contentDescription="button"
-                    android:src="@mipmap/ic_tiger_foreground"
-                    tools:ignore="SpeakableTextPresentCheck" />
+                        <TextView
+                            android:id="@+id/warrior2exp"
+                            android:layout_width="110dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="10dp"
+                            android:background="#77FFFFFF"
+                            android:gravity="center"
+                            android:padding="5dp"
+                            android:text="100 EXP"
+                            android:textAlignment="center"
+                            android:textColor="#191919"
+                            android:textSize="16sp" />
 
-                <TextView
-                    android:id="@+id/subclass3Exp2"
-                    android:layout_width="130dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="10dp"
-                    android:background="#77FFFFFF"
-                    android:gravity="center"
-                    android:padding="5dp"
-                    android:text="50 EXP"
-                    android:textAlignment="center"
-                    android:textColor="#191919"
-                    android:textSize="16sp" />
+                        <ImageButton
+                            android:id="@+id/warrior4button"
+                            android:layout_width="110dp"
+                            android:layout_height="110dp"
+                            android:backgroundTint="#FFFFFF"
+                            android:contentDescription="button"
+                            android:src="@mipmap/ic_tiger_foreground"
+                            tools:ignore="SpeakableTextPresentCheck" />
 
-                <ImageButton
-                    android:id="@+id/subclass3button3"
-                    android:layout_width="130dp"
-                    android:layout_height="130dp"
-                    android:backgroundTint="#FFFFFF"
-                    android:contentDescription="button"
-                    android:src="@mipmap/ic_tiger_foreground"
-                    tools:ignore="SpeakableTextPresentCheck" />
+                        <TextView
+                            android:id="@+id/warrior4exp"
+                            android:layout_width="110dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="10dp"
+                            android:background="#77FFFFFF"
+                            android:gravity="center"
+                            android:padding="5dp"
+                            android:text="100 EXP"
+                            android:textAlignment="center"
+                            android:textColor="#191919"
+                            android:textSize="16sp" />
+                    </LinearLayout>
 
-                <TextView
-                    android:id="@+id/subclass3Exp3"
-                    android:layout_width="130dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="10dp"
-                    android:background="#77FFFFFF"
-                    android:gravity="center"
-                    android:padding="5dp"
-                    android:text="75 EXP"
-                    android:textAlignment="center"
-                    android:textColor="#191919"
-                    android:textSize="16sp" />
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:gravity="center_horizontal"
+                        android:orientation="vertical">
 
-                <ImageButton
-                    android:id="@+id/subclass3button4"
-                    android:layout_width="130dp"
-                    android:layout_height="130dp"
-                    android:backgroundTint="#FFFFFF"
-                    android:contentDescription="button"
-                    android:src="@mipmap/ic_tiger_foreground"
-                    tools:ignore="SpeakableTextPresentCheck" />
+                        <ImageButton
+                            android:id="@+id/warrior3button"
+                            android:layout_width="110dp"
+                            android:layout_height="110dp"
+                            android:backgroundTint="#FFFFFF"
+                            android:contentDescription="button"
+                            android:src="@mipmap/ic_tiger_foreground"
+                            tools:ignore="SpeakableTextPresentCheck" />
 
-                <TextView
-                    android:id="@+id/subclass3Exp4"
-                    android:layout_width="130dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="10dp"
-                    android:background="#77FFFFFF"
-                    android:gravity="center"
-                    android:padding="5dp"
-                    android:text="100 EXP"
-                    android:textAlignment="center"
-                    android:textColor="#191919"
-                    android:textSize="16sp" />
+                        <TextView
+                            android:id="@+id/warrior3exp"
+                            android:layout_width="110dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="10dp"
+                            android:background="#77FFFFFF"
+                            android:gravity="center"
+                            android:padding="5dp"
+                            android:text="100 EXP"
+                            android:textAlignment="center"
+                            android:textColor="#191919"
+                            android:textSize="16sp" />
+
+                        <ImageButton
+                            android:id="@+id/warrior5button"
+                            android:layout_width="110dp"
+                            android:layout_height="110dp"
+                            android:backgroundTint="#FFFFFF"
+                            android:contentDescription="button"
+                            android:src="@mipmap/ic_tiger_foreground"
+                            tools:ignore="SpeakableTextPresentCheck" />
+
+                        <TextView
+                            android:id="@+id/warrior5exp"
+                            android:layout_width="110dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="10dp"
+                            android:background="#77FFFFFF"
+                            android:gravity="center"
+                            android:padding="5dp"
+                            android:text="100 EXP"
+                            android:textAlignment="center"
+                            android:textColor="#191919"
+                            android:textSize="16sp" />
+                    </LinearLayout>
+                </LinearLayout>
             </LinearLayout>
         </LinearLayout>
-
     </LinearLayout>
 </layout>
