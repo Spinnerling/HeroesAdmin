@@ -2,6 +2,7 @@ package com.example.heroadmin
 
 import android.util.Log
 import kotlinx.serialization.Serializable
+import kotlin.math.min
 
 @Serializable
 data class Player(
@@ -31,10 +32,10 @@ data class Player(
         val levelCosts = listOf(0, 50, 75, 100)
 
         // Calculate the total cost of each special class
-        val healerExp = levelCosts[healerLevel - 1]
-        val rogueExp = levelCosts[rogueLevel - 1]
-        val mageExp = levelCosts[mageLevel - 1]
-        val knightExp = levelCosts[knightLevel - 1]
+        val healerExp = if (healerLevel > 0) levelCosts[healerLevel - 1] else 0
+        val rogueExp = if (rogueLevel > 0) levelCosts[rogueLevel - 1] else 0
+        val mageExp = if (mageLevel > 0) levelCosts[mageLevel - 1] else 0
+        val knightExp = if (knightLevel > 0) levelCosts[knightLevel - 1] else 0
 
         // Calculate the cost of unlockables
         val unlockableCost = 100
@@ -44,20 +45,19 @@ data class Player(
         val warriorKnightExp = if (warriorKnight == 1) unlockableCost else 0
 
         // Calculate the total, used, and remaining experience
-        totalExp = exp2021!! + exp2022!! + extraExp!!
+        totalExp = exp2021!! + exp2022!! + exp2023!! + extraExp!!
         usedExp = healerExp + rogueExp + mageExp + knightExp +
                 warriorHealerExp + warriorRogueExp + warriorMageExp + warriorKnightExp
         remExp = totalExp - usedExp
     }
 
-    fun getClassLevel(classIndex: Int): Int {
-        return when (classIndex) {
+    fun getClassLevel(mainClass: Int): Int {
+        return when (mainClass) {
             0 -> healerLevel
             1 -> rogueLevel
             2 -> mageLevel
             3 -> knightLevel
-            4 -> 0 // Warrior upgrades start at level 0
-            else -> throw IllegalArgumentException("Invalid class index: $classIndex")
+            else -> 0 // Warrior
         }
     }
     fun isWarriorUpgradeUnlocked(upgrade: String): Boolean {
@@ -68,5 +68,60 @@ data class Player(
             "warriorKnight" -> warriorKnight == 1
             else -> false
         }
+    }
+    fun upgradeClass(mainClass: Int, level: Int) {
+        when (mainClass) {
+            0 -> healerLevel = level
+            1 -> rogueLevel = level
+            2 -> mageLevel = level
+            3 -> knightLevel = level
+            4 -> {
+                when (level) {
+                    1 -> warriorHealer = 1
+                    2 -> warriorRogue = 1
+                    3 -> warriorMage = 1
+                    4 -> warriorKnight = 1
+                }
+            }
+        }
+        updateExp()
+    }
+    fun removeOtherUltimateUpgrades(mainClass: Int) {
+        when (mainClass) {
+            0 -> {
+                rogueLevel = min(rogueLevel, 3)
+                mageLevel = min(mageLevel, 3)
+                knightLevel = min(knightLevel, 3)
+            }
+            1 -> {
+                healerLevel = min(healerLevel, 3)
+                mageLevel = min(mageLevel, 3)
+                knightLevel = min(knightLevel, 3)
+            }
+            2 -> {
+                healerLevel = min(healerLevel, 3)
+                rogueLevel = min(rogueLevel, 3)
+                knightLevel = min(knightLevel, 3)
+            }
+            3 -> {
+                healerLevel = min(healerLevel, 3)
+                rogueLevel = min(rogueLevel, 3)
+                mageLevel = min(mageLevel, 3)
+            }
+        }
+    }
+
+    fun getOwnedLevels(mainClass: Int, isSpecialSection: Boolean): List<Int> {
+        val classLevel = getClassLevel(mainClass)
+        val numOfLevels = if (isSpecialSection) 5 else 4
+        val ownedLevels = mutableListOf<Int>()
+
+        for (level in 1..numOfLevels) {
+            if (classLevel >= level || (isSpecialSection && level == 1)) {
+                ownedLevels.add(level)
+            }
+        }
+
+        return ownedLevels
     }
 }

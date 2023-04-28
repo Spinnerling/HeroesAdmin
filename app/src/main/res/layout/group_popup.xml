@@ -14,7 +14,7 @@
         android:background="@color/background_green_medium"
         android:paddingTop="5dp"
         android:paddingBottom="5dp"
-        android:text="Enter Group Name"
+        android:text="Enter Group"
         android:textAlignment="center" />
 
     <TextView
@@ -27,17 +27,32 @@
         android:text="name"
         android:textAlignment="center" />
 
-    <EditText
-        android:id="@+id/groupPopup_EditName"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="5dp"
-        android:layout_marginRight="5dp"
-        android:layout_marginBottom="10dp"
-        android:ems="10"
-        android:hint="Group Name"
-        android:inputType="textPersonName"
-        android:textAlignment="center" />
+        android:layout_height="match_parent"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/textView18"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Group:"
+            android:layout_weight="1"
+            android:textAlignment="center"/>
+
+        <EditText
+            android:id="@+id/groupPopup_EditName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="5dp"
+            android:layout_marginRight="5dp"
+            android:layout_marginBottom="10dp"
+            android:ems="10"
+            android:hint="Number"
+            android:layout_weight="1"
+            android:inputType="number"
+            android:textAlignment="center" />
+    </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"

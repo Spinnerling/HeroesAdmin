@@ -386,7 +386,6 @@ class EventView : Fragment() {
 //        }
 
 
-
         // Temporary code
         allTickets = ticketDatabase.getAll()
         event.ticketIDs = allTickets.map { it.ticketId }.toMutableList()
@@ -528,56 +527,59 @@ class EventView : Fragment() {
     }
 
     private fun updateTicketGroups() {
-        takenGroupNames = mutableListOf()
+        // Initialize an empty list to keep track of used group numbers
+        val usedGroupNumbers = mutableListOf<Int>()
 
+        // Iterate through each ticket in the list of tickets
         for (i in assignList.indices) {
+            // Get the current ticket
             val ticket1 = assignList[i]
 
+            // Skip tickets that are already in a group or are for the "SELF" group
             if (ticket1.group == "SELF") {
                 continue
             }
 
+            // Iterate through the remaining tickets in the list to compare with the current ticket
             for (j in assignList.indices) {
+                // Get the ticket to compare with the current ticket
                 val ticket2 = assignList[j]
-                // Skip until next ticket in line
+
+                // Skip if the compared ticket is the same as the current ticket, is for the "SELF" group, or is before the current ticket in the list
                 if (j <= i || ticket2 == ticket1 || ticket2.group == "SELF") {
                     continue
                 }
 
-                // Skip if already in the same existing group
+                // Skip if the compared ticket is already in the same group as the current ticket
                 if (ticket1.group != "" && ticket1.group == ticket2.group) {
                     continue
                 }
 
-                // Check if tickets are booked by same email
+                // Check if tickets are booked by the same email
                 if (ticket1.bookerEmail == ticket2.bookerEmail) {
                     // Check if both tickets have no group yet
                     if (ticket1.group == "" && ticket2.group == "") {
-
-                        // Randomize new group name and put both in it
-                        val nameArray = resources.getStringArray(R.array.groupNames)
-                        var randomValue = Random.nextInt(nameArray.size)
-                        var newGroupName: String = nameArray[randomValue].lowercase()
-
-                        // Check that the name is not already taken
-                        while (takenGroupNames.contains(newGroupName)) {
-                            randomValue = Random.nextInt(nameArray.size)
-                            newGroupName = nameArray[randomValue].lowercase()
+                        // Generate a new group number
+                        var newGroupNumber = 1
+                        while (usedGroupNumbers.contains(newGroupNumber)) {
+                            newGroupNumber++
                         }
+                        usedGroupNumbers.add(newGroupNumber)
 
-                        takenGroupNames.add(newGroupName)
-                        ticket1.group = newGroupName
-                        ticket2.group = newGroupName
+                        // Assign both tickets to the new group
+                        ticket1.group = newGroupNumber.toString()
+                        ticket2.group = newGroupNumber.toString()
 
+                        // Continue to the next pair of tickets
                         continue
                     }
 
-                    // Check if they are already split up into different existing groups
+                    // Check if the tickets are already in different groups
                     if (ticket1.group != "" && ticket2.group != "" && ticket1.group != ticket2.group) {
                         continue
                     }
 
-                    // Put the ticket with empty group into the other one's group
+                    // Put the ticket with an empty group into the other ticket's group
                     if (ticket1.group == "") {
                         ticket1.group = ticket2.group
                         continue
@@ -590,10 +592,38 @@ class EventView : Fragment() {
                 }
             }
 
+            // Calculate the group size for the current ticket
             if (ticket1.group != "") {
                 ticket1.groupSize = assignList.count { it.group == ticket1.group }
             } else {
                 ticket1.groupSize = 1
+            }
+        }
+
+// Add a step to reassign group identifiers based on group sizes
+// First, create a map with group identifier as key and group size as value
+        val groupSizeMap = mutableMapOf<String, Int>()
+        for (ticket in assignList) {
+            if (ticket.group != "SELF" && ticket.group != "") {
+                groupSizeMap[ticket.group] = ticket.groupSize
+            }
+        }
+
+// Sort the groups by size in descending order
+        val sortedGroupSizeMap = groupSizeMap.entries.sortedByDescending { it.value }
+
+// Reassign group identifiers based on the sorted order
+        val reassignedGroupMap = mutableMapOf<String, String>()
+        var newIdentifier = 1
+        for (entry in sortedGroupSizeMap) {
+            reassignedGroupMap[entry.key] = newIdentifier.toString()
+            newIdentifier++
+        }
+
+// Update the ticket groups with the new identifiers
+        for (ticket in assignList) {
+            if (ticket.group != "SELF" && ticket.group != "") {
+                ticket.group = reassignedGroupMap[ticket.group] ?: ticket.group
             }
         }
     }
@@ -629,9 +659,9 @@ class EventView : Fragment() {
             ticket.firstName ?: "",
             ticket.lastName ?: "",
             ticket.age ?: 0,
-            0,0,0,0,
-            1,1,1,1,
-            0,0,0,0
+            0, 0, 0, 0,
+            1, 1, 1, 1,
+            0, 0, 0, 0
         )
         ticket.playerId = player.playerId
     }
@@ -911,15 +941,15 @@ class EventView : Fragment() {
         }
 
         dialogView.findViewById<Button>(R.id.checkinAcceptButton).setOnClickListener {
-                // Update locally
-                ticket.checkedIn = 1
-                updateTicketLists()
+            // Update locally
+            ticket.checkedIn = 1
+            updateTicketLists()
 
-                // Update database
-                val parcel = DBF.createTicketJsonString(ticket)
-                DBF.apiCallPost("https://talltales.nu/API/api/update-ticket.php", parcel)
+            // Update database
+            val parcel = DBF.createTicketJsonString(ticket)
+            DBF.apiCallPost("https://talltales.nu/API/api/update-ticket.php", parcel)
 
-                alertDialog.dismiss()
+            alertDialog.dismiss()
 
         }
         dialogView.findViewById<Button>(R.id.checkinCancelButton).setOnClickListener {
@@ -1016,7 +1046,8 @@ class EventView : Fragment() {
 
     private fun switchTeam() {
         // Update locally
-        if (selectedTicket.teamColor == "Red") selectedTicket.teamColor = "Blue" else selectedTicket.teamColor = "Red"
+        if (selectedTicket.teamColor == "Red") selectedTicket.teamColor =
+            "Blue" else selectedTicket.teamColor = "Red"
         updateTicketLists()
         deselectPlayer()
 
@@ -1098,16 +1129,24 @@ class EventView : Fragment() {
         name.text = ticket.fullName
 
         val editText = dialogView.findViewById<EditText>(R.id.groupPopup_EditName)
-        if (ticket.group == "") {
-            editText.setText("Group", TextView.BufferType.EDITABLE)
-        }
         editText.setText(ticket.group, TextView.BufferType.EDITABLE)
         editText.requestFocus()
 
         dialogView.findViewById<Button>(R.id.groupPopup_acceptButton).setOnClickListener {
             val groupName = editText.text.toString().lowercase()
             if (groupName != "") {
-                ticket.group = groupName
+                // Check if the input groupName is a valid group number
+                if (groupName.toIntOrNull() != null) {
+                    ticket.group = groupName
+                } else {
+                    // Generate a new group number for the person
+                    val usedGroupNumbers = assignList.mapNotNull { it.group.toIntOrNull() }.toMutableList()
+                    var newGroupNumber = 1
+                    while (usedGroupNumbers.contains(newGroupNumber)) {
+                        newGroupNumber++
+                    }
+                    ticket.group = newGroupNumber.toString()
+                }
                 updateTicketLists()
                 alertDialog.dismiss()
             }
@@ -1250,17 +1289,22 @@ class EventView : Fragment() {
     }
 
     private fun sortAssignByGroup() {
-        if (assignList.size == 0) {
+        if (assignList.isEmpty()) {
             return
         }
 
+        // Sort the list by group and full name
         assignList = assignList.sortedWith(
             compareBy(
-                Ticket::groupSize,
                 Ticket::group,
                 Ticket::fullName
-            ).reversed()
+            )
         ) as MutableList<Ticket>
+
+        // Move all solo players (with the "SELF" group) to the end of the list
+        val soloPlayers = assignList.filter { it.group == "SELF" || it.group == "" }
+        val nonSoloPlayers = assignList.filter { it.group != "SELF" && it.group != "" }
+        assignList = (nonSoloPlayers + soloPlayers as MutableList<Ticket>) as MutableList<Ticket>
     }
 
     private fun sortCheckInByName() {

@@ -65,7 +65,8 @@
             android:layout_height="wrap_content"
             android:layout_marginRight="5dp"
             android:layout_weight="5"
-            android:text="Group" />
+            android:text="Group" >
+        </Button>
 
         <Button
             android:id="@+id/assignTeam_infoButton"

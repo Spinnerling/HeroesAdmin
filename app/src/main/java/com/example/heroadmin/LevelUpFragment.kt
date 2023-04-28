@@ -21,17 +21,17 @@ class LevelUpFragment : Fragment() {
     lateinit var currPlayerId: String
     private var currSection = 0
     private lateinit var mainClassLevel: IntArray
-    private lateinit var buttonList: Array<Array<ImageButton>>
+    private lateinit var buttonList: Array<ImageButton>
     private lateinit var warriorButtonList: Array<ImageButton>
     private lateinit var warriorExpTextArray: Array<TextView>
     private lateinit var specialSection: LinearLayout
     private lateinit var warriorSection: LinearLayout
 
     private val expArray: Array<IntArray> = arrayOf(
-        intArrayOf(50, 75, 100, 100), // Healer levels' experience costs
-        intArrayOf(50, 75, 100, 100), // Rogue levels' experience costs
-        intArrayOf(50, 75, 100, 100), // Mage levels' experience costs
-        intArrayOf(50, 75, 100, 100), // Knight levels' experience costs
+        intArrayOf(0, 50, 75, 100, 100), // Healer levels' experience costs
+        intArrayOf(0, 50, 75, 100, 100), // Rogue levels' experience costs
+        intArrayOf(0, 50, 75, 100, 100), // Mage levels' experience costs
+        intArrayOf(0, 50, 75, 100, 100), // Knight levels' experience costs
         intArrayOf(100, 100, 100, 100) // Warrior levels' experience costs
     )
 
@@ -58,20 +58,18 @@ class LevelUpFragment : Fragment() {
         warriorSection = binding.warriorList
 
         buttonList = arrayOf(
-            arrayOf(
-                binding.upgrade1button,
-                binding.upgrade2button,
-                binding.upgrade3button,
-                binding.upgrade4button,
-                binding.upgrade5button
-            )
+            binding.upgrade1button,
+            binding.upgrade2button,
+            binding.upgrade3button,
+            binding.upgrade4button
         )
 
         warriorButtonList = arrayOf(
             binding.warrior1button,
             binding.warrior2button,
             binding.warrior3button,
-            binding.warrior4button
+            binding.warrior4button,
+            binding.warrior5button
         )
 
         expTextArray = arrayOf(
@@ -87,27 +85,35 @@ class LevelUpFragment : Fragment() {
             levelUpRogueButton.setOnClickListener { changeSection(R.color.rogueColor, 1, true) }
             levelUpMageButton.setOnClickListener { changeSection(R.color.mageColor, 2, true) }
             levelUpKnightButton.setOnClickListener { changeSection(R.color.knightColor, 3, true) }
-            levelUpWarriorButton.setOnClickListener { changeSection(R.color.warriorColor, 4, false) }}
-
-            binding.levelUpBackButton.setOnClickListener {
-                findNavController().navigate(LevelUpFragmentDirections.actionLevelUpFragmentToEventView())
+            levelUpWarriorButton.setOnClickListener {
+                changeSection(
+                    R.color.warriorColor,
+                    4,
+                    false
+                )
             }
+        }
 
-            val buttons = arrayOf(
-                binding.upgrade1button,
-                binding.upgrade2button,
-                binding.upgrade3button,
-                binding.upgrade4button,
-                binding.upgrade5button,
-                binding.warrior1button,
-                binding.warrior2button,
-                binding.warrior3button,
-                binding.warrior4button
-            )
+        binding.levelUpBackButton.setOnClickListener {
+            findNavController().navigate(LevelUpFragmentDirections.actionLevelUpFragmentToEventView())
+        }
 
-            for (button in buttons) {
-                button.setOnClickListener { buttonClick(button) }
-            }
+        val buttons = arrayOf(
+            binding.upgrade1button,
+            binding.upgrade2button,
+            binding.upgrade3button,
+            binding.upgrade4button,
+            binding.upgrade5button,
+            binding.warrior1button,
+            binding.warrior2button,
+            binding.warrior3button,
+            binding.warrior4button,
+            binding.warrior5button
+        )
+
+        for (button in buttons) {
+            button.setOnClickListener { buttonClick(button) }
+        }
 
         changeSection(R.color.healerColor, 0, true)
 
@@ -121,25 +127,32 @@ class LevelUpFragment : Fragment() {
     }
 
     private fun buttonClick(button: ImageButton) {
-        val index = findIndex(buttonList, button)
-        if (index == -1) {
+        val level = buttonList.indexOf(button)
+        if (level == -1) {
             Log.i("test", "Could not find upgrade button")
             return
         } else {
-            // Use index to identify the main class and level
-            val mainClass = index / 4
-            val level = index % 4
+            val mainClass = currSection
             val isSpecialSection = mainClass != 4
 
-            if (mainClassLevel[mainClass] >= level + 1) {
-                // remove upgrade
+            if (mainClassLevel[mainClass] == level + 1) { // Case 3: Remove the current level
                 mainClassLevel[mainClass] = level
+                player.upgradeClass(mainClass, level)
                 updateUpgrades(currSection, isSpecialSection)
                 updateExpText()
-            } else {
-                // if enough exp, add upgrade
+            } else if (mainClassLevel[mainClass] > level + 1) { // Case 2: Set the level to the pressed upgrade level
+                mainClassLevel[mainClass] = level + 1
+                player.upgradeClass(mainClass, level + 1)
+                updateUpgrades(currSection, isSpecialSection)
+                updateExpText()
+            } else { // Case 1: Buy the upgrade if they have enough experience
                 if (player.remExp >= expArray[mainClass][level]) {
+                    if (level == 3) { // Case 4: Handle ultimate upgrade choice
+                        player.removeOtherUltimateUpgrades(mainClass)
+                    }
                     mainClassLevel[mainClass] = level + 1
+                    player.upgradeClass(mainClass, level + 1)
+                    player.remExp -= expArray[mainClass][level] // Deduct the upgrade cost from the player's remaining XP
                     updateUpgrades(currSection, isSpecialSection)
                     updateExpText()
                 }
@@ -147,20 +160,23 @@ class LevelUpFragment : Fragment() {
         }
     }
 
-    private fun findIndex(arr: Array<Array<ImageButton>>, item: ImageButton): Int {
+    private fun findIndex(arr: Array<Array<ImageButton>>, item: ImageButton): Pair<Int, Int> {
         for (i in arr.indices) {
             for (j in arr[i].indices) {
                 if (arr[i][j] == item) {
-                    return i * 4 + j
+                    return Pair(i, j)
                 }
             }
         }
-        return -1
+        return Pair(-1, -1)
     }
 
     private fun updateUpgrades(currentRole: Int, isSpecialSection: Boolean) {
+        Log.i(
+            "player",
+            "healer: " + player.healerLevel + " rogue: " + player.rogueLevel + " mage: " + player.mageLevel + " knight: " + player.knightLevel
+        )
         val numOfLevels = 4
-        val currentButtonList = if (isSpecialSection) buttonList[0] else warriorButtonList
         val currentExpTextArray = if (isSpecialSection) expTextArray else warriorExpTextArray
 
         for (level in 0 until numOfLevels) {
@@ -168,23 +184,18 @@ class LevelUpFragment : Fragment() {
             val classLevel = player.getClassLevel(currentRole)
 
             if (index < currentExpTextArray.size) {
-                if (classLevel >= level || player.isWarriorUpgradeUnlocked("warriorHealer") ||
-                    player.isWarriorUpgradeUnlocked("warriorRogue") || player.isWarriorUpgradeUnlocked("warriorMage") ||
-                    player.isWarriorUpgradeUnlocked("warriorKnight")) {
+                if (classLevel >= level + 1 || (isSpecialSection && level == 0)) {
                     currentExpTextArray[index].text = "OWNED"
                 } else {
                     currentExpTextArray[index].text = "${expArray[currentRole][level]} EXP"
                 }
             }
 
-            val buttonIndex = currentRole * (numOfLevels + 1) + level
-            if (buttonIndex < currentButtonList.size) {
-                if (classLevel >= level || player.isWarriorUpgradeUnlocked("warriorHealer") ||
-                    player.isWarriorUpgradeUnlocked("warriorRogue") || player.isWarriorUpgradeUnlocked("warriorMage") ||
-                    player.isWarriorUpgradeUnlocked("warriorKnight")) {
-                    setButtonOwnership(currentButtonList[buttonIndex], true, true)
+            if (level < buttonList.size) {
+                if (classLevel >= level + 1 || (isSpecialSection && level == 0)) {
+                    setButtonOwnership(buttonList[level], true, true)
                 } else {
-                    setButtonOwnership(currentButtonList[buttonIndex], false, true)
+                    setButtonOwnership(buttonList[level], false, true)
                 }
             }
         }
@@ -200,7 +211,8 @@ class LevelUpFragment : Fragment() {
             warriorSection.visibility = View.GONE
         } else {
             specialSection.visibility = View.GONE
-            warriorSection.visibility = View.VISIBLE // set the visibility of the warrior section to VISIBLE
+            warriorSection.visibility =
+                View.VISIBLE // set the visibility of the warrior section to VISIBLE
         }
         updateButtonImages()
     }
@@ -229,40 +241,50 @@ class LevelUpFragment : Fragment() {
                 R.mipmap.ic_tiger,
                 R.mipmap.ic_tiger,
                 R.mipmap.ic_tiger
-            ) // Add healer ultimate images
+            )
+
             1 -> arrayOf(
                 R.mipmap.ic_tiger,
                 R.mipmap.ic_tiger,
                 R.mipmap.ic_tiger,
                 R.mipmap.ic_tiger,
                 R.mipmap.ic_tiger
-            ) // Add rogue ultimate images
+            )
+
             2 -> arrayOf(
                 R.mipmap.ic_tiger,
                 R.mipmap.ic_tiger,
                 R.mipmap.ic_tiger,
                 R.mipmap.ic_tiger,
                 R.mipmap.ic_tiger
-            ) // Add mage ultimate images
+            )
+
             3 -> arrayOf(
                 R.mipmap.ic_tiger,
                 R.mipmap.ic_tiger,
                 R.mipmap.ic_tiger,
                 R.mipmap.ic_tiger,
                 R.mipmap.ic_tiger
-            ) // Add knight ultimate images
+            )
+
             4 -> arrayOf(
                 R.mipmap.ic_tiger,
                 R.mipmap.ic_tiger,
                 R.mipmap.ic_tiger,
+                R.mipmap.ic_tiger,
                 R.mipmap.ic_tiger
-            ) // Add warrior ultimate images
+            )
+
             else -> arrayOf()
         }
 
-        for (i in buttonList.indices) {
-            for (j in buttonList[i].indices) {
-                buttonList[i][j].setImageResource(imageResources[i * 4 + j])
+        if (currSection < 4) {
+            for (i in buttonList.indices) {
+                buttonList[i].setImageResource(imageResources[i])
+            }
+        } else if (currSection == 4) {
+            for (i in warriorButtonList.indices) {
+                warriorButtonList[i].setImageResource(imageResources[i])
             }
         }
     }
