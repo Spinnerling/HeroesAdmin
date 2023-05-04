@@ -18,9 +18,7 @@ data class Event (
     var ExpWinningValue: Int? = null,
     var ExpTeamChangeValue: Int? = null,
     var ExpRecruitValue: Int? = null,
-    var round: Int? = 0,
-    var redRound: Int? = 0,
-    var blueRound: Int? = 0,
+    var round: Int = 0,
     var status: String? = null
 ) {
     var ticketIDs: MutableList<String> = mutableListOf()

@@ -8,6 +8,7 @@
     </data>
 
     <LinearLayout
+        android:id="@+id/layoutBackground"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="#64BD5E"
@@ -16,6 +17,86 @@
         tools:context=".EventView">
 
         <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/endEventButton"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginRight="10dp"
+                android:layout_weight="1"
+                android:backgroundTint="#FFFFFF"
+                android:text="Back"
+                android:textColor="#000000"
+                app:strokeColor="#000000"
+                app:strokeWidth="2dp" />
+
+            <Button
+                android:id="@+id/refreshButton"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginRight="10dp"
+                android:layout_weight="1"
+                android:backgroundTint="#FFFFFF"
+                android:text="Refresh"
+                android:textColor="#000000"
+                app:strokeColor="#000000"
+                app:strokeWidth="2dp" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginRight="10dp"
+                android:layout_weight="1"
+                android:gravity="center_horizontal"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_weight="2"
+                    android:text="Round"
+                    android:textAlignment="center" />
+
+                <TextView
+                    android:id="@+id/roundText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:text="#"
+                    android:textAlignment="center"
+                    android:textSize="24dp" />
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/emptyButton"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginRight="10dp"
+                android:layout_weight="1"
+                android:backgroundTint="#FFFFFF"
+                android:text=""
+                android:textColor="#000000"
+                app:strokeColor="#000000"
+                app:strokeWidth="2dp" />
+
+            <Button
+                android:id="@+id/setWinnerButton"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:backgroundTint="#FFFFFF"
+                android:text="Set Winner"
+                android:textColor="#000000"
+                app:strokeColor="#000000"
+                app:strokeWidth="2dp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/layoutBackground3"
             android:layout_width="match_parent"
             android:layout_height="48dp"
             android:orientation="horizontal">
@@ -196,6 +277,7 @@
             android:background="#9DE498">
 
             <LinearLayout
+                android:id="@+id/layoutBackground2"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
@@ -592,8 +674,7 @@
         <LinearLayout
             android:id="@+id/bottom_panel"
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
+            android:layout_height="wrap_content"
             android:background="@color/background_green_light"
             android:orientation="horizontal"
             android:visibility="visible">
@@ -601,7 +682,7 @@
             <LinearLayout
                 android:id="@+id/info"
                 android:layout_width="0dp"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:layout_marginRight="15dp"
                 android:layout_weight="1"
                 android:orientation="vertical"
@@ -644,69 +725,22 @@
                     android:textStyle="bold" />
             </LinearLayout>
 
-            <LinearLayout
-                android:id="@+id/buttons1"
+            <Button
+                android:id="@+id/newRoundButton"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:orientation="vertical">
-
-                <Button
-                    android:id="@+id/refreshButton"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:backgroundTint="#FFFFFF"
-                    android:text="Refresh"
-                    android:textColor="#000000"
-                    app:strokeColor="#000000"
-                    app:strokeWidth="2dp" />
-
-                <Button
-                    android:id="@+id/endEventButton"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:backgroundTint="#FFFFFF"
-                    android:text="End Event"
-                    android:textColor="#000000"
-                    app:strokeColor="#000000"
-                    app:strokeWidth="2dp" />
-
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/buttons2"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_marginLeft="10dp"
-                android:layout_weight="2"
-                android:orientation="vertical">
-
-                <Button
-                    android:id="@+id/newRoundButton"
-                    android:layout_width="match_parent"
-                    android:layout_height="100dp"
-                    android:layout_weight="1"
-                    android:backgroundTint="#FFFFFF"
-                    android:text="New Round"
-                    android:textColor="#000000"
-                    app:strokeColor="#000000"
-                    app:strokeWidth="2dp" />
-
-                <Button
-                    android:id="@+id/rerollTeamButton"
-                    android:layout_width="match_parent"
-                    android:layout_height="100dp"
-                    android:layout_weight="1"
-                    android:backgroundTint="#FFFFFF"
-                    android:text="Reroll Team"
-                    android:textColor="#000000"
-                    app:strokeColor="#000000"
-                    app:strokeWidth="2dp" />
-            </LinearLayout>
+                android:backgroundTint="#FFFFFF"
+                android:text="New Round"
+                android:textColor="#000000"
+                app:strokeColor="#000000"
+                app:strokeWidth="2dp"
+                android:layout_margin="10dp"/>
 
         </LinearLayout>
+
+
+
 
         <LinearLayout
             android:id="@+id/bottom_panel_newRound"
@@ -970,17 +1004,19 @@
                     android:gravity="center"
                     android:orientation="horizontal">
 
-                    <Button
-                        android:id="@+id/warriorButton"
+                    <Switch
+                        android:id="@+id/playerOnOffSwitch2"
                         android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_marginRight="5dp"
+                        android:layout_height="48dp"
+                        android:layout_marginRight="10dp"
                         android:layout_weight="1"
-                        android:backgroundTint="#FFFFFF"
-                        android:text="Warrior"
-                        android:textColor="#000000"
-                        app:strokeColor="#000000"
-                        app:strokeWidth="2dp" />
+                        android:background="@color/background_green_extralight"
+                        android:checked="true"
+                        android:paddingLeft="10dp"
+                        android:text="Playing"
+                        android:textAlignment="textStart"
+                        android:textAppearance="@style/TextAppearance.AppCompat.Display2"
+                        android:textSize="16sp" />
 
                     <Button
                         android:id="@+id/switchTeamButton2"

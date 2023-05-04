@@ -21,6 +21,10 @@ class TeamViewHolder(
     }
 
     override fun onClick(p0: View?) {
+        select()
+    }
+
+    fun select() {
         eventView.selectTicket(ticket)
         val position = adapterPosition
         onTeamItemClick(position)
