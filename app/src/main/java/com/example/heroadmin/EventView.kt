@@ -16,7 +16,15 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.heroadmin.databinding.FragmentEventViewBinding
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.decodeFromString
 import org.json.JSONObject
 import kotlin.math.abs
@@ -31,6 +39,7 @@ class EventView : Fragment() {
     private lateinit var currEventId: String
     private lateinit var event: Event
     val ticketDatabase = LocalDatabase(Ticket.serializer())
+    val playerDatabase = LocalDatabase(Player.serializer())
     private lateinit var allTickets: MutableList<Ticket>
     private lateinit var redTeam: MutableList<Ticket>
     private lateinit var blueTeam: MutableList<Ticket>
@@ -44,20 +53,9 @@ class EventView : Fragment() {
     private lateinit var blueTeamAdapter: TeamRecyclerAdapter
     private lateinit var redBenchAdapter: TeamRecyclerAdapter
     private lateinit var blueBenchAdapter: TeamRecyclerAdapter
-    private lateinit var redTeamPowerText: TextView
-    private lateinit var blueTeamPowerText: TextView
-    private lateinit var redTeamAmountText: TextView
-    private lateinit var blueTeamAmountText: TextView
-    private lateinit var redTeamTeensText: TextView
-    private lateinit var blueTeamTeensText: TextView
-    private lateinit var redTeamTiniesText: TextView
-    private lateinit var blueTeamTiniesText: TextView
     lateinit var selectedTicket: Ticket
     private lateinit var selectedPlayer: Player
-    private lateinit var playerOnOffSwitch: Switch
-    private lateinit var playerOnOffSwitch2: Switch
     lateinit var selectedTicketTVH: TeamViewHolder
-    private lateinit var playerExpText: TextView
     private lateinit var bottomPanel: LinearLayout
     private lateinit var bottomPanelPlayer: LinearLayout
     private lateinit var bottomPanelNewRound: LinearLayout
@@ -100,36 +98,9 @@ class EventView : Fragment() {
 
     @SuppressLint("SetTextI18n")
     override fun onResume() {
-
         super.onResume()
 
         // Find elements
-        val assignTeamPanelButton: Button = binding.assignTeamPanelButton
-        val assignTeamList: LinearLayout = binding.assignTeamList
-        val checkInPanelButton: Button = binding.checkInPanelButton
-        val checkInList: LinearLayout = binding.checkInList
-        val eventInfoDate = binding.dateText
-        val eventInfoTime = binding.timeText
-        val eventInfoVenue = binding.venueText
-        val eventInfoPlayerAmount = binding.playerAmountText
-        val playerCloseButton = binding.playerCloseButton
-        val newRoundButton = binding.newRoundButton
-        val cancelNewRoundButton = binding.cancelNewRoundButton
-        val switchTeamButton = binding.switchTeamButton
-        val switchTeamButton2 = binding.switchTeamButton2
-        val spendExpButton = binding.spendExpButton
-
-        playerExpText = binding.playerExpText
-        redTeamPowerText = binding.redTeamPowerText
-        blueTeamPowerText = binding.blueTeamPowerText
-        redTeamAmountText = binding.redTeamAmountText
-        blueTeamAmountText = binding.blueTeamAmountText
-        redTeamTeensText = binding.redTeamTeensText
-        blueTeamTeensText = binding.blueTeamTeensText
-        redTeamTiniesText = binding.redTeamTiniesText
-        blueTeamTiniesText = binding.blueTeamTiniesText
-        playerOnOffSwitch = binding.playerOnOffSwitch
-        playerOnOffSwitch2 = binding.playerOnOffSwitch2
         bottomPanel = binding.bottomPanel
         bottomPanelNewRound = binding.bottomPanelNewRound
         bottomPanelPlayer = binding.bottomPanelPlayer
@@ -139,10 +110,10 @@ class EventView : Fragment() {
         getAllTickets(event)
 
         // Set variables
-        eventInfoDate.text = "Date: ${event.actualDate}"
-        eventInfoTime.text = "Start: ${event.actualStartTime}"
-        eventInfoVenue.text = "Venue: ${event.venue}"
-        eventInfoPlayerAmount.text = "Tickets: ${allTickets.size} / ${event.playerMax}"
+        binding.dateText.text = "Date: ${event.actualDate}"
+        binding.timeText.text = "Start: ${event.actualStartTime}"
+        binding.venueText.text = "Venue: ${event.venue}"
+        binding.playerAmountText.text = "Tickets: ${allTickets.size} / ${event.playerMax}"
         binding.roundText.text = event.round.toString()
 
         binding.scrollingPanel.setOnTouchListener { _, _ ->
@@ -152,21 +123,21 @@ class EventView : Fragment() {
             true
         }
 
-        assignTeamPanelButton.setOnClickListener {
-            if (assignTeamList.layoutParams.height == 0) {
-                assignTeamList.layoutParams = LinearLayout.LayoutParams(
+        binding.assignTeamPanelButton.setOnClickListener {
+            if (binding.assignTeamList.layoutParams.height == 0) {
+                binding.assignTeamList.layoutParams = LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.MATCH_PARENT,
                     LinearLayout.LayoutParams.MATCH_PARENT
                 )
-                assignTeamPanelButton.setCompoundDrawablesRelativeWithIntrinsicBounds(
+                binding.assignTeamPanelButton.setCompoundDrawablesRelativeWithIntrinsicBounds(
                     R.drawable.ic_list_open,
                     0,
                     0,
                     0
                 )
             } else {
-                assignTeamList.layoutParams.height = 0
-                assignTeamPanelButton.setCompoundDrawablesRelativeWithIntrinsicBounds(
+                binding.assignTeamList.layoutParams.height = 0
+                binding.assignTeamPanelButton.setCompoundDrawablesRelativeWithIntrinsicBounds(
                     R.drawable.ic_list_closed,
                     0,
                     0,
@@ -175,25 +146,25 @@ class EventView : Fragment() {
             }
         }
 
-        checkInPanelButton.setOnClickListener {
-            if (checkInList.layoutParams.height == 0) {
-                checkInList.layoutParams = LinearLayout.LayoutParams(
+        binding.checkInPanelButton.setOnClickListener {
+            if (binding.checkInList.layoutParams.height == 0) {
+                binding.checkInList.layoutParams = LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.MATCH_PARENT,
                     LinearLayout.LayoutParams.MATCH_PARENT
                 )
 
                 // Set button arrow icon
-                checkInPanelButton.setCompoundDrawablesRelativeWithIntrinsicBounds(
+                binding.checkInPanelButton.setCompoundDrawablesRelativeWithIntrinsicBounds(
                     R.drawable.ic_list_open,
                     0,
                     0,
                     0
                 )
             } else {
-                checkInList.layoutParams.height = 0
+                binding.checkInList.layoutParams.height = 0
 
                 // Set button arrow icon
-                checkInPanelButton.setCompoundDrawablesRelativeWithIntrinsicBounds(
+                binding.checkInPanelButton.setCompoundDrawablesRelativeWithIntrinsicBounds(
                     R.drawable.ic_list_closed,
                     0,
                     0,
@@ -202,26 +173,26 @@ class EventView : Fragment() {
             }
         }
 
-        playerOnOffSwitch.setOnClickListener {
+        binding.playerOnOffSwitch.setOnClickListener {
             benchTicket()
         }
 
-        playerOnOffSwitch2.setOnClickListener {
+        binding.playerOnOffSwitch2.setOnClickListener {
             benchTicket()
         }
 
-        playerCloseButton.setOnClickListener {
+        binding.playerCloseButton.setOnClickListener {
             deselectPlayer()
         }
 
-        newRoundButton.setOnClickListener {
+        binding.newRoundButton.setOnClickListener {
             deselectPlayer()
             bottomPanel.visibility = View.GONE
             bottomPanelNewRound.visibility = View.VISIBLE
             checkTeamSizes()
         }
 
-        cancelNewRoundButton.setOnClickListener {
+        binding.cancelNewRoundButton.setOnClickListener {
             deselectPlayer()
             bottomPanel.visibility = View.VISIBLE
             bottomPanelNewRound.visibility = View.GONE
@@ -229,15 +200,15 @@ class EventView : Fragment() {
             dismissKeyboard()
         }
 
-        switchTeamButton.setOnClickListener {
+        binding.switchTeamButton.setOnClickListener {
             switchTeam()
         }
 
-        switchTeamButton2.setOnClickListener {
+        binding.switchTeamButton2.setOnClickListener {
             switchTeam()
         }
 
-        spendExpButton.setOnClickListener {
+        binding.spendExpButton.setOnClickListener {
             findNavController().navigate(
                 EventViewDirections.actionEventViewToLevelUpFragment(
                     selectedTicket.playerId ?: ""
@@ -364,14 +335,14 @@ class EventView : Fragment() {
         val list = MutableList(jsonArray.length()) {
             jsonArray.getString(it)
         }
-        event.ticketIDs?.addAll(list)
+        event.ticketIDs.addAll(list)
 
         getAllTickets(event)
     }
 
     private fun getAllTickets(event: Event) {
-        // Get the event's ticket ids safely
-//        event.tickets.let { allTicketIds ->
+//        // Get the event's ticket ids safely
+//        event.ticketIDs.let { allTicketIds ->
 //            // Create an array of the players connected to the tickets
 //            allTickets = mutableListOf()
 //
@@ -391,12 +362,12 @@ class EventView : Fragment() {
 //                allTickets.addAll(fetchedTickets)
 //
 //                // Update UI with the new ticket list
-//            withContext(Dispatchers.Main) {
-//                updateTicketLists()
-//                DBF.getTicketGuardians(allTickets)
-//                loadingDialogue.dismiss()
-//                binding.refreshButton.isEnabled = true
-//            }
+//                withContext(Dispatchers.Main) {
+//                    updateTicketLists()
+//                    DBF.getTicketBookers(allTickets)
+//                    loadingDialogue.dismiss()
+//                    binding.refreshButton.isEnabled = true
+//                }
 //            }
 //        } ?: run {
 //            // Handle the case when event.tickets is null
@@ -405,13 +376,17 @@ class EventView : Fragment() {
 //        }
 
 
-        // Temporary code
-        allTickets = ticketDatabase.getAll()
-        event.ticketIDs = allTickets.map { it.ticketId }.toMutableList()
+        allTickets = ticketDatabase.getAll() // Temporary code while no APIs exists
+        allTickets.forEach { automaticPlayerLink(it) }
+        event.ticketIDs = allTickets.map { it.ticketId ?: "" }.toMutableList() // Temporary code while no APIs exists
         updateTicketLists()
-        DBF.getTicketGuardians(allTickets)
+        DBF.getTicketBookers(allTickets)
         loadingDialogue.dismiss()
         binding.refreshButton.isEnabled = true
+    }
+
+    private fun automaticPlayerLink(ticket: Ticket) {
+
     }
 
     private fun getTicket(ticketId: String, onComplete: (Ticket?) -> Unit) {
@@ -436,9 +411,9 @@ class EventView : Fragment() {
         allTickets.add(ticket)
 
         // If this is the last ticket to be parsed, update lists
-        if (allTickets.size >= (event.ticketIDs?.size ?: 0)) {
+        if (allTickets.size >= (event.ticketIDs.size ?: 0)) {
             updateTicketLists()
-            DBF.getTicketGuardians(allTickets)
+            DBF.getTicketBookers(allTickets)
 
             loadingDialogue.dismiss()
             binding.refreshButton.isEnabled = true
@@ -539,6 +514,7 @@ class EventView : Fragment() {
                 sortTeamsByRole()
             }
         }
+        Log.i("check", "Ticket amount: " + allTickets.size.toString())
 
         setAssignTeamAdapter()
         setCheckInAdapter()
@@ -548,81 +524,43 @@ class EventView : Fragment() {
     }
 
     private fun updateTicketGroups() {
-        // Initialize an empty list to keep track of used group numbers
-        val usedGroupNumbers = mutableListOf<Int>()
+        val emailToGroupMap = mutableMapOf<String, Int>()
+        val usedGroupNumbers = mutableSetOf<Int>()
+        val groupToSizeMap = mutableMapOf<Int, Int>()
 
-        // Iterate through each ticket in the list of tickets
-        for (i in assignList.indices) {
-            // Get the current ticket
-            val ticket1 = assignList[i]
-
-            // Skip tickets that are already in a group or are for the "SELF" group
-            if (ticket1.group == "SELF") {
+        // First pass: Assign group numbers and calculate group sizes.
+        for (ticket in assignList) {
+            if (ticket.group == "SELF") {
                 continue
             }
 
-            // Iterate through the remaining tickets in the list to compare with the current ticket
-            for (j in assignList.indices) {
-                // Get the ticket to compare with the current ticket
-                val ticket2 = assignList[j]
-
-                // Skip if the compared ticket is the same as the current ticket, is for the "SELF" group, or is before the current ticket in the list
-                if (j <= i || ticket2 == ticket1 || ticket2.group == "SELF") {
-                    continue
+            val bookerEmail = ticket.bookerEmail ?: continue
+            val groupNumber = emailToGroupMap[bookerEmail] ?: run {
+                var newGroupNumber = 1
+                while (usedGroupNumbers.contains(newGroupNumber)) {
+                    newGroupNumber++
                 }
-
-                // Skip if the compared ticket is already in the same group as the current ticket
-                if (ticket1.group != "" && ticket1.group == ticket2.group) {
-                    continue
-                }
-
-                // Check if tickets are booked by the same email
-                if (ticket1.bookerEmail == ticket2.bookerEmail) {
-                    // Check if both tickets have no group yet
-                    if (ticket1.group == "" && ticket2.group == "") {
-                        // Generate a new group number
-                        var newGroupNumber = 1
-                        while (usedGroupNumbers.contains(newGroupNumber)) {
-                            newGroupNumber++
-                        }
-                        usedGroupNumbers.add(newGroupNumber)
-
-                        // Assign both tickets to the new group
-                        ticket1.group = newGroupNumber.toString()
-                        ticket2.group = newGroupNumber.toString()
-
-                        // Continue to the next pair of tickets
-                        continue
-                    }
-
-                    // Check if the tickets are already in different groups
-                    if (ticket1.group != "" && ticket2.group != "" && ticket1.group != ticket2.group) {
-                        continue
-                    }
-
-                    // Put the ticket with an empty group into the other ticket's group
-                    if (ticket1.group == "") {
-                        ticket1.group = ticket2.group
-                        continue
-                    }
-
-                    if (ticket2.group == "") {
-                        ticket2.group = ticket1.group
-                        continue
-                    }
-                }
+                usedGroupNumbers.add(newGroupNumber)
+                newGroupNumber
             }
+            emailToGroupMap[bookerEmail] = groupNumber
+            ticket.group = groupNumber.toString()
 
-            // Calculate the group size for the current ticket
-            if (ticket1.group != "") {
-                ticket1.groupSize = assignList.count { it.group == ticket1.group }
-            } else {
-                ticket1.groupSize = 1
-            }
+            val groupSize = groupToSizeMap[groupNumber] ?: 0
+            groupToSizeMap[groupNumber] = groupSize + 1
         }
 
-// Add a step to reassign group identifiers based on group sizes
-// First, create a map with group identifier as key and group size as value
+        // Second pass: Assign group sizes to tickets.
+        for (ticket in assignList) {
+            if (ticket.group == "SELF") {
+                continue
+            }
+
+            val groupNumber = ticket.group.toIntOrNull() ?: continue
+            ticket.groupSize = groupToSizeMap[groupNumber] ?: 1
+        }
+
+        // Create a map with group identifier as key and group size as value.
         val groupSizeMap = mutableMapOf<String, Int>()
         for (ticket in assignList) {
             if (ticket.group != "SELF" && ticket.group != "") {
@@ -630,10 +568,10 @@ class EventView : Fragment() {
             }
         }
 
-// Sort the groups by size in descending order
+        // Sort the groups by size in descending order.
         val sortedGroupSizeMap = groupSizeMap.entries.sortedByDescending { it.value }
 
-// Reassign group identifiers based on the sorted order
+        // Reassign group identifiers based on the sorted order.
         val reassignedGroupMap = mutableMapOf<String, String>()
         var newIdentifier = 1
         for (entry in sortedGroupSizeMap) {
@@ -641,7 +579,7 @@ class EventView : Fragment() {
             newIdentifier++
         }
 
-// Update the ticket groups with the new identifiers
+        // Update the ticket groups with the new identifiers.
         for (ticket in assignList) {
             if (ticket.group != "SELF" && ticket.group != "") {
                 ticket.group = reassignedGroupMap[ticket.group] ?: ticket.group
@@ -661,8 +599,7 @@ class EventView : Fragment() {
 
                 if (setDatabase) {
                     // Update database
-                    val parcel = DBF.createTicketJsonString(ticket)
-                    DBF.apiCallPost("https://talltales.nu/API/api/update-ticket.php", parcel)
+                    DBF.updateData(ticket)
                 }
 
                 // Check if Ticket is connected to a Player
@@ -833,17 +770,17 @@ class EventView : Fragment() {
             }
         }
 
-        redTeamPowerText.text = redPowerLevel.toString()
-        blueTeamPowerText.text = bluePowerLevel.toString()
+        binding.redTeamPowerText.text = redPowerLevel.toString()
+        binding.blueTeamPowerText.text = bluePowerLevel.toString()
 
-        redTeamAmountText.text = redAmount.toString()
-        blueTeamAmountText.text = blueAmount.toString()
+        binding.redTeamAmountText.text = redAmount.toString()
+        binding.blueTeamAmountText.text = blueAmount.toString()
 
-        redTeamTeensText.text = redTeenAmount.toString()
-        blueTeamTeensText.text = blueTeenAmount.toString()
+        binding.redTeamTeensText.text = redTeenAmount.toString()
+        binding.blueTeamTeensText.text = blueTeenAmount.toString()
 
-        redTeamTiniesText.text = redTiniesAmount.toString()
-        blueTeamTiniesText.text = blueTiniesAmount.toString()
+        binding.redTeamTiniesText.text = redTiniesAmount.toString()
+        binding.blueTeamTiniesText.text = blueTiniesAmount.toString()
     }
 
     private fun checkListVisibilities() {
@@ -919,7 +856,7 @@ class EventView : Fragment() {
         if (!firstPlayerSelected) {
             deselectPlayer()
         }
-        selectedPlayer = DBF.getPlayer(selectedTicket.ticketId)
+        //selectedPlayer = selectedTicket.ticketId?.let { DBF.getPlayer(it) }!!
 
         if (bottomPanelNewRound.visibility == View.VISIBLE) {
             playerRoleButtonPanel.visibility = View.VISIBLE
@@ -934,16 +871,16 @@ class EventView : Fragment() {
                 binding.playerNameText.setBackgroundResource(R.color.teamRedColor)
             }
 
-            playerExpText.text = "${selectedPlayer.totalExp} EXP kvar"
+            //binding.playerExpText.text = "${selectedPlayer.totalExp} EXP kvar"
             val roleInText = DBF.getRoleByNumber(selectedTicket.currentRole ?: 0)
             binding.ticketRoleText.text = roleInText
 
             if (selectedTicket.benched == 0) {
-                playerOnOffSwitch.isChecked = true
-                playerOnOffSwitch2.isChecked = true
+                binding.playerOnOffSwitch.isChecked = true
+                binding.playerOnOffSwitch2.isChecked = true
             } else if (selectedTicket.benched == 1) {
-                playerOnOffSwitch.isChecked = false
-                playerOnOffSwitch2.isChecked = false
+                binding.playerOnOffSwitch.isChecked = false
+                binding.playerOnOffSwitch2.isChecked = false
             }
         }
     }
@@ -969,8 +906,7 @@ class EventView : Fragment() {
             updateTicketLists()
 
             // Update database
-            val parcel = DBF.createTicketJsonString(ticket)
-            DBF.apiCallPost("https://talltales.nu/API/api/update-ticket.php", parcel)
+            DBF.updateData(ticket)
 
             alertDialog.dismiss()
 
@@ -1031,8 +967,7 @@ class EventView : Fragment() {
                 ticket.expPersonal = ticket.expPersonal?.plus(number.toInt())
 
                 // Update database
-                val parcel = DBF.createTicketJsonString(selectedTicket)
-                DBF.apiCallPost("https://talltales.nu/API/api/update-ticket.php", parcel)
+                DBF.updateData(selectedTicket)
 
                 alertDialog.dismiss()
             }
@@ -1071,16 +1006,15 @@ class EventView : Fragment() {
         ticket.selected = true
         selectedTicket = ticket
         if (selectedTicket.benched == 0) {
-            playerOnOffSwitch.isChecked = true
-            playerOnOffSwitch2.isChecked = true
+            binding.playerOnOffSwitch.isChecked = true
+            binding.playerOnOffSwitch2.isChecked = true
         } else {
-            playerOnOffSwitch.isChecked = false
-            playerOnOffSwitch2.isChecked = false
+            binding.playerOnOffSwitch.isChecked = false
+            binding.playerOnOffSwitch2.isChecked = false
         }
     }
 
     private fun switchTeam() {
-        val currSelectedTicket = selectedTicket
         // Update locally
         if (selectedTicket.teamColor == "Red") selectedTicket.teamColor =
             "Blue" else selectedTicket.teamColor = "Red"
@@ -1090,8 +1024,7 @@ class EventView : Fragment() {
         autoSetRoleAmounts()
 
         // Update database
-        val parcel = DBF.createTicketJsonString(selectedTicket)
-        DBF.apiCallPost("https://talltales.nu/API/api/update-ticket.php", parcel)
+        DBF.updateData(selectedTicket)
     }
 
     private fun endEvent() {
@@ -1219,8 +1152,7 @@ class EventView : Fragment() {
             updateTicketLists()
 
             // Update database
-            val parcel = DBF.createTicketJsonString(ticket)
-            DBF.apiCallPost("https://talltales.nu/API/api/update-ticket.php", parcel)
+            DBF.updateData(ticket)
 
             alertDialog.dismiss()
         }
@@ -1230,11 +1162,7 @@ class EventView : Fragment() {
         }
     }
 
-    @SuppressLint("SetTextI18n")
     fun manualPlayerLink(ticket: Ticket) {
-        var playerId = ""
-        var playerList = mutableListOf<Player>()
-
         val dialogView = LayoutInflater.from(context).inflate(R.layout.manual_player_link, null)
 
         val builder = AlertDialog.Builder(context)
@@ -1242,76 +1170,63 @@ class EventView : Fragment() {
 
         val alertDialog = builder.show()
 
-        val playerLayout: LinearLayout = dialogView.findViewById(R.id.mpl_playerLayout)
-
+        // Get the references for the TextViews to display ticket information
         val name: TextView = dialogView.findViewById(R.id.mpl_ticketNameText)
-        name.text = ticket.fullName
-
         val age: TextView = dialogView.findViewById(R.id.mpl_ageText)
-        age.text = ticket.age.toString()
-
         val bookerName: TextView = dialogView.findViewById(R.id.mpl_bookerNameText)
-        bookerName.text = ticket.bookerName
-
         val bookerEmail: TextView = dialogView.findViewById(R.id.mpl_bookerEmailText)
+        val bookerAddress: TextView = dialogView.findViewById(R.id.mpl_bookerAdressText)
+        val bookerPhone: TextView = dialogView.findViewById(R.id.mpl_bookerPhoneText)
+
+        // Populate the TextViews with ticket information
+        name.text = ticket.fullName
+        age.text = ticket.age.toString()
+        bookerName.text = ticket.bookerName
         bookerEmail.text = ticket.bookerEmail
+        bookerAddress.text = ticket.bookerAdress
+        bookerPhone.text = ticket.bookerPhoneNr
 
-        val guardianName: TextView = dialogView.findViewById(R.id.mpl_guardianNameText)
-        guardianName.text = ticket.bookerName
+        // Get the reference for the RecyclerView and set its layout manager
+        val recyclerView: RecyclerView = dialogView.findViewById(R.id.mpl_recyclerView)
+        recyclerView.layoutManager = LinearLayoutManager(context)
 
-        val guardianPhone: TextView = dialogView.findViewById(R.id.mpl_guardianPhoneText)
-        guardianPhone.text = ticket.bookerPhoneNr
+        // Fetch the players and create an instance of PlayerListItemAdapter
+        val players = playerDatabase.getAll() // You need to implement this method to fetch the list of players
 
-        val noEntriesText = dialogView.findViewById<TextView>(R.id.mpl_noEntriesText)
+        val playerListItems = players.mapNotNull { player ->
+            if (player.firstName != null && player.lastName != null && player.age != null) {
+                PlayerListItem(
+                    firstName = player.firstName!!,
+                    lastName = player.lastName!!,
+                    age = player.age!!,
+                    bookerNames = player.bookerNames,
+                    bookerPhones = player.bookerPhones,
+                    bookerEmails = player.bookerEmails,
+                    bookerAddresses = player.bookerAddresses
+                )
+            } else null
+        }.toMutableList()
 
-        val acceptButton = dialogView.findViewById<TextView>(R.id.mpl_acceptButton)
+        val adapter = PlayerListItemAdapter(playerListItems)
+        recyclerView.adapter = adapter
 
-        val cancelButton = dialogView.findViewById<TextView>(R.id.mpl_cancelButton)
+        // Get the reference for the buttons
+        val acceptButton = dialogView.findViewById<Button>(R.id.mpl_acceptButton)
+        val cancelButton = dialogView.findViewById<Button>(R.id.mpl_cancelButton)
 
-        val radioGroup = RadioGroup(context)
-        radioGroup.orientation = LinearLayout.VERTICAL
-        radioGroup.layoutDirection = View.LAYOUT_DIRECTION_RTL
-
-        var layoutParams: RadioGroup.LayoutParams
-
-        for (player in playerList) {
-            val radioButton = RadioButton(context)
-            radioButton.text = player.fullName + ", " + player.age + "år"
-            radioButton.setPadding(20, 0, 0, 0)
-
-            layoutParams = RadioGroup.LayoutParams(
-                RadioGroup.LayoutParams.MATCH_PARENT,
-                RadioGroup.LayoutParams.MATCH_PARENT
-            )
-            layoutParams.setMargins(0, 20, 0, 0)
-            radioGroup.addView(radioButton, layoutParams)
-        }
-
-        playerLayout.addView(radioGroup)
-
-        if (playerList.size == 0) {
-            noEntriesText.visibility = View.VISIBLE
-        } else {
-            noEntriesText.visibility = View.GONE
-        }
-
-        radioGroup.setOnCheckedChangeListener { group, checkedId ->
-            val checkedRadioButton = radioGroup.findViewById<View>(checkedId) as RadioButton
-            val checkedRadioButtonId = radioGroup.indexOfChild(checkedRadioButton)
-            val checkedRadioButtonText = checkedRadioButton.text.toString()
-        }
-
+        // Set click listeners for the buttons
         cancelButton.setOnClickListener {
             Toast.makeText(context, "Cancelled", Toast.LENGTH_SHORT).show()
             alertDialog.dismiss()
         }
 
         acceptButton.setOnClickListener {
-            ticket.playerId = playerId
-            updateTicketLists()
+            // Here you can handle what happens when the "Accept" button is clicked
+            // For example, you might want to update the ticket with the selected player
             alertDialog.dismiss()
         }
     }
+
 
 // SORTING FUNCTIONS
 
@@ -1387,15 +1302,13 @@ class EventView : Fragment() {
             updatePlayerStats(blueTeam)
             updatePlayerStats(redTeam)
             updateRound(true)
-        }
-        else if (!blueTeamSuccess && !redTeamSuccess) {
+        } else if (!blueTeamSuccess && !redTeamSuccess) {
             Toast.makeText(
                 context,
                 "Failed to generate roles for any team.",
                 Toast.LENGTH_LONG
             ).show()
-        }
-        else {
+        } else {
             val team = if (!redTeamSuccess) "red" else "blue"
 
             Toast.makeText(
@@ -1437,7 +1350,8 @@ class EventView : Fragment() {
 
         // Sort the remaining team members by roundsSpecialRole and take the first totalAmount players
         val remainingPlayers = team.filter { it.currentRole == 7 }
-        val prioritizedPlayers = remainingPlayers.sortedBy { it.roundsSpecialRole }.take(totalAmount - guaranteedPlayers.size)
+        val prioritizedPlayers = remainingPlayers.sortedBy { it.roundsSpecialRole }
+            .take(totalAmount - guaranteedPlayers.size)
 
         // Assign special roles to the prioritized players
         var roleIndex = 0
@@ -1505,77 +1419,77 @@ class EventView : Fragment() {
             Ticket(
                 "T1", "John", "Doe", 15, "Jane Doe", "555-123-4567",
                 "123 Main St", "Springfield", "john@example.com", null, "", 0, 0, 10, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, "P1", "E1"
+                0, 0, 0, 0, 0, 0, 0, null, "E1"
             ),
             Ticket(
                 "T2", "Jane", "Doe", 14, "John Doe", "555-987-6543",
                 "456 Elm St", "Springfield", "john@example.com", null, "", 0, 0, 8, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, "P2", "E1"
+                0, 0, 0, 0, 0, 0, 0, null, "E1"
             ),
             Ticket(
                 "T3", "Alice", "Smith", 13, "Bob Smith", "555-456-7890",
                 "789 Oak St", "Springfield", "alice@example.com", null, "", 0, 0, 12, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, "P3", "E1"
+                0, 0, 0, 0, 0, 0, 0, null, "E1"
             ),
             Ticket(
                 "T4", "Bob", "Brown", 12, "Alice Brown", "555-321-0987",
                 "321 Birch St", "Springfield", "alice@example.com", null, "", 0, 0, 9, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, "P4", "E1"
+                0, 0, 0, 0, 0, 0, 0, null, "E1"
             ),
             Ticket(
                 "T5", "Charlie", "Johnson", 11, "Diana Johnson", "555-654-3210",
                 "654 Pine St", "Springfield", "alice@example.com", null, "", 0, 0, 6, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, "P5", "E1"
+                0, 0, 0, 0, 0, 0, 0, null, "E1"
             ),
             Ticket(
                 "T6", "Diana", "Miller", 10, "Charlie Miller", "555-852-1470",
                 "852 Maple St", "Springfield", "diana@example.com", null, "", 0, 0, 5, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, "P6", "E1"
+                0, 0, 0, 0, 0, 0, 0, null, "E1"
             ),
             Ticket(
                 "T7", "Eva", "Taylor", 9, "David Taylor", "555-555-5555",
                 "10 Oak St", "Springfield", "eva@example.com", null, "", 0, 0, 11, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, "P7", "E1"
+                0, 0, 0, 0, 0, 0, 0, null, "E1"
             ),
             Ticket(
                 "T0", "Edward", "Wilson", 8, "Emma Wilson", "555-789-4561",
                 "741 Vine St", "Springfield", "edward@example.com", null, "", 0, 0, 7, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, "P7", "E1"
+                0, 0, 0, 0, 0, 0, 0, null, "E1"
             ),
             Ticket(
                 "T8", "Frank", "Adams", 7, "Frank Adams", "555-123-7890",
                 "369 Oak St", "Springfield", "edward@example.com", null, "", 0, 0, 10, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, "P8", "E2"
+                0, 0, 0, 0, 0, 0, 0, null, "E2"
             ),
             Ticket(
                 "T9", "George", "Garcia", 6, "George Garcia", "555-456-1234",
                 "852 Chestnut St", "Springfield", "george@example.com", null, "", 0, 0, 9, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, "P9", "E2"
+                0, 0, 0, 0, 0, 0, 0, null, "E2"
             ),
             Ticket(
                 "T10", "Hannah", "Scott", 5, "Henry Scott", "555-789-0123",
                 "753 Main St", "Springfield", "hannah@example.com", null, "", 0, 0, 12, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, "P10", "E2"
+                0, 0, 0, 0, 0, 0, 0, null, "E2"
             ),
             Ticket(
                 "T11", "Fohn", "Doe", 15, "Jane Doe", "555-123-4567",
                 "123 Main St", "Springfield", "john@example.com", null, "", 0, 0, 10, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, "P1", "E1"
+                0, 0, 0, 0, 0, 0, 0, null, "E1"
             ),
             Ticket(
                 "T12", "Fane", "Doe", 14, "John Doe", "555-987-6543",
                 "456 Elm St", "Springfield", "john@example.com", null, "", 0, 0, 8, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, "P2", "E1"
+                0, 0, 0, 0, 0, 0, 0, null, "E1"
             ),
             Ticket(
                 "T13", "Flice", "Smith", 13, "Bob Smith", "555-456-7890",
                 "789 Oak St", "Springfield", "alice@example.com", null, "", 0, 0, 12, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, "P3", "E1"
+                0, 0, 0, 0, 0, 0, 0, null, "E1"
             ),
             Ticket(
                 "T14", "Fob", "Brown", 12, "Alice Brown", "555-321-0987",
                 "321 Birch St", "Springfield", "alice@example.com", null, "", 0, 0, 9, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, "P4", "E1"
+                0, 0, 0, 0, 0, 0, 0, null, "E1"
             ),
             Ticket(
                 "T15",
@@ -1601,13 +1515,13 @@ class EventView : Fragment() {
                 0,
                 0,
                 0,
-                "P5",
+                null,
                 "E1"
             ),
             Ticket(
                 "T16", "Fiana", "Miller", 10, "Charlie Miller", "555-852-1470",
                 "852 Maple St", "Springfield", "diana@example.com", null, "", 0, 0, 5, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, "P6", "E1"
+                0, 0, 0, 0, 0, 0, 0, null, "E1"
             ),
             Ticket(
                 "T17",
@@ -1633,33 +1547,56 @@ class EventView : Fragment() {
                 0,
                 0,
                 0,
-                "P7",
+                null,
                 "E1"
             ),
             Ticket(
-                "T18", "Fedward", "Wilson", 8, "Emma Wilson", "555-789-4561",
-                "741 Vine St", "Springfield", "edward@example.com", null, "", 0, 0, 7, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, "P7", "E1"
+                "", "Fedward", "Wilson", 8, "Emma Wilson", "555-789-4561",
+                "741 Vine St", "Springfield", "edward@example.com", null, "red", 0, 0, 7, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, null, "E1"
             ),
             Ticket(
                 "T19", "Drank", "Adams", 7, "Frank Adams", "555-123-7890",
-                "369 Oak St", "Springfield", "edward@example.com", null, "", 0, 0, 10, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, "P8", "E2"
+                "369 Oak St", "Springfield", "edward@example.com", null, "blue", 1, 0, 10, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, null, "E2"
             ),
             Ticket(
                 "T20", "Feorge", "Garcia", 6, "George Garcia", "555-456-1234",
-                "852 Chestnut St", "Springfield", "george@example.com", null, "", 0, 0, 9, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, "P9", "E2"
+                "852 Chestnut St", "Springfield", "george@example.com", null, "", 1, 0, 9, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, null, "E2"
             ),
             Ticket(
                 "T21", "Fannah", "Scott", 5, "Henry Scott", "555-789-0123",
                 "753 Main St", "Springfield", "hannah@example.com", null, "", 0, 0, 12, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, "P10", "E2"
+                0, 0, 0, 0, 0, 0, 0, null, "E2"
+            ),
+            Ticket(
+                "T25", "Aliviera", "Barnham", 5, "Henry Scott", "555-789-0123",
+                "753 Main St", "Springfield", "hannah@example.com", null, "", 0, 0, 12, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, null, "E2"
             )
         )
 
-        // Insert sample players into the playerDatabase
+        // Insert sample tickets into the ticketDatabase
         tickets.forEach { ticketDatabase.insert(it) }
+
+
+        val players = listOf(
+            Player(
+                "12345", "Fane", "Doe", 15, 205, 1000,
+                5, 5, 1, 1, 1, 1, 0, 0, 0, 0,
+                mutableListOf("susanne", "thorvald"),mutableListOf("susanne@email.com", "thorvald@email.com"),
+                mutableListOf("0918239013", "128309312"),mutableListOf("nyckeldalen 3", "spårvagnen 4"),
+            ),
+            Player(
+                "54321", "Jane", "Doe", 15, 205, 1000,
+                5, 5, 1, 1, 1, 1, 0, 0, 0, 0,
+                mutableListOf("susanne", "thorvald"),mutableListOf("susanne@email.com", "thorvald@email.com"),
+                mutableListOf("0918239013", "128309312"),mutableListOf("nyckeldalen 3", "spårvagnen 4"),
+            )
+        )
+        // Insert sample player into the playerDatabase
+        players.forEach { playerDatabase.insert(it) }
     }
 
     fun dismissKeyboard() {

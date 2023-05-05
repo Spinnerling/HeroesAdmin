@@ -4,7 +4,7 @@ import kotlin.math.floor
 
 @Serializable
 data class Ticket(
-    val ticketId: String,
+    val ticketId: String? = "",
     var firstName: String? = null,
     var lastName: String? = null,
     val age: Int? = null,

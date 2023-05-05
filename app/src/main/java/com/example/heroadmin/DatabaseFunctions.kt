@@ -14,6 +14,7 @@ import org.json.JSONArray
 import org.json.JSONObject
 import kotlinx.serialization.encodeToString
 import com.android.volley.NoConnectionError
+import java.util.Locale
 
 
 class DatabaseFunctions(private val context: Context) {
@@ -247,7 +248,7 @@ class DatabaseFunctions(private val context: Context) {
         // Add guardian to player
     }
 
-    fun getTicketGuardians(ticketList: MutableList<Ticket>) {
+    fun getTicketBookers(ticketList: MutableList<Ticket>) {
         allTickets = ticketList
 
         for (ticket in allTickets) {
@@ -324,11 +325,18 @@ class DatabaseFunctions(private val context: Context) {
         ticket.teamColor = if (setBlue) "Blue" else "Red"
 
         // Update database
-        val jsonString = createTicketJsonString(ticket)
+        val jsonString = createJsonString(ticket)
         apiCallPost( "https://talltales.nu/API/api/update-ticket.php", jsonString)
     }
 
-    fun createTicketJsonString(ticket: Ticket): String {
-        return Json.encodeToString(ticket)
+    inline fun <reified T> createJsonString(data: T): String {
+        return Json.encodeToString(data)
+    }
+
+    inline fun <reified T> updateData(data: T) {
+        val jsonString = createJsonString(data)
+        val className = T::class.java.simpleName.lowercase(Locale.ROOT)
+        val endpoint = "https://talltales.nu/API/api/update-$className.php"
+        apiCallPost(endpoint, jsonString)
     }
 }

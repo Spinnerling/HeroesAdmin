@@ -21,12 +21,17 @@ data class Player(
     var warriorHealer : Int = 0,
     var warriorRogue : Int = 0,
     var warriorMage : Int = 0,
-    var warriorKnight : Int = 0
+    var warriorKnight : Int = 0,
+    var bookerNames : MutableList<String> = mutableListOf(),
+    var bookerEmails : MutableList<String> = mutableListOf(),
+    var bookerPhones : MutableList<String> = mutableListOf(),
+    var bookerAddresses : MutableList<String> = mutableListOf(),
 ) {
     var fullName = "$firstName $lastName"
     var totalExp = exp2021!! + exp2022!! + exp2023!! + extraExp!!
     var usedExp = 0
     var remExp = totalExp - usedExp
+
 
     fun updateExp() {
         val levelCosts = listOf(0, 50, 75, 100)
