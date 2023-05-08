@@ -1,6 +1,7 @@
 package com.example.heroadmin
 
 data class PlayerListItem (
+    val playerId: String,
     val firstName : String,
     val lastName : String,
     val age : Int,

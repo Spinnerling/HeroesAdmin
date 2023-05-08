@@ -1194,6 +1194,7 @@ class EventView : Fragment() {
         val playerListItems = players.mapNotNull { player ->
             if (player.firstName != null && player.lastName != null && player.age != null) {
                 PlayerListItem(
+                    playerId = player.playerId,
                     firstName = player.firstName!!,
                     lastName = player.lastName!!,
                     age = player.age!!,
@@ -1205,11 +1206,16 @@ class EventView : Fragment() {
             } else null
         }.toMutableList()
 
+        // Declare selectedItem variable here
+        var selectedItem: PlayerListItem? = null
+
         val adapter = PlayerListItemAdapter(
             playerListItems,
             object : PlayerListItemAdapter.OnItemClickListener {
-                override fun onItemClick(position: Int, adapter: PlayerListItemAdapter) {
+                override fun onItemClick(position: Int, adapter: PlayerListItemAdapter, playerListItem: PlayerListItem) {
+                    // ... onItemClick code ...
                     adapter.toggleSelection(position)
+                    selectedItem = if (adapter.selectedPosition != -1) playerListItem else null
 
                     // Get the reference for the acceptButton
                     val acceptButton: Button = dialogView.findViewById(R.id.mpl_acceptButton)
@@ -1219,7 +1225,7 @@ class EventView : Fragment() {
                         acceptButton.setBackgroundColor(
                             ContextCompat.getColor(
                                 context!!,
-                                R.color.primary_green
+                                R.color.buttonGreen
                             )
                         ) // Change to the desired color for the selected state
                     } else {
@@ -1235,8 +1241,6 @@ class EventView : Fragment() {
         )
 
         recyclerView.adapter = adapter
-
-
         // Get the reference for the buttons
         val acceptButton = dialogView.findViewById<Button>(R.id.mpl_acceptButton)
         val cancelButton = dialogView.findViewById<Button>(R.id.mpl_cancelButton)
@@ -1247,17 +1251,24 @@ class EventView : Fragment() {
             alertDialog.dismiss()
         }
 
+        // Set the click listener for the accept button
         acceptButton.setOnClickListener {
-            val selectedItem = adapter.getSelectedItem()
-            if (selectedItem != null) {
-                // Here, you can perform actions with the selected item, e.g., update the ticket with the selected player
+            val currentSelectedItem = selectedItem
+            if (currentSelectedItem != null) {
+                // Update the playerId of the ticket
+                ticket.playerId = currentSelectedItem.playerId
+
+                // Save the updated ticket
+                DBF.updateData(ticket)
+                updateTicketLists()
+
+                // Close the alertDialog
+                alertDialog.dismiss()
             } else {
-                // Show a message or handle the case when no item is selected
+                // Show a message that no player is selected, or handle the case where a new player should be created
             }
-            alertDialog.dismiss()
         }
     }
-
 
 // SORTING FUNCTIONS
 
@@ -1289,7 +1300,8 @@ class EventView : Fragment() {
         // Move all solo players (with the "SELF" group) to the end of the list
         val soloPlayers = assignList.filter { it.group == "SELF" || it.group == "" }
         val nonSoloPlayers = assignList.filter { it.group != "SELF" && it.group != "" }
-        assignList = (nonSoloPlayers + soloPlayers as MutableList<Ticket>) as MutableList<Ticket>
+        assignList =
+            (nonSoloPlayers + soloPlayers as MutableList<Ticket>) as MutableList<Ticket>
     }
 
     private fun sortCheckInByName() {
@@ -1370,7 +1382,8 @@ class EventView : Fragment() {
         redBench.forEach { it.currentRole = 7 }
 
         // Handle players with guarantees first
-        val guaranteedPlayers = team.filter { it.guaranteedRole!! > 0 && it.guaranteedRole!! <= 6 }
+        val guaranteedPlayers =
+            team.filter { it.guaranteedRole!! > 0 && it.guaranteedRole!! <= 6 }
         for (player in guaranteedPlayers) {
             val role = player.guaranteedRole
             if (roleAmounts[role!! - 1] > 0) {
@@ -1398,7 +1411,8 @@ class EventView : Fragment() {
             // Assign the current role and decrement roleCounter
             player.currentRole = roleIndex + 1
             roleCounter--
-            roleAmounts[roleIndex] = roleCounter // Update the roleCounter in the roleAmounts array
+            roleAmounts[roleIndex] =
+                roleCounter // Update the roleCounter in the roleAmounts array
         }
 
         // Check if all the desired roles were distributed

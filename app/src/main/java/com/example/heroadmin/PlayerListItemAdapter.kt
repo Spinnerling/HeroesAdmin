@@ -71,7 +71,7 @@ class PlayerListItemAdapter(
         // Add click listener for the whole item
         holder.itemView.setOnTouchListener { view, motionEvent ->
             if (motionEvent.action == MotionEvent.ACTION_DOWN) {
-                listener.onItemClick(position, this)
+                listener.onItemClick(position, this, playerList[position])
                 true
             } else {
                 false
@@ -87,7 +87,7 @@ class PlayerListItemAdapter(
     }
 
     interface OnItemClickListener {
-        fun onItemClick(position: Int, adapter: PlayerListItemAdapter)
+        fun onItemClick(position: Int, adapter: PlayerListItemAdapter, playerListItem: PlayerListItem)
     }
 
     // Get the selected item
