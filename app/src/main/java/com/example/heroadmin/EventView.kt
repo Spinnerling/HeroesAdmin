@@ -10,6 +10,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.widget.*
+import androidx.core.content.ContextCompat
 import kotlin.math.min
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
@@ -18,13 +19,6 @@ import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.heroadmin.databinding.FragmentEventViewBinding
-import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import kotlinx.serialization.decodeFromString
 import org.json.JSONObject
 import kotlin.math.abs
@@ -378,7 +372,8 @@ class EventView : Fragment() {
 
         allTickets = ticketDatabase.getAll() // Temporary code while no APIs exists
         allTickets.forEach { automaticPlayerLink(it) }
-        event.ticketIDs = allTickets.map { it.ticketId ?: "" }.toMutableList() // Temporary code while no APIs exists
+        event.ticketIDs = allTickets.map { it.ticketId ?: "" }
+            .toMutableList() // Temporary code while no APIs exists
         updateTicketLists()
         DBF.getTicketBookers(allTickets)
         loadingDialogue.dismiss()
@@ -1171,7 +1166,8 @@ class EventView : Fragment() {
         val alertDialog = builder.show()
 
         // Get the references for the TextViews to display ticket information
-        val name: TextView = dialogView.findViewById(R.id.mpl_ticketNameText)
+        val firstName: TextView = dialogView.findViewById(R.id.mpl_ticketFirstNameText)
+        val lastName: TextView = dialogView.findViewById(R.id.mpl_ticketLastNameText)
         val age: TextView = dialogView.findViewById(R.id.mpl_ageText)
         val bookerName: TextView = dialogView.findViewById(R.id.mpl_bookerNameText)
         val bookerEmail: TextView = dialogView.findViewById(R.id.mpl_bookerEmailText)
@@ -1179,7 +1175,8 @@ class EventView : Fragment() {
         val bookerPhone: TextView = dialogView.findViewById(R.id.mpl_bookerPhoneText)
 
         // Populate the TextViews with ticket information
-        name.text = ticket.fullName
+        firstName.text = ticket.firstName
+        lastName.text = ticket.lastName
         age.text = ticket.age.toString()
         bookerName.text = ticket.bookerName
         bookerEmail.text = ticket.bookerEmail
@@ -1191,7 +1188,8 @@ class EventView : Fragment() {
         recyclerView.layoutManager = LinearLayoutManager(context)
 
         // Fetch the players and create an instance of PlayerListItemAdapter
-        val players = playerDatabase.getAll() // You need to implement this method to fetch the list of players
+        val players =
+            playerDatabase.getAll() // You need to implement this method to fetch the list of players
 
         val playerListItems = players.mapNotNull { player ->
             if (player.firstName != null && player.lastName != null && player.age != null) {
@@ -1207,8 +1205,37 @@ class EventView : Fragment() {
             } else null
         }.toMutableList()
 
-        val adapter = PlayerListItemAdapter(playerListItems)
+        val adapter = PlayerListItemAdapter(
+            playerListItems,
+            object : PlayerListItemAdapter.OnItemClickListener {
+                override fun onItemClick(position: Int, adapter: PlayerListItemAdapter) {
+                    adapter.toggleSelection(position)
+
+                    // Get the reference for the acceptButton
+                    val acceptButton: Button = dialogView.findViewById(R.id.mpl_acceptButton)
+
+                    // Change the color of the acceptButton based on the selected item count
+                    if (adapter.selectedPosition != -1) {
+                        acceptButton.setBackgroundColor(
+                            ContextCompat.getColor(
+                                context!!,
+                                R.color.primary_green
+                            )
+                        ) // Change to the desired color for the selected state
+                    } else {
+                        acceptButton.setBackgroundColor(
+                            ContextCompat.getColor(
+                                context!!,
+                                R.color.colorUnselected
+                            )
+                        ) // Change to the desired color for the unselected state
+                    }
+                }
+            }
+        )
+
         recyclerView.adapter = adapter
+
 
         // Get the reference for the buttons
         val acceptButton = dialogView.findViewById<Button>(R.id.mpl_acceptButton)
@@ -1221,8 +1248,12 @@ class EventView : Fragment() {
         }
 
         acceptButton.setOnClickListener {
-            // Here you can handle what happens when the "Accept" button is clicked
-            // For example, you might want to update the ticket with the selected player
+            val selectedItem = adapter.getSelectedItem()
+            if (selectedItem != null) {
+                // Here, you can perform actions with the selected item, e.g., update the ticket with the selected player
+            } else {
+                // Show a message or handle the case when no item is selected
+            }
             alertDialog.dismiss()
         }
     }
@@ -1583,23 +1614,39 @@ class EventView : Fragment() {
 
         val players = listOf(
             Player(
-                "12345", "Fane", "Doe", 15, 205, 1000,
-                5, 5, 1, 1, 1, 1, 0, 0, 0, 0,
-                mutableListOf("susanne", "thorvald"),mutableListOf("susanne@email.com", "thorvald@email.com"),
-                mutableListOf("0918239013", "128309312"),mutableListOf("nyckeldalen 3", "spårvagnen 4"),
+                "12345",
+                "Fane",
+                "Doe",
+                15,
+                205,
+                1000,
+                5,
+                5,
+                1,
+                1,
+                1,
+                1,
+                0,
+                0,
+                0,
+                0,
+                mutableListOf("susanne", "thorvald"),
+                mutableListOf("susanne@email.com", "thorvald@email.com"),
+                mutableListOf("0918239013", "128309312"),
+                mutableListOf("nyckeldalen 3", "spårvagnen 4"),
             ),
             Player(
                 "54321", "Jane", "Doe", 15, 205, 1000,
                 5, 5, 1, 1, 1, 1, 0, 0, 0, 0,
-                mutableListOf("susanne", "thorvald"),mutableListOf("susanne@email.com", "thorvald@email.com"),
-                mutableListOf("0918239013", "128309312"),mutableListOf("nyckeldalen 3", "spårvagnen 4"),
+                mutableListOf("susanne"), mutableListOf("susanne@email.com"),
+                mutableListOf("0918239013"), mutableListOf("nyckeldalen 3"),
             )
         )
         // Insert sample player into the playerDatabase
         players.forEach { playerDatabase.insert(it) }
     }
 
-    fun dismissKeyboard() {
+    private fun dismissKeyboard() {
         val imm =
             requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
         imm.hideSoftInputFromWindow(binding.root.windowToken, 0)

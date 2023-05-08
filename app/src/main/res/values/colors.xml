@@ -28,6 +28,5 @@
     <color name="button_background">#F5F5F5</color>
     <color name="button_text">#2ecc71</color>
     <color name="button_text_dark">#27b062</color>
-
-
+    <color name="colorUnselected">#D3D3D3</color>
 </resources>

@@ -9,13 +9,14 @@ data class PlayerListItem (
     val bookerEmails: List<String> = listOf(),
     val bookerAddresses: List<String> = listOf()
 ) {
-    val bookerNamesShort = bookerNames[0]
+    val bookerNamesShort = bookerNames.firstOrNull() ?: ""
     val bookerNamesLong = bookerNames.joinToString("\n")
-    val bookerPhonesShort = bookerPhones[0]
+    val bookerPhonesShort = bookerPhones.firstOrNull() ?: ""
     val bookerPhonesLong = bookerPhones.joinToString("\n")
-    val bookerEmailsShort = bookerEmails[0]
+    val bookerEmailsShort = bookerEmails.firstOrNull() ?: ""
     val bookerEmailsLong = bookerEmails.joinToString("\n")
-    val bookerAddressesShort = bookerAddresses[0]
+    val bookerAddressesShort = bookerAddresses.firstOrNull() ?: ""
     val bookerAddressesLong = bookerAddresses.joinToString("\n")
     val hasMoreInfo = bookerNames.size > 1 || bookerPhones.size > 1 || bookerEmails.size > 1 || bookerAddresses.size > 1
+    var isExpanded: Boolean = false
 }
