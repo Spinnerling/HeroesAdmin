@@ -30,7 +30,7 @@ class AssignTeamRecyclerAdapter (private val ticketArray: MutableList<Ticket>, p
         holder.playerIdText.text = ticket.playerId
         holder.bookerEmailText.text = ticket.bookerEmail
         holder.contactName.text = ticket.bookerName
-        holder.contactPhone.text = ticket.bookerPhoneNr
+        holder.contactPhone.text = ticket.bookerPhone
         holder.bookerName.text = ticket.bookerName
         holder.note.text = ticket.note
 
@@ -87,7 +87,7 @@ class AssignTeamRecyclerAdapter (private val ticketArray: MutableList<Ticket>, p
             eventView.updateTicketLists()
 
             if (ticket.checkedIn == 1){
-                eventView.setTicketTabardNumber(ticket)
+                eventView.checkInTicket(ticket)
             }
         }
 
@@ -102,7 +102,7 @@ class AssignTeamRecyclerAdapter (private val ticketArray: MutableList<Ticket>, p
             eventView.updateTicketLists()
 
             if (ticket.checkedIn == 1){
-                eventView.setTicketTabardNumber(ticket)
+                eventView.checkInTicket(ticket)
             }
         }
 

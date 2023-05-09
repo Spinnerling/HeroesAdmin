@@ -14,7 +14,10 @@ import org.json.JSONArray
 import org.json.JSONObject
 import kotlinx.serialization.encodeToString
 import com.android.volley.NoConnectionError
+import kotlinx.coroutines.delay
 import java.util.Locale
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 
 class DatabaseFunctions(private val context: Context) {
@@ -243,11 +246,6 @@ class DatabaseFunctions(private val context: Context) {
         return role
     }
 
-    fun mergeTicketAndPlayer(player: Player, ticket: Ticket) {
-        player.age = ticket.age ?:0
-        // Add guardian to player
-    }
-
     fun getTicketBookers(ticketList: MutableList<Ticket>) {
         allTickets = ticketList
 
@@ -257,8 +255,8 @@ class DatabaseFunctions(private val context: Context) {
             }
 
             // Find ticket's guardian among previous guardians by their phone number
-            val formattedNumber = ticket.bookerPhoneNr?.let { formatPhoneNumber(it) }
-            ticket.bookerPhoneNr = formattedNumber
+            val formattedNumber = ticket.bookerPhone?.let { formatPhoneNumber(it) }
+            ticket.bookerPhone = formattedNumber
             apiCallGet(
                 "https://talltales.nu/API/api/guardian_players.php?id=$formattedNumber",
                 ::findPlayersByGuardian, {}
@@ -338,5 +336,100 @@ class DatabaseFunctions(private val context: Context) {
         val className = T::class.java.simpleName.lowercase(Locale.ROOT)
         val endpoint = "https://talltales.nu/API/api/update-$className.php"
         apiCallPost(endpoint, jsonString)
+    }
+
+    sealed class MatchResult {
+        data class DefiniteMatch(val playerId: String) : MatchResult()
+        data class Suggestions(val suggestions: List<PlayerListItem>) : MatchResult()
+        object NoMatch : MatchResult()
+    }
+
+    suspend fun matchTicketToPlayer(ticket: Ticket): MatchResult {
+        return suspendCoroutine { continuation ->
+            val url = "https://your.api/endpoint?firstName=${ticket.firstName}&lastName=${ticket.lastName}&age=${ticket.age}&bookerName=${ticket.bookerName}"
+
+            apiCallGet(
+                url,
+                responseFunction = { response ->
+                    // Based on the response, call onResult with the appropriate MatchResult subclass instance
+                    when (val matchType = response.getString("matchType")) {
+                        "definite" -> {
+                            val playerId = response.getString("playerId")
+                            continuation.resume(MatchResult.DefiniteMatch(playerId))
+                        }
+                        "suggestions" -> {
+                            val suggestedPlayers = response.getJSONArray("suggestedPlayers")
+                            val playerList = mutableListOf<PlayerListItem>()
+
+                            for (i in 0 until suggestedPlayers.length()) {
+                                val playerJson = suggestedPlayers.getJSONObject(i)
+                                val player = Json.decodeFromString<PlayerListItem>(playerJson.toString())
+                                playerList.add(player)
+                            }
+
+                            continuation.resume(MatchResult.Suggestions(playerList))
+                        }
+                        "noMatch" -> {
+                            continuation.resume(MatchResult.NoMatch)
+                        }
+                        else -> {
+                            Log.e("matchTicketToPlayer", "Invalid matchType: $matchType")
+                            continuation.resume(MatchResult.NoMatch) // You can decide how to handle this case
+                            Log.i("check", "{${ticket.fullName} had an error")
+                        }
+                    }
+                },
+                errorFunction = {
+                    // Handle error case here
+                    Log.e("matchTicketToPlayer", "API call failed")
+                    continuation.resume(MatchResult.NoMatch) // You can decide how to handle this case
+                }
+            )
+        }
+    }
+
+    suspend fun matchTicketToPlayerLocal(ticket: Ticket, playerDatabase: LocalDatabase<Player>): DatabaseFunctions.MatchResult {
+        delay(500) // Add delay to simulate network latency
+
+        val players = playerDatabase.getAll().filter { player ->
+            player.firstName == ticket.firstName && player.lastName == ticket.lastName
+        }
+
+        return when {
+            players.isEmpty() -> MatchResult.NoMatch
+            players.size == 1 -> {
+                val player = players.first()
+                // You can add additional checks here to confirm it's a definite match
+                MatchResult.DefiniteMatch(player.playerId)
+            }
+            else -> {
+                val playerListItems = players.map { player ->
+                    // Convert player objects to PlayerListItem objects
+                    PlayerListItem(
+                        playerId = player.playerId,
+                        firstName = player.firstName!!,
+                        lastName = player.lastName!!,
+                        age = player.age!!
+                    )
+                }
+                MatchResult.Suggestions(playerListItems)
+            }
+        }
+    }
+
+    fun getHighestPlayerId(onComplete: (String?) -> Unit) {
+        val url = "https://your.api/endpoint/getHighestPlayerId"
+
+        apiCallGet(
+            url,
+            responseFunction = { response ->
+                val highestId = response.getString("highestId")
+                onComplete(highestId)
+            },
+            errorFunction = {
+                Log.e("getHighestPlayerId", "API call failed")
+                onComplete(null)
+            }
+        )
     }
 }

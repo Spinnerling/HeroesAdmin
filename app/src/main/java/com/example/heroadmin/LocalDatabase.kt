@@ -9,7 +9,7 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicInteger
 
 class LocalDatabase<T : Any>(private val serializer: KSerializer<T>) {
-    private val storage = ConcurrentHashMap<Int, T>()
+    internal val storage = ConcurrentHashMap<Int, T>()
     private val nextId = AtomicInteger(1)
 
     fun getById(id: Int): T? {
@@ -50,6 +50,12 @@ class LocalDatabase<T : Any>(private val serializer: KSerializer<T>) {
             Json.decodeFromString(serializer, json)
         } catch (e: Exception) {
             throw RuntimeException("Error while decoding JSON to object", e)
+        }
+    }
+
+    internal inline fun <reified P> getByPropertyValue(propertySelector: (T) -> P, value: P): T? {
+        return storage.values.firstOrNull { item ->
+            propertySelector(item) == value
         }
     }
 }

@@ -1,5 +1,7 @@
 package com.example.heroadmin
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class PlayerListItem (
     val playerId: String,
     val firstName : String,

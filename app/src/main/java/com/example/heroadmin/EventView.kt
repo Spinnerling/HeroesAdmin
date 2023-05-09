@@ -19,10 +19,20 @@ import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.heroadmin.databinding.FragmentEventViewBinding
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.decodeFromString
 import org.json.JSONObject
 import kotlin.math.abs
 import kotlinx.serialization.json.Json
+import java.util.UUID
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 class EventView : Fragment() {
     private lateinit var currActivity: MainActivity
@@ -55,7 +65,7 @@ class EventView : Fragment() {
     private lateinit var bottomPanelNewRound: LinearLayout
     private lateinit var playerRoleButtonPanel: LinearLayout
     private lateinit var loadingDialogue: AlertDialog
-    private lateinit var notification: AlertDialog
+    private var playerIdGenerator: PlayerIdGenerator? = null
     private var healerAmount: Int = 0
     private var rogueAmount: Int = 0
     private var mageAmount: Int = 0
@@ -100,8 +110,9 @@ class EventView : Fragment() {
         bottomPanelPlayer = binding.bottomPanelPlayer
         playerRoleButtonPanel = binding.playerRoleButtonPanel
 
+        setupPlayerIdGenerator()
         loadingPopup()
-        getAllTickets(event)
+        getTicketIdsLocal(event)
 
         // Set variables
         binding.dateText.text = "Date: ${event.actualDate}"
@@ -324,64 +335,60 @@ class EventView : Fragment() {
     }
 
     private fun refreshEvent(response: JSONObject) {
-        event = Json.decodeFromString<Event>(response.toString())
+        val json = Json { ignoreUnknownKeys = true }
+        Log.d("refreshEvent", "JSON input: ${response.toString()}")
+        event = json.decodeFromString<Event>(response.toString())
         val jsonArray = response.getJSONArray("data").getJSONObject(0).getJSONArray("TicketIDs")
         val list = MutableList(jsonArray.length()) {
             jsonArray.getString(it)
         }
         event.ticketIDs.addAll(list)
 
-        getAllTickets(event)
+        getTicketIdsLocal(event)
     }
 
-    private fun getAllTickets(event: Event) {
-//        // Get the event's ticket ids safely
-//        event.ticketIDs.let { allTicketIds ->
-//            // Create an array of the players connected to the tickets
-//            allTickets = mutableListOf()
-//
-//            CoroutineScope(Dispatchers.IO).launch {
-//                val ticketJobs = allTicketIds.map { ticketId ->
-//                    async {
-//                        val result = CompletableDeferred<Ticket?>()
-//                        getTicket(ticketId) { ticket ->
-//                            result.complete(ticket)
-//                        }
-//                        result.await()
-//                    }
-//                }
-//
-//                val fetchedTickets = ticketJobs.awaitAll().filterNotNull()
-//                allTickets.clear()
-//                allTickets.addAll(fetchedTickets)
-//
-//                // Update UI with the new ticket list
-//                withContext(Dispatchers.Main) {
-//                    updateTicketLists()
-//                    DBF.getTicketBookers(allTickets)
-//                    loadingDialogue.dismiss()
-//                    binding.refreshButton.isEnabled = true
-//                }
-//            }
-//        } ?: run {
-//            // Handle the case when event.tickets is null
-//            // e.g., show an error message or set allTickets to an empty list
-//            allTickets = mutableListOf()
-//        }
+    private fun getTicketIds(event: Event) {
+        // Get the event's ticket ids safely
+        event.ticketIDs.let { allTicketIds ->
+            // Create an array of the players connected to the tickets
+            allTickets = mutableListOf()
 
+            CoroutineScope(Dispatchers.IO).launch {
+                val ticketJobs = allTicketIds.map { ticketId ->
+                    async {
+                        val result = CompletableDeferred<Ticket?>()
+                        getTicket(ticketId) { ticket ->
+                            result.complete(ticket)
+                        }
+                        result.await()
+                    }
+                }
 
-        allTickets = ticketDatabase.getAll() // Temporary code while no APIs exists
-        allTickets.forEach { automaticPlayerLink(it) }
-        event.ticketIDs = allTickets.map { it.ticketId ?: "" }
-            .toMutableList() // Temporary code while no APIs exists
+                val fetchedTickets = ticketJobs.awaitAll().filterNotNull()
+                allTickets.clear()
+                allTickets.addAll(fetchedTickets)
+                // Automatically link Tickets to Players
+                allTickets.forEach { ticket ->
+                    automaticPlayerLink(ticket)
+                }
+
+                // Update UI with the new ticket list
+                withContext(Dispatchers.Main) {
+                    updateTicketLists()
+                    DBF.getTicketBookers(allTickets)
+                    loadingDialogue.dismiss()
+                    binding.refreshButton.isEnabled = true
+                }
+            }
+        } ?: run {
+            // Handle the case when event.tickets is null
+            // e.g., show an error message or set allTickets to an empty list
+            allTickets = mutableListOf()
+        }
         updateTicketLists()
         DBF.getTicketBookers(allTickets)
         loadingDialogue.dismiss()
         binding.refreshButton.isEnabled = true
-    }
-
-    private fun automaticPlayerLink(ticket: Ticket) {
-
     }
 
     private fun getTicket(ticketId: String, onComplete: (Ticket?) -> Unit) {
@@ -398,6 +405,207 @@ class EventView : Fragment() {
             }
         )
     }
+
+    private fun getTicketIdsLocal(event: Event) {
+        event.ticketIDs.let { allTicketIds ->
+
+            allTickets = mutableListOf()
+
+            CoroutineScope(Dispatchers.IO).launch {
+                val ticketJobs = allTicketIds.map { ticketId ->
+                    async {
+                        val result = CompletableDeferred<Ticket?>()
+                        getTicketLocal(ticketId) { ticket ->
+                            result.complete(ticket)
+                        }
+                        result.await()
+                    }
+                }
+
+                val fetchedTickets = ticketJobs.awaitAll().filterNotNull()
+                allTickets.clear()
+                allTickets.addAll(fetchedTickets)
+
+                // Automatically link Tickets to Players
+                val automaticPlayerLinkJobs = allTickets.map { ticket ->
+                    async { automaticPlayerLink(ticket) }
+                }
+
+                val linkedTickets = automaticPlayerLinkJobs.awaitAll()
+                allTickets.clear()
+                allTickets.addAll(linkedTickets)
+                withContext(Dispatchers.Main) {
+
+                    Log.i("check", "Is run!")
+                    updateTicketLists()
+                    DBF.getTicketBookers(allTickets)
+                    loadingDialogue.dismiss()
+                    binding.refreshButton.isEnabled = true
+                }
+            }
+        } ?: run {
+            allTickets = mutableListOf()
+        }
+    }
+
+    fun getTicketLocal(ticketId: String, callback: (Ticket?) -> Unit) {
+        CoroutineScope(Dispatchers.IO).launch {
+            val ticket = ticketDatabase.getByPropertyValue({ it.ticketId }, ticketId)
+
+            withContext(Dispatchers.Main) {
+                callback(ticket)
+            }
+        }
+    }
+
+    private suspend fun automaticPlayerLink(ticket: Ticket): Ticket {
+        return if (ticket.playerId == null) {
+            when (val result = DBF.matchTicketToPlayerLocal(ticket, playerDatabase)) {
+                is DatabaseFunctions.MatchResult.DefiniteMatch -> {
+                    ticket.playerId = result.playerId
+                    DBF.updateData(ticket)
+                    Log.i("check", "{${ticket.fullName} found a definite match")
+                }
+
+                is DatabaseFunctions.MatchResult.Suggestions -> {
+                    ticket.suggestions = result.suggestions
+                    DBF.updateData(ticket)
+
+                    val amount = result.suggestions.size
+                    Log.i("check", "{${ticket.fullName} found {$amount} suggestions")
+                }
+
+                is DatabaseFunctions.MatchResult.NoMatch -> {
+                    val newPlayer: Player = createNewPlayer(ticket)
+                    DBF.updateData(newPlayer)
+                    ticket.playerId = newPlayer.playerId
+                    DBF.updateData(ticket)
+                    Log.i("check", "{${ticket.fullName} found nothing. Should create player")
+                }
+                else->{
+                    Log.i("check", "{${ticket.fullName} had an error")
+                }
+            }
+            ticket
+        } else {
+            ticket
+        }
+    }
+
+    fun manualPlayerLink(ticket: Ticket) {
+        val dialogView = LayoutInflater.from(context).inflate(R.layout.manual_player_link, null)
+
+        val builder = AlertDialog.Builder(context)
+            .setView(dialogView)
+
+        val alertDialog = builder.show()
+
+        // Get the references for the TextViews to display ticket information
+        val firstName: TextView = dialogView.findViewById(R.id.mpl_ticketFirstNameText)
+        val lastName: TextView = dialogView.findViewById(R.id.mpl_ticketLastNameText)
+        val age: TextView = dialogView.findViewById(R.id.mpl_ageText)
+        val bookerName: TextView = dialogView.findViewById(R.id.mpl_bookerNameText)
+        val bookerEmail: TextView = dialogView.findViewById(R.id.mpl_bookerEmailText)
+        val bookerAddress: TextView = dialogView.findViewById(R.id.mpl_bookerAdressText)
+        val bookerPhone: TextView = dialogView.findViewById(R.id.mpl_bookerPhoneText)
+
+        // Populate the TextViews with ticket information
+        firstName.text = ticket.firstName
+        lastName.text = ticket.lastName
+        age.text = ticket.age.toString()
+        bookerName.text = ticket.bookerName
+        bookerEmail.text = ticket.bookerEmail
+        bookerAddress.text = ticket.bookerAddress
+        bookerPhone.text = ticket.bookerPhone
+
+        // Get the reference for the RecyclerView and set its layout manager
+        val recyclerView: RecyclerView = dialogView.findViewById(R.id.mpl_recyclerView)
+        recyclerView.layoutManager = LinearLayoutManager(context)
+
+        // Fetch the players and create an instance of PlayerListItemAdapter
+        val playerListItems = ticket.suggestions?.mapNotNull { player ->
+            if (player.firstName != null && player.lastName != null && player.age != null) {
+                PlayerListItem(
+                    playerId = player.playerId,
+                    firstName = player.firstName!!,
+                    lastName = player.lastName!!,
+                    age = player.age!!,
+                    bookerNames = player.bookerNames,
+                    bookerPhones = player.bookerPhones,
+                    bookerEmails = player.bookerEmails,
+                    bookerAddresses = player.bookerAddresses
+                )
+            } else null
+        }?.toMutableList()
+
+// Declare selectedItem variable here
+        var selectedItem: PlayerListItem? = null
+
+        val adapter = PlayerListItemAdapter(
+            playerListItems?.let { it } ?: mutableListOf(), // Use the null-safe operator here
+            object : PlayerListItemAdapter.OnItemClickListener {
+                override fun onItemClick(
+                    position: Int,
+                    adapter: PlayerListItemAdapter,
+                    playerListItem: PlayerListItem
+                ) {
+                    // ... onItemClick code ...
+                    adapter.toggleSelection(position)
+                    selectedItem = if (adapter.selectedPosition != -1) playerListItem else null
+
+                    // Get the reference for the acceptButton
+                    val acceptButton: Button = dialogView.findViewById(R.id.mpl_acceptButton)
+
+                    // Change the color of the acceptButton based on the selected item count
+                    if (adapter.selectedPosition != -1) {
+                        acceptButton.setBackgroundColor(
+                            ContextCompat.getColor(
+                                context!!,
+                                R.color.buttonGreen
+                            )
+                        ) // Change to the desired color for the selected state
+                    } else {
+                        acceptButton.setBackgroundColor(
+                            ContextCompat.getColor(
+                                context!!,
+                                R.color.colorUnselected
+                            )
+                        ) // Change to the desired color for the unselected state
+                    }
+                }
+            }
+        )
+
+        recyclerView.adapter = adapter
+        // Get the reference for the buttons
+        val acceptButton = dialogView.findViewById<Button>(R.id.mpl_acceptButton)
+        val cancelButton = dialogView.findViewById<Button>(R.id.mpl_cancelButton)
+
+        // Set click listeners for the buttons
+        cancelButton.setOnClickListener {
+            Toast.makeText(context, "Cancelled", Toast.LENGTH_SHORT).show()
+            alertDialog.dismiss()
+        }
+
+        // Set the click listener for the accept button
+        acceptButton.setOnClickListener {
+            val currentSelectedItem = selectedItem
+            if (currentSelectedItem != null) {
+                // Update the playerId of the ticket
+                ticket.playerId = currentSelectedItem.playerId
+
+                // Save the updated ticket
+                DBF.updateData(ticket)
+                updateTicketLists()
+
+                // Close the alertDialog
+                alertDialog.dismiss()
+            } else {
+                // Show a message that no player is selected, or handle the case where a new player should be created
+            }
+        }
+    }
+
 
     private fun parseTicket2(response: JSONObject) {
         // Deserialize the JSONObject into a Ticket object
@@ -606,17 +814,34 @@ class EventView : Fragment() {
         updateTeamPower()
     }
 
-    private fun createNewPlayer(ticket: Ticket) {
-        val player = Player(
-            getNewPlayerId(),
-            ticket.firstName ?: "",
-            ticket.lastName ?: "",
-            ticket.age ?: 0,
-            0, 0, 0, 0,
-            1, 1, 1, 1,
-            0, 0, 0, 0
+    private fun createNewPlayer(ticket: Ticket): Player {
+        val newPlayerId = playerIdGenerator?.generateNewPlayerId() ?: run {
+            Log.e("createNewPlayer", "Error generating player ID")
+            "AAA000" // Fallback to default in case of error
+        }
+
+        return Player(
+            playerId = newPlayerId,
+            firstName = ticket.firstName ?: "",
+            lastName = ticket.lastName ?: "",
+            age = ticket.age ?: 0,
+            exp2021 = 0,
+            exp2022 = 0,
+            exp2023 = 0,
+            extraExp = 0,
+            healerLevel = 1,
+            rogueLevel = 1,
+            mageLevel = 1,
+            knightLevel = 1,
+            warriorHealer = 0,
+            warriorRogue = 0,
+            warriorMage = 0,
+            warriorKnight = 0,
+            bookerNames = mutableListOf(ticket.bookerName!!),
+            bookerEmails = mutableListOf(ticket.bookerEmail!!),
+            bookerPhones = mutableListOf(ticket.bookerPhone!!),
+            bookerAddresses = mutableListOf(ticket.bookerAddress!!),
         )
-        ticket.playerId = player.playerId
     }
 
     private fun getNewPlayerId(): String {
@@ -880,7 +1105,7 @@ class EventView : Fragment() {
         }
     }
 
-    fun setTicketTabardNumber(ticket: Ticket) {
+    fun checkInTicket(ticket: Ticket) {
         val dialogView = LayoutInflater.from(context).inflate(R.layout.checkin_popup, null)
 
         val builder = AlertDialog.Builder(context)
@@ -931,7 +1156,7 @@ class EventView : Fragment() {
         val guardianName: TextView = dialogView.findViewById(R.id.ti_guardianName)
         guardianName.text = ticket.bookerName
         val guardianPhone: TextView = dialogView.findViewById(R.id.ti_guardianPhone)
-        guardianPhone.text = ticket.bookerPhoneNr
+        guardianPhone.text = ticket.bookerPhone
         val bookerName: TextView = dialogView.findViewById(R.id.ti_bookerName)
         bookerName.text = ticket.bookerName
         val bookerEmail: TextView = dialogView.findViewById(R.id.ti_bookerEmail)
@@ -1157,119 +1382,6 @@ class EventView : Fragment() {
         }
     }
 
-    fun manualPlayerLink(ticket: Ticket) {
-        val dialogView = LayoutInflater.from(context).inflate(R.layout.manual_player_link, null)
-
-        val builder = AlertDialog.Builder(context)
-            .setView(dialogView)
-
-        val alertDialog = builder.show()
-
-        // Get the references for the TextViews to display ticket information
-        val firstName: TextView = dialogView.findViewById(R.id.mpl_ticketFirstNameText)
-        val lastName: TextView = dialogView.findViewById(R.id.mpl_ticketLastNameText)
-        val age: TextView = dialogView.findViewById(R.id.mpl_ageText)
-        val bookerName: TextView = dialogView.findViewById(R.id.mpl_bookerNameText)
-        val bookerEmail: TextView = dialogView.findViewById(R.id.mpl_bookerEmailText)
-        val bookerAddress: TextView = dialogView.findViewById(R.id.mpl_bookerAdressText)
-        val bookerPhone: TextView = dialogView.findViewById(R.id.mpl_bookerPhoneText)
-
-        // Populate the TextViews with ticket information
-        firstName.text = ticket.firstName
-        lastName.text = ticket.lastName
-        age.text = ticket.age.toString()
-        bookerName.text = ticket.bookerName
-        bookerEmail.text = ticket.bookerEmail
-        bookerAddress.text = ticket.bookerAdress
-        bookerPhone.text = ticket.bookerPhoneNr
-
-        // Get the reference for the RecyclerView and set its layout manager
-        val recyclerView: RecyclerView = dialogView.findViewById(R.id.mpl_recyclerView)
-        recyclerView.layoutManager = LinearLayoutManager(context)
-
-        // Fetch the players and create an instance of PlayerListItemAdapter
-        val players =
-            playerDatabase.getAll() // You need to implement this method to fetch the list of players
-
-        val playerListItems = players.mapNotNull { player ->
-            if (player.firstName != null && player.lastName != null && player.age != null) {
-                PlayerListItem(
-                    playerId = player.playerId,
-                    firstName = player.firstName!!,
-                    lastName = player.lastName!!,
-                    age = player.age!!,
-                    bookerNames = player.bookerNames,
-                    bookerPhones = player.bookerPhones,
-                    bookerEmails = player.bookerEmails,
-                    bookerAddresses = player.bookerAddresses
-                )
-            } else null
-        }.toMutableList()
-
-        // Declare selectedItem variable here
-        var selectedItem: PlayerListItem? = null
-
-        val adapter = PlayerListItemAdapter(
-            playerListItems,
-            object : PlayerListItemAdapter.OnItemClickListener {
-                override fun onItemClick(position: Int, adapter: PlayerListItemAdapter, playerListItem: PlayerListItem) {
-                    // ... onItemClick code ...
-                    adapter.toggleSelection(position)
-                    selectedItem = if (adapter.selectedPosition != -1) playerListItem else null
-
-                    // Get the reference for the acceptButton
-                    val acceptButton: Button = dialogView.findViewById(R.id.mpl_acceptButton)
-
-                    // Change the color of the acceptButton based on the selected item count
-                    if (adapter.selectedPosition != -1) {
-                        acceptButton.setBackgroundColor(
-                            ContextCompat.getColor(
-                                context!!,
-                                R.color.buttonGreen
-                            )
-                        ) // Change to the desired color for the selected state
-                    } else {
-                        acceptButton.setBackgroundColor(
-                            ContextCompat.getColor(
-                                context!!,
-                                R.color.colorUnselected
-                            )
-                        ) // Change to the desired color for the unselected state
-                    }
-                }
-            }
-        )
-
-        recyclerView.adapter = adapter
-        // Get the reference for the buttons
-        val acceptButton = dialogView.findViewById<Button>(R.id.mpl_acceptButton)
-        val cancelButton = dialogView.findViewById<Button>(R.id.mpl_cancelButton)
-
-        // Set click listeners for the buttons
-        cancelButton.setOnClickListener {
-            Toast.makeText(context, "Cancelled", Toast.LENGTH_SHORT).show()
-            alertDialog.dismiss()
-        }
-
-        // Set the click listener for the accept button
-        acceptButton.setOnClickListener {
-            val currentSelectedItem = selectedItem
-            if (currentSelectedItem != null) {
-                // Update the playerId of the ticket
-                ticket.playerId = currentSelectedItem.playerId
-
-                // Save the updated ticket
-                DBF.updateData(ticket)
-                updateTicketLists()
-
-                // Close the alertDialog
-                alertDialog.dismiss()
-            } else {
-                // Show a message that no player is selected, or handle the case where a new player should be created
-            }
-        }
-    }
-
 // SORTING FUNCTIONS
 
     private fun sortAssignByUserId() {
@@ -1454,11 +1566,32 @@ class EventView : Fragment() {
     }
 
     private fun updateRound(increase: Boolean) {
-        if (increase) event.round++ else event.round--
+        if (increase) event.round = event.round!! + 1 else event.round = event.round!! - 1
         binding.roundText.text = event.round.toString()
     }
 
     fun loadTestData() {
+        event = Event(
+            "e123",         // eventId: String
+            "Äventyrsspel", // title: String
+            "2023-05-15T14:30:00", // startTime: String
+            "2023-05-15T18:00:00", // endTime: String
+            "v456",         // venue: String
+            "Lorem ipsum dolor sit amet, consectetur adipiscing elit.", // reportText: String
+            "Join us for an exciting adventure game!", // description: String
+            null,       // winner: String
+            20,            // ExpAttendanceValue: Int
+            10,             // ExpWinningValue: Int
+            5,             // ExpTeamChangeValue: Int
+            20,             // ExpRecruitValue: Int
+            0,              // round: Int
+            null        // status: String
+        )
+        event.ticketIDs = mutableListOf(
+            "T0", "T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8", "T9",
+            "T10", "T11", "T12", "T13", "T14", "T15", "T16", "T17", "T18", "T19",
+            "T20", "T21", "T22"
+        )
         // Generate sample players
         val tickets = listOf(
             Ticket(
@@ -1596,7 +1729,7 @@ class EventView : Fragment() {
                 "E1"
             ),
             Ticket(
-                "", "Fedward", "Wilson", 8, "Emma Wilson", "555-789-4561",
+                "T18", "Fedward", "Wilson", 8, "Emma Wilson", "555-789-4561",
                 "741 Vine St", "Springfield", "edward@example.com", null, "red", 0, 0, 7, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, null, "E1"
             ),
@@ -1616,7 +1749,7 @@ class EventView : Fragment() {
                 0, 0, 0, 0, 0, 0, 0, null, "E2"
             ),
             Ticket(
-                "T25", "Aliviera", "Barnham", 5, "Henry Scott", "555-789-0123",
+                "T22", "Aliviera", "Barnham", 5, "Henry Scott", "555-789-0123",
                 "753 Main St", "Springfield", "hannah@example.com", null, "", 0, 0, 12, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, null, "E2"
             )
@@ -1684,7 +1817,7 @@ class EventView : Fragment() {
 
         val builder = AlertDialog.Builder(context).setView(dialogView)
 
-        notification = builder.show()
+        val notification = builder.show()
 
         val textHolder: TextView = dialogView.findViewById(R.id.notePopupText)
         textHolder.text = message
@@ -1707,5 +1840,11 @@ class EventView : Fragment() {
     fun layoutFunction() {
         dismissKeyboard()
         deselectPlayer()
+    }
+
+    fun setupPlayerIdGenerator() {
+        DBF.getHighestPlayerId { highestId ->
+            playerIdGenerator = PlayerIdGenerator(highestId)
+        }
     }
 }

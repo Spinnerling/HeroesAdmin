@@ -32,7 +32,7 @@ class CheckInRecyclerAdapter(private var ticketArray: MutableList<Ticket>, priva
         holder.note.text = ticket.note
 
         holder.contactName.text = ticket.bookerName
-        holder.contactPhone.text = ticket.bookerPhoneNr
+        holder.contactPhone.text = ticket.bookerPhone
         holder.bookerEmail.text = ticket.bookerEmail
 
         if (holder.note.text != "" && !ticket.noteHandled) {
@@ -65,7 +65,7 @@ class CheckInRecyclerAdapter(private var ticketArray: MutableList<Ticket>, priva
         }
 
         holder.checkInButton.setOnClickListener{
-            eventView.setTicketTabardNumber(ticket)
+            eventView.checkInTicket(ticket)
 
             eventView.autoSetRoleAmounts()
         }

@@ -9,8 +9,8 @@ data class Ticket(
     var lastName: String? = null,
     val age: Int? = null,
     val bookerName: String? = null,
-    var bookerPhoneNr: String? = null,
-    val bookerAdress: String? = null,
+    var bookerPhone: String? = null,
+    val bookerAddress: String? = null,
     val bookerPostort: String? = null,
     val bookerEmail: String? = null,
     var note: String? = null,
@@ -40,6 +40,7 @@ data class Ticket(
     var noteHandled = false
     var groupSize = 1
     var group = ""
+    var suggestions: List<PlayerListItem>? = null
 
     private fun checkPowerLevel(): Int {
         var multiplier: Float = 1.0F

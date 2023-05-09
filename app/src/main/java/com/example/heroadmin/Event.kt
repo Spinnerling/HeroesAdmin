@@ -18,10 +18,10 @@ data class Event (
     var ExpWinningValue: Int? = null,
     var ExpTeamChangeValue: Int? = null,
     var ExpRecruitValue: Int? = null,
-    var round: Int = 0,
-    var status: String? = null
+    @SerialName("Round") var round: Int? = 0,
+    @SerialName("Status") var status: String? = "Ej påbörjat"
 ) {
-    var ticketIDs: MutableList<String> = mutableListOf()
+    @SerialName("TicketIDs") var ticketIDs: MutableList<String> = mutableListOf()
     var time = startTime?.substring(11, 16)?.let { offsetTime(it) }
     var actualStartTime: String? = time
 

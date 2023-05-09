@@ -1,5 +1,6 @@
 package com.example.heroadmin
 
+import android.app.AlertDialog
 import android.content.Context
 import android.content.SharedPreferences
 import android.os.Bundle
@@ -10,6 +11,8 @@ import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
+import android.widget.Button
+import android.widget.TextView
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
@@ -45,16 +48,10 @@ class EventList : Fragment() {
         val venuesArrayAdapter = ArrayAdapter(v.context, R.layout.dropdown_item, venues)
         dropdownMenu.setAdapter(venuesArrayAdapter)
 
-
-        DBF.apiCallGet(
-            "https://talltales.nu/API/api/eventlist.php",
-            { eventsJson -> getEvents(eventsJson, json) },
-            {}
-        )
-        //setEventAdapter()
-
         // Load the saved venue, if any
         loadVenue()
+
+        loadEvents()
 
         // Set an onItemSelectedListener for the dropdownMenu
         dropdownMenu.onItemClickListener = AdapterView.OnItemClickListener { parent, _, position, _ ->
@@ -70,6 +67,19 @@ class EventList : Fragment() {
         binding.mainActivityBtPastEvents.setOnClickListener {
             setEventAdapter(dropdownMenu.text.toString(), true)
         }
+
+        binding.refreshButton.setOnClickListener {
+            loadEvents()
+        }
+    }
+
+    private fun loadEvents(){
+        binding.eventStatusText.text = "Loading Events..."
+        DBF.apiCallGet(
+            "https://talltales.nu/API/api/eventlist.php",
+            { eventsJson -> getEvents(eventsJson, json) },
+            {}
+        )
     }
 
     private fun saveVenue(venue: String) {
@@ -131,7 +141,22 @@ class EventList : Fragment() {
     }
 
     private fun noEventConnection() {
+        callNotification("Could not access database")
+    }
 
+    private fun callNotification(message: String) {
+        val dialogView = LayoutInflater.from(context).inflate(R.layout.note_popup, null)
+
+        val builder = AlertDialog.Builder(context).setView(dialogView)
+
+        val notification = builder.show()
+
+        val textHolder: TextView = dialogView.findViewById(R.id.notePopupText)
+        textHolder.text = message
+
+        dialogView.findViewById<Button>(R.id.notePopupAcceptButton).setOnClickListener {
+            notification.dismiss()
+        }
     }
 
     private fun setEventAdapter(venue: String, displayPastEvents: Boolean) {
@@ -158,11 +183,15 @@ class EventList : Fragment() {
         eventList.itemAnimator = DefaultItemAnimator()
         eventList.adapter = eventAdapter
 
+        if (list.size < 1){
+            binding.eventStatusText.text = "No events found"
+        }
+
         // Set text visibility
         if (list.isNotEmpty()) {
-            binding.noEventsText.visibility = View.INVISIBLE
+            binding.eventStatusText.visibility = View.INVISIBLE
         } else {
-            binding.noEventsText.visibility = View.VISIBLE
+            binding.eventStatusText.visibility = View.VISIBLE
         }
     }
 
