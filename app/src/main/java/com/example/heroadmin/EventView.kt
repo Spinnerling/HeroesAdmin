@@ -30,6 +30,7 @@ import kotlinx.serialization.decodeFromString
 import org.json.JSONObject
 import kotlin.math.abs
 import kotlinx.serialization.json.Json
+import org.json.JSONArray
 import java.util.UUID
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
@@ -44,6 +45,7 @@ class EventView : Fragment() {
     private lateinit var event: Event
     val ticketDatabase = LocalDatabase(Ticket.serializer())
     val playerDatabase = LocalDatabase(Player.serializer())
+    val eventDatabase = LocalDatabase(Event.serializer())
     private lateinit var allTickets: MutableList<Ticket>
     private lateinit var redTeam: MutableList<Ticket>
     private lateinit var blueTeam: MutableList<Ticket>
@@ -305,7 +307,7 @@ class EventView : Fragment() {
             openAwardExp()
         }
         binding.refreshButton.setOnClickListener {
-            getEvent()
+            getEventLocal()
             binding.refreshButton.isEnabled = false
             loadingDialogue.show()
         }
@@ -334,14 +336,37 @@ class EventView : Fragment() {
         )
     }
 
+    fun getEventLocal() {
+        CoroutineScope(Dispatchers.IO).launch {
+            val eventId = event.eventId
+            val fetchedEvent = eventDatabase.getByPropertyValue({ it.eventId }, eventId)
+
+            withContext(Dispatchers.Main) {
+                fetchedEvent?.let {
+                    val jsonEvent = JSONObject(Json.encodeToString(Event.serializer(), it))
+                    val response = JSONObject().apply {
+                        put("data", JSONArray().apply { put(jsonEvent) })
+                    }
+                    refreshEvent(response)
+                } ?: run {
+                    Log.e("getEventLocal", "Event not found in the local database")
+                    // Handle the case when the event is not found in the local database
+                }
+            }
+        }
+    }
+
     private fun refreshEvent(response: JSONObject) {
         val json = Json { ignoreUnknownKeys = true }
-        Log.d("refreshEvent", "JSON input: ${response.toString()}")
-        event = json.decodeFromString<Event>(response.toString())
-        val jsonArray = response.getJSONArray("data").getJSONObject(0).getJSONArray("TicketIDs")
+        Log.d("check", "JSON input: ${response.toString()}")
+        val eventData = response.getJSONArray("data").getJSONObject(0)
+        event = json.decodeFromString<Event>(eventData.toString())
+        val jsonArray = eventData.getJSONArray("TicketIDs")
         val list = MutableList(jsonArray.length()) {
             jsonArray.getString(it)
         }
+
+        event.ticketIDs.clear() // Clear the existing ticket IDs
         event.ticketIDs.addAll(list)
 
         getTicketIdsLocal(event)
@@ -412,6 +437,8 @@ class EventView : Fragment() {
             allTickets = mutableListOf()
 
             CoroutineScope(Dispatchers.IO).launch {
+                Log.d("check", "All ticket IDs: $allTicketIds")
+
                 val ticketJobs = allTicketIds.map { ticketId ->
                     async {
                         val result = CompletableDeferred<Ticket?>()
@@ -423,6 +450,9 @@ class EventView : Fragment() {
                 }
 
                 val fetchedTickets = ticketJobs.awaitAll().filterNotNull()
+                Log.d("check", "Fetched tickets: ${fetchedTickets.size}")
+
+                Log.i("check", "tickets in database after: ${ticketDatabase.storage.size}")
                 allTickets.clear()
                 allTickets.addAll(fetchedTickets)
 
@@ -432,15 +462,15 @@ class EventView : Fragment() {
                 }
 
                 val linkedTickets = automaticPlayerLinkJobs.awaitAll()
+                Log.d("check", "Linked tickets: ${linkedTickets.size}")
                 allTickets.clear()
                 allTickets.addAll(linkedTickets)
                 withContext(Dispatchers.Main) {
-
                     Log.i("check", "Is run!")
                     updateTicketLists()
                     DBF.getTicketBookers(allTickets)
-                    loadingDialogue.dismiss()
                     binding.refreshButton.isEnabled = true
+                    loadingDialogue.dismiss()
                 }
             }
         } ?: run {
@@ -842,11 +872,6 @@ class EventView : Fragment() {
             bookerPhones = mutableListOf(ticket.bookerPhone!!),
             bookerAddresses = mutableListOf(ticket.bookerAddress!!),
         )
-    }
-
-    private fun getNewPlayerId(): String {
-        val playerId = "0"
-        return playerId
     }
 
     private fun autoAssignLoop() {
@@ -1791,6 +1816,29 @@ class EventView : Fragment() {
         )
         // Insert sample player into the playerDatabase
         players.forEach { playerDatabase.insert(it) }
+
+        // EVENT
+        val exampleEvent = Event(
+            eventId = "1",
+            title = "Example Event",
+            startTime = "2023-05-15T10:00:00",
+            endTime = "2023-05-15T18:00:00",
+            venue = "Example Venue",
+            reportText = "This is an example event for testing purposes.",
+            description = "This is an example event where participants will compete in various activities.",
+            winner = "John Doe",
+            ExpAttendanceValue = 50,
+            ExpWinningValue = 1000,
+            ExpTeamChangeValue = 20,
+            ExpRecruitValue = 10,
+            round = 1,
+            status = "Ej påbörjat"
+        )
+        val ticketIdsList = listOf(
+            "T1", "T2", "T3", "T4", "T5", "T6", "T7", "T0", "T11", "T12", "T13", "T14", "T15", "T16", "T17", "T18"
+        )
+        exampleEvent.ticketIDs.addAll(ticketIdsList)
+        eventDatabase.insert(exampleEvent)
     }
 
     private fun dismissKeyboard() {

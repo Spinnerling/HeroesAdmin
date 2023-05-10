@@ -123,7 +123,7 @@ class EventList : Fragment() {
             for (i in venues.indices) {
                 // If event's venue is correct for the list, add event to past or future list
                 if (event.venue == venues[i]) {
-                    Log.d("asdasdasd", "${event.title}")
+                    Log.d("asdasdasd", event.title)
                     if (event.startTime!! < currentTime.toString()) {
                         eventListList[i * 2].add(event) // Add to past list
                     } else {
