@@ -26,6 +26,9 @@ class LevelUpFragment : Fragment() {
     private lateinit var warriorExpTextArray: Array<TextView>
     private lateinit var specialSection: LinearLayout
     private lateinit var warriorSection: LinearLayout
+    val ticketDatabase = LocalDatabaseSingleton.ticketDatabase
+    val playerDatabase = LocalDatabaseSingleton.playerDatabase
+    val eventDatabase = LocalDatabaseSingleton.eventDatabase
 
     private val expArray: Array<IntArray> = arrayOf(
         intArrayOf(0, 50, 75, 100, 100), // Healer levels' experience costs

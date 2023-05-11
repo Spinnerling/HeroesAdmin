@@ -33,6 +33,7 @@ class DatabaseFunctions(private val context: Context) {
         val requestQueue = Volley.newRequestQueue(context)
         val stringRequest = StringRequest(Request.Method.GET, url,
             { response ->
+                Log.d("check", "response: $response")
                 responseFunction(JSONObject(response))
             },
             { error ->
@@ -388,7 +389,8 @@ class DatabaseFunctions(private val context: Context) {
         }
     }
 
-    suspend fun matchTicketToPlayerLocal(ticket: Ticket, playerDatabase: LocalDatabase<Player>): DatabaseFunctions.MatchResult {
+    suspend fun matchTicketToPlayerLocal(ticket: Ticket, playerDatabase: LocalDatabase<Player, String>): MatchResult {
+
         delay(500) // Add delay to simulate network latency
 
         val players = playerDatabase.getAll().filter { player ->

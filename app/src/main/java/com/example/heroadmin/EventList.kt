@@ -21,6 +21,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.heroadmin.databinding.FragmentEventListBinding
 import org.json.JSONObject
 import kotlinx.serialization.json.Json
+import org.json.JSONArray
 
 class EventList : Fragment() {
     // Initialize the binding object
@@ -36,6 +37,7 @@ class EventList : Fragment() {
     private var displayPastEvents: Boolean = false
     private val SHARED_PREFS = "sharedPrefs"
     private val VENUE_KEY = "venue"
+    val eventDatabase = LocalDatabaseSingleton.eventDatabase
 
     private lateinit var sharedPreferences: SharedPreferences
 
@@ -51,7 +53,8 @@ class EventList : Fragment() {
         // Load the saved venue, if any
         loadVenue()
 
-        loadEvents()
+        createSampleEvents()
+        loadEventsLocally()
 
         // Set an onItemSelectedListener for the dropdownMenu
         dropdownMenu.onItemClickListener = AdapterView.OnItemClickListener { parent, _, position, _ ->
@@ -80,6 +83,24 @@ class EventList : Fragment() {
             { eventsJson -> getEvents(eventsJson, json) },
             {}
         )
+    }
+
+    private fun loadEventsLocally() {
+        binding.eventStatusText.text = "Loading Events Locally..."
+
+        val events = eventDatabase.getAll()
+        val eventsJsonArray = JSONArray()
+
+        for (event in events) {
+            val eventJson = JSONObject(this.eventDatabase.toJson(event))
+            eventsJsonArray.put(eventJson)
+        }
+
+        val eventsJsonObject = JSONObject().apply {
+            put("data", eventsJsonArray) // Change "events" to "data" to match the expected key in getEventArray
+        }
+
+        getEvents(eventsJsonObject, Json)
     }
 
     private fun saveVenue(venue: String) {
@@ -199,6 +220,34 @@ class EventList : Fragment() {
         val event = eventArray[position].eventId
         (activity as MainActivity).event = eventArray[position]
         findNavController().navigate(EventListDirections.actionEventListToEventView(event))
+    }
+
+    private fun createSampleEvents() {
+        // Create sample event 1
+        val event1 = Event(
+            eventId = "1",
+            title = "Sample Event 1",
+            startTime = "2024-05-11T10:00:00",
+            endTime = "2024-05-11T12:00:00",
+            venue = "Stockholm"
+        )
+        val ticketIdsList = listOf(
+            "T1", "T2", "T3", "T4", "T5", "T6", "T7", "T0", "T11", "T12", "T13", "T14", "T15", "T16", "T17", "T18"
+        )
+        event1.ticketIDs.addAll(ticketIdsList)
+        eventDatabase.insert(event1)
+
+        // Create sample event 2
+        val event2 = Event(
+            eventId = "2",
+            title = "Sample Event 2",
+            startTime = "2024-05-12T14:00:00",
+            endTime = "2024-05-12T16:00:00",
+            venue = "Visby"
+        )
+        event2.ticketIDs.addAll(ticketIdsList)
+        eventDatabase.insert(event2)
+        // Create more sample events as needed and insert them into localEventDatabase
     }
 
     override fun onCreateView(

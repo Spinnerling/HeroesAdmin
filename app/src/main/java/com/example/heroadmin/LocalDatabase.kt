@@ -1,5 +1,6 @@
 package com.example.heroadmin
 
+import android.util.Log
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
@@ -8,32 +9,42 @@ import kotlinx.serialization.json.Json
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicInteger
 
-class LocalDatabase<T : Any>(private val serializer: KSerializer<T>) {
-    internal val storage = ConcurrentHashMap<Int, T>()
-    private val nextId = AtomicInteger(1)
+class LocalDatabase<T, ID>(
+    private val serializer: KSerializer<T>,
+    private val getId: (T) -> ID
+) {
+    private val database = mutableMapOf<ID, T>()
 
-    fun getById(id: Int): T? {
-        return storage[id]
+    fun getById(id: ID): T? {
+        return database[id]
     }
 
     fun getAll(): MutableList<T> {
-        return storage.values.toMutableList()
+        return database.values.toMutableList()
     }
 
-    fun insert(obj: T, id: Int? = null): Int {
-        val newId = id ?: nextId.getAndIncrement()
-        if (storage.putIfAbsent(newId, obj) != null) {
-            throw IllegalStateException("Object with id $newId already exists.")
+    fun insert(item: T) {
+        val id = getId(item)
+        if (id !in database) {
+            database[id] = item
+        } else {
+            //update(item)
+            Log.i("check", "Item with ID $id already in database.")
         }
-        return newId
     }
 
-    fun update(id: Int, obj: T): Boolean {
-        return storage.replace(id, obj) != null
+    fun update(item: T) {
+        val id = getId(item)
+        if (id in database) {
+            database[id] = item
+        } else {
+            insert(item)
+            Log.i("check", "Item with ID $id does not exist in database. Inserting instead.")
+        }
     }
 
-    fun deleteById(id: Int): Boolean {
-        return storage.remove(id) != null
+    fun deleteById(id: ID): Boolean {
+        return database.remove(id) != null
     }
 
     // Serialize and deserialize functions for JSON
@@ -54,7 +65,7 @@ class LocalDatabase<T : Any>(private val serializer: KSerializer<T>) {
     }
 
     internal inline fun <reified P> getByPropertyValue(propertySelector: (T) -> P, value: P): T? {
-        return storage.values.firstOrNull { item ->
+        return database.values.firstOrNull { item ->
             propertySelector(item) == value
         }
     }

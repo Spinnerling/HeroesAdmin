@@ -43,9 +43,9 @@ class EventView : Fragment() {
     private lateinit var args: EventViewArgs
     private lateinit var currEventId: String
     private lateinit var event: Event
-    val ticketDatabase = LocalDatabase(Ticket.serializer())
-    val playerDatabase = LocalDatabase(Player.serializer())
-    val eventDatabase = LocalDatabase(Event.serializer())
+    val ticketDatabase = LocalDatabaseSingleton.ticketDatabase
+    val playerDatabase = LocalDatabaseSingleton.playerDatabase
+    val eventDatabase = LocalDatabaseSingleton.eventDatabase
     private lateinit var allTickets: MutableList<Ticket>
     private lateinit var redTeam: MutableList<Ticket>
     private lateinit var blueTeam: MutableList<Ticket>
@@ -120,7 +120,7 @@ class EventView : Fragment() {
         binding.dateText.text = "Date: ${event.actualDate}"
         binding.timeText.text = "Start: ${event.actualStartTime}"
         binding.venueText.text = "Venue: ${event.venue}"
-        binding.playerAmountText.text = "Tickets: ${allTickets.size} / ${event.playerMax}"
+        binding.playerAmountText.text = "Tickets: ${event.ticketAmount} / ${event.playerMax}"
         binding.roundText.text = event.round.toString()
 
         binding.scrollingPanel.setOnTouchListener { _, _ ->
@@ -247,6 +247,7 @@ class EventView : Fragment() {
                     ticket.teamColor = "Red"
                     team = "Blue"
                 }
+                ticketDatabase.update(ticket)
             }
             updateTicketLists()
             autoSetRoleAmounts()
@@ -307,9 +308,12 @@ class EventView : Fragment() {
             openAwardExp()
         }
         binding.refreshButton.setOnClickListener {
+            loadingDialogue.show()
             getEventLocal()
             binding.refreshButton.isEnabled = false
-            loadingDialogue.show()
+        }
+        binding.emptyButton.setOnClickListener {
+            addOneTicket() // TODO: Remove
         }
         binding.assignTeamAutoAssignButton.setOnClickListener {
             autoAssignLoop()
@@ -337,19 +341,21 @@ class EventView : Fragment() {
     }
 
     fun getEventLocal() {
+        Log.d("check", "getEventLocal started")
         CoroutineScope(Dispatchers.IO).launch {
             val eventId = event.eventId
             val fetchedEvent = eventDatabase.getByPropertyValue({ it.eventId }, eventId)
 
             withContext(Dispatchers.Main) {
                 fetchedEvent?.let {
+                    Log.d("check", "Event fetched from local database") // Add this log statement
                     val jsonEvent = JSONObject(Json.encodeToString(Event.serializer(), it))
                     val response = JSONObject().apply {
                         put("data", JSONArray().apply { put(jsonEvent) })
                     }
                     refreshEvent(response)
                 } ?: run {
-                    Log.e("getEventLocal", "Event not found in the local database")
+                    Log.e("check", "Event not found in the local database")
                     // Handle the case when the event is not found in the local database
                 }
             }
@@ -452,7 +458,6 @@ class EventView : Fragment() {
                 val fetchedTickets = ticketJobs.awaitAll().filterNotNull()
                 Log.d("check", "Fetched tickets: ${fetchedTickets.size}")
 
-                Log.i("check", "tickets in database after: ${ticketDatabase.storage.size}")
                 allTickets.clear()
                 allTickets.addAll(fetchedTickets)
 
@@ -461,7 +466,9 @@ class EventView : Fragment() {
                     async { automaticPlayerLink(ticket) }
                 }
 
+                Log.d("check", "Before automaticPlayerLinkJobs.awaitAll()")
                 val linkedTickets = automaticPlayerLinkJobs.awaitAll()
+                Log.d("check", "After automaticPlayerLinkJobs.awaitAll()")
                 Log.d("check", "Linked tickets: ${linkedTickets.size}")
                 allTickets.clear()
                 allTickets.addAll(linkedTickets)
@@ -470,6 +477,7 @@ class EventView : Fragment() {
                     updateTicketLists()
                     DBF.getTicketBookers(allTickets)
                     binding.refreshButton.isEnabled = true
+                    Log.d("check", "Dismissing loading dialogue...")
                     loadingDialogue.dismiss()
                 }
             }
@@ -480,6 +488,7 @@ class EventView : Fragment() {
 
     fun getTicketLocal(ticketId: String, callback: (Ticket?) -> Unit) {
         CoroutineScope(Dispatchers.IO).launch {
+            Log.d("check", "Getting ticket with ID: $ticketId") // Add this log statement
             val ticket = ticketDatabase.getByPropertyValue({ it.ticketId }, ticketId)
 
             withContext(Dispatchers.Main) {
@@ -492,14 +501,15 @@ class EventView : Fragment() {
         return if (ticket.playerId == null) {
             when (val result = DBF.matchTicketToPlayerLocal(ticket, playerDatabase)) {
                 is DatabaseFunctions.MatchResult.DefiniteMatch -> {
-                    ticket.playerId = result.playerId
-                    DBF.updateData(ticket)
-                    Log.i("check", "{${ticket.fullName} found a definite match")
-                }
+                    val updatedTicket = ticket.copy(playerId = result.playerId)
+                    //DBF.updateData(updatedTicket) TODO: Update all these to Online instead
+                    ticketDatabase.update(updatedTicket)
+                    Log.i("check", "{${ticket.fullName} found a definite match")}
 
                 is DatabaseFunctions.MatchResult.Suggestions -> {
                     ticket.suggestions = result.suggestions
-                    DBF.updateData(ticket)
+                    //DBF.updateData(ticket)
+                    ticketDatabase.update(ticket)
 
                     val amount = result.suggestions.size
                     Log.i("check", "{${ticket.fullName} found {$amount} suggestions")
@@ -507,9 +517,11 @@ class EventView : Fragment() {
 
                 is DatabaseFunctions.MatchResult.NoMatch -> {
                     val newPlayer: Player = createNewPlayer(ticket)
-                    DBF.updateData(newPlayer)
+                    //DBF.updateData(newPlayer)
+                    playerDatabase.update(newPlayer)
                     ticket.playerId = newPlayer.playerId
-                    DBF.updateData(ticket)
+                    //DBF.updateData(ticket)
+                    ticketDatabase.update(ticket)
                     Log.i("check", "{${ticket.fullName} found nothing. Should create player")
                 }
                 else->{
@@ -625,7 +637,8 @@ class EventView : Fragment() {
                 ticket.playerId = currentSelectedItem.playerId
 
                 // Save the updated ticket
-                DBF.updateData(ticket)
+                //DBF.updateData(ticket)
+                ticketDatabase.update(ticket)
                 updateTicketLists()
 
                 // Close the alertDialog
@@ -673,6 +686,7 @@ class EventView : Fragment() {
     }
 
     fun updateTicketLists() {
+        Log.i("check", "tickets updated")
         assignList = mutableListOf()
         checkInList = mutableListOf()
         redTeam = mutableListOf()
@@ -832,7 +846,8 @@ class EventView : Fragment() {
 
                 if (setDatabase) {
                     // Update database
-                    DBF.updateData(ticket)
+                    //DBF.updateData(ticket)
+                    ticketDatabase.update(ticket)
                 }
 
                 // Check if Ticket is connected to a Player
@@ -1151,7 +1166,8 @@ class EventView : Fragment() {
             updateTicketLists()
 
             // Update database
-            DBF.updateData(ticket)
+            //DBF.updateData(ticket)
+            ticketDatabase.update(ticket)
 
             alertDialog.dismiss()
 
@@ -1212,7 +1228,8 @@ class EventView : Fragment() {
                 ticket.expPersonal = ticket.expPersonal?.plus(number.toInt())
 
                 // Update database
-                DBF.updateData(selectedTicket)
+                //DBF.updateData(selectedTicket)
+                ticketDatabase.update(selectedTicket)
 
                 alertDialog.dismiss()
             }
@@ -1269,7 +1286,8 @@ class EventView : Fragment() {
         autoSetRoleAmounts()
 
         // Update database
-        DBF.updateData(selectedTicket)
+        //DBF.updateData(selectedTicket)
+        ticketDatabase.update(selectedTicket)
     }
 
     private fun endEvent() {
@@ -1318,8 +1336,8 @@ class EventView : Fragment() {
         }
 
         dialogView.findViewById<Button>(R.id.rp_exitButton).setOnClickListener {
-            event.ExpAttendanceValue = attendanceValue.text.toString().toInt()
-            event.ExpRecruitValue = recruitValue.text.toString().toInt()
+            //event.ExpAttendanceValue = attendanceValue.text.toString().toInt()
+            //event.ExpRecruitValue = recruitValue.text.toString().toInt()
             //event.ExpWinningValue = winningValue.text.toString().toInt()
 
             alertDialog.dismiss()
@@ -1397,7 +1415,8 @@ class EventView : Fragment() {
             updateTicketLists()
 
             // Update database
-            DBF.updateData(ticket)
+            //DBF.updateData(ticket)
+            ticketDatabase.update(ticket)
 
             alertDialog.dismiss()
         }
@@ -1596,27 +1615,6 @@ class EventView : Fragment() {
     }
 
     fun loadTestData() {
-        event = Event(
-            "e123",         // eventId: String
-            "Äventyrsspel", // title: String
-            "2023-05-15T14:30:00", // startTime: String
-            "2023-05-15T18:00:00", // endTime: String
-            "v456",         // venue: String
-            "Lorem ipsum dolor sit amet, consectetur adipiscing elit.", // reportText: String
-            "Join us for an exciting adventure game!", // description: String
-            null,       // winner: String
-            20,            // ExpAttendanceValue: Int
-            10,             // ExpWinningValue: Int
-            5,             // ExpTeamChangeValue: Int
-            20,             // ExpRecruitValue: Int
-            0,              // round: Int
-            null        // status: String
-        )
-        event.ticketIDs = mutableListOf(
-            "T0", "T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8", "T9",
-            "T10", "T11", "T12", "T13", "T14", "T15", "T16", "T17", "T18", "T19",
-            "T20", "T21", "T22"
-        )
         // Generate sample players
         val tickets = listOf(
             Ticket(
@@ -1894,5 +1892,18 @@ class EventView : Fragment() {
         DBF.getHighestPlayerId { highestId ->
             playerIdGenerator = PlayerIdGenerator(highestId)
         }
+    }
+
+    fun addOneTicket() {
+        ticketDatabase.insert(Ticket(
+            "T30", "New", "Man", 16, "william Scott", "555-789-0123",
+            "753 Main St", "Springfield", "william@example.com", null, "", 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, null, event.eventId
+        ))
+        event.ticketIDs.add("T30")
+        Log.i("check", "additional ticket added")
+
+        // Update the event in the local database
+        eventDatabase.update(event)
     }
 }

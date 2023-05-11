@@ -1,5 +1,6 @@
 package com.example.heroadmin
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
@@ -26,8 +27,9 @@ class EventRecyclerAdapterKt(private val eventArray: MutableList<Event>, private
         holder.dateText.text = date
         val time = event.actualStartTime
         holder.timeText.text = time
-        val playerAmount = event.playerAmount
-        holder.playerAmountText.text = "$playerAmount players"
+        val ticketAmount = event.ticketAmount
+        Log.i("check", "antal deltagare: " + event.ticketAmount)
+        holder.playerAmountText.text = "$ticketAmount deltagare"
         val status = event.status
         holder.statusText.text = status
     }
