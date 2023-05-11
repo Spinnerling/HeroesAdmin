@@ -502,33 +502,32 @@ class EventView : Fragment() {
             when (val result = DBF.matchTicketToPlayerLocal(ticket, playerDatabase)) {
                 is DatabaseFunctions.MatchResult.DefiniteMatch -> {
                     val updatedTicket = ticket.copy(playerId = result.playerId)
-                    //DBF.updateData(updatedTicket) TODO: Update all these to Online instead
                     ticketDatabase.update(updatedTicket)
-                    Log.i("check", "{${ticket.fullName} found a definite match")}
+                    Log.i("check", "{${ticket.fullName} found a definite match")
+                    updatedTicket
+                }
 
                 is DatabaseFunctions.MatchResult.Suggestions -> {
-                    ticket.suggestions = result.suggestions
-                    //DBF.updateData(ticket)
-                    ticketDatabase.update(ticket)
-
+                    val updatedTicket = ticket.copy(suggestions = result.suggestions)
+                    ticketDatabase.update(updatedTicket)
                     val amount = result.suggestions.size
                     Log.i("check", "{${ticket.fullName} found {$amount} suggestions")
+                    updatedTicket
                 }
 
                 is DatabaseFunctions.MatchResult.NoMatch -> {
                     val newPlayer: Player = createNewPlayer(ticket)
-                    //DBF.updateData(newPlayer)
                     playerDatabase.update(newPlayer)
-                    ticket.playerId = newPlayer.playerId
-                    //DBF.updateData(ticket)
-                    ticketDatabase.update(ticket)
+                    val updatedTicket = ticket.copy(playerId = newPlayer.playerId)
+                    ticketDatabase.update(updatedTicket)
                     Log.i("check", "{${ticket.fullName} found nothing. Should create player")
+                    updatedTicket
                 }
-                else->{
+                else -> {
                     Log.i("check", "{${ticket.fullName} had an error")
+                    ticket
                 }
             }
-            ticket
         } else {
             ticket
         }

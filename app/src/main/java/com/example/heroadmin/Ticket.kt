@@ -28,7 +28,8 @@ data class Ticket(
     var roundsSpecialRole: Int? = 0,
     var guaranteedRole: Int? = 0,
     var playerId: String? = null,
-    val eventId: String? = null
+    val eventId: String? = null,
+    var suggestions: List<PlayerListItem>? = null
 ) {
     val fullName: String
         get() = "${firstName ?: ""} ${lastName ?: ""}"
@@ -40,7 +41,6 @@ data class Ticket(
     var noteHandled = false
     var groupSize = 1
     var group = ""
-    var suggestions: List<PlayerListItem>? = null
 
     private fun checkPowerLevel(): Int {
         var multiplier: Float = 1.0F
