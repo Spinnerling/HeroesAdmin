@@ -517,7 +517,7 @@ class EventView : Fragment() {
 
                 is DatabaseFunctions.MatchResult.NoMatch -> {
                     val newPlayer: Player = createNewPlayer(ticket)
-                    playerDatabase.update(newPlayer)
+                    playerDatabase.insert(newPlayer)
                     val updatedTicket = ticket.copy(playerId = newPlayer.playerId)
                     ticketDatabase.update(updatedTicket)
                     Log.i("check", "{${ticket.fullName} found nothing. Should create player")
