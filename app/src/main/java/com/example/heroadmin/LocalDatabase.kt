@@ -69,4 +69,8 @@ class LocalDatabase<T, ID>(
             propertySelector(item) == value
         }
     }
+
+    fun getHighestId(): String? {
+        return database.keys.maxOfOrNull { it.toString() }
+    }
 }

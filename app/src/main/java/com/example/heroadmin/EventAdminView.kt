@@ -9,24 +9,23 @@ import com.example.heroadmin.databinding.FragmentEventAdminBinding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import org.json.JSONObject
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 class EventAdminFragment : Fragment() {
-    private lateinit var DBF: DatabaseFunctions
-    private var _binding: FragmentEventAdminBinding? = null
-    private val binding get() = _binding!!
-    private lateinit var v: View
     private lateinit var currActivity: MainActivity
+    private lateinit var binding: FragmentEventAdminBinding
+    private lateinit var v: View
+    private lateinit var DBF: DatabaseFunctions
+//    private lateinit var args: EventAdminViewArgs
     private lateinit var event: Event
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        _binding = FragmentEventAdminBinding.inflate(inflater, container, false)
+        binding = FragmentEventAdminBinding.inflate(inflater, container, false)
         v = inflater.inflate(R.layout.fragment_event_admin, container, false)
 
         currActivity = (activity as MainActivity)
@@ -42,6 +41,15 @@ class EventAdminFragment : Fragment() {
 
         loadEventData()
         setupSubmitButton()
+
+        binding.eventAdminEditValues.setOnClickListener {
+            if (binding.eventAdminAttendanceValue.visibility == View.VISIBLE) {
+                changeExpValues()
+            }
+            else {
+                saveExpValues()
+            }
+        }
     }
 
     private fun loadEventData() {
@@ -55,7 +63,7 @@ class EventAdminFragment : Fragment() {
                     binding.eventAdminEventTime.text = eventData.getString("time")
                     binding.eventAdminAttendanceValue.setText(eventData.getString("attendance_value"))
                     binding.eventAdminRecruitmentValue.setText(eventData.getString("recruitment_value"))
-                    binding.eventAdminWinningValue.setText(eventData.getString("winning_value"))
+                    binding.eventAdminWin1Value.setText(eventData.getString("winning_value"))
                     binding.eventAdminTeamChangeValue.setText(eventData.getString("changing_team_value"))
                     binding.eventAdminReportText.setText(eventData.getString("report_text"))
                 }
@@ -81,7 +89,8 @@ class EventAdminFragment : Fragment() {
                 reportText = binding.eventAdminReportText.text.toString()
                 ExpAttendanceValue = binding.eventAdminAttendanceValue.text.toString().toInt()
                 ExpRecruitValue = binding.eventAdminRecruitmentValue.text.toString().toInt()
-                ExpWinningValue = binding.eventAdminWinningValue.text.toString().toInt()
+                ExpClickWinValue = binding.eventAdminWin1Value.text.toString().toInt()
+                ExpGameWinValue = binding.eventAdminWin2Value.text.toString().toInt()
                 ExpTeamChangeValue = binding.eventAdminTeamChangeValue.text.toString().toInt()
             }
 
@@ -90,8 +99,43 @@ class EventAdminFragment : Fragment() {
         }
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
+    private fun changeExpValues() {
+        binding.eventAdminAttendanceValue.visibility = View.GONE
+        binding.eventAdminEditAttendance.visibility = View.VISIBLE
+
+        binding.eventAdminWin1Value.visibility = View.GONE
+        binding.eventAdminEditWin1.visibility = View.VISIBLE
+
+        binding.eventAdminWin2Value.visibility = View.GONE
+        binding.eventAdminEditWin2.visibility = View.VISIBLE
+
+        binding.eventAdminRecruitmentValue.visibility = View.GONE
+        binding.eventAdminEditRecruitment.visibility = View.VISIBLE
+
+        binding.eventAdminTeamChangeValue.visibility = View.GONE
+        binding.eventAdminEditTeamChange.visibility = View.VISIBLE
+
+        binding.eventAdminEditValues.text = "Spara"
+        binding.eventAdminEditValues.setBackgroundResource(R.color.buttonGreen)
+    }
+
+    private fun saveExpValues() {
+        binding.eventAdminAttendanceValue.visibility = View.GONE
+        binding.eventAdminEditAttendance.visibility = View.VISIBLE
+
+        binding.eventAdminWin1Value.visibility = View.GONE
+        binding.eventAdminEditWin1.visibility = View.VISIBLE
+
+        binding.eventAdminWin2Value.visibility = View.GONE
+        binding.eventAdminEditWin2.visibility = View.VISIBLE
+
+        binding.eventAdminRecruitmentValue.visibility = View.GONE
+        binding.eventAdminEditRecruitment.visibility = View.VISIBLE
+
+        binding.eventAdminTeamChangeValue.visibility = View.GONE
+        binding.eventAdminEditTeamChange.visibility = View.VISIBLE
+
+        binding.eventAdminEditValues.text = "Ändra"
+        binding.eventAdminEditValues.setBackgroundResource(R.color.white)
     }
 }

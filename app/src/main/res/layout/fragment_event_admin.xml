@@ -13,10 +13,10 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:orientation="vertical"
+        android:weightSum="3"
         app:layout_constraintBottom_toTopOf="@+id/layout2"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_weight="1"
-        android:weightSum="3">
+        app:layout_constraintVertical_weight="2">
 
         <TextView
             android:id="@+id/eventAdminEventNameText"
@@ -25,19 +25,20 @@
             android:layout_gravity="center_horizontal"
             android:layout_weight="1"
             android:text="Event Name"
-            android:textColor="#FFFFFF"
+            android:textColor="#000000"
             android:textSize="32sp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            android:gravity="center"/>
 
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
+            android:layout_weight="1"
             android:gravity="center"
             android:orientation="horizontal"
-            android:weightSum="4"
-            android:layout_weight="1">
+            android:weightSum="4">
 
             <LinearLayout
                 android:layout_width="0dp"
@@ -49,17 +50,17 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Venue"
-                    android:textSize="18sp"
-                    android:textColor="#FFFFFF" />
+                    android:text="Plats"
+                    android:textColor="#000000"
+                    android:textSize="18sp" />
 
                 <TextView
                     android:id="@+id/eventAdminEventVenue"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Venue"
-                    android:textSize="24sp"
-                    android:textColor="#FFFFFF" />
+                    android:textColor="#000000"
+                    android:textSize="24sp" />
             </LinearLayout>
 
             <LinearLayout
@@ -72,17 +73,17 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Date"
-                    android:textSize="18sp"
-                    android:textColor="#FFFFFF" />
+                    android:text="Datum"
+                    android:textColor="#000000"
+                    android:textSize="18sp" />
 
                 <TextView
                     android:id="@+id/eventAdminEventDate"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Date"
-                    android:textSize="24sp"
-                    android:textColor="#FFFFFF" />
+                    android:textColor="#000000"
+                    android:textSize="24sp" />
             </LinearLayout>
 
             <LinearLayout
@@ -95,17 +96,17 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Time"
-                    android:textSize="18sp"
-                    android:textColor="#FFFFFF" />
+                    android:text="Tid"
+                    android:textColor="#000000"
+                    android:textSize="18sp" />
 
                 <TextView
                     android:id="@+id/eventAdminEventTime"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Time"
-                    android:textSize="24sp"
-                    android:textColor="#FFFFFF" />
+                    android:textColor="#000000"
+                    android:textSize="24sp" />
             </LinearLayout>
         </LinearLayout>
     </LinearLayout>
@@ -116,18 +117,28 @@
         android:layout_height="0dp"
         android:gravity="center"
         android:orientation="vertical"
-        android:weightSum="3"
+        android:background="@color/background_green_light"
         app:layout_constraintBottom_toTopOf="@+id/layout3"
         app:layout_constraintTop_toBottomOf="@+id/layout1"
-        app:layout_constraintVertical_weight="1">
+        app:layout_constraintVertical_weight="2"
+        android:padding="10dp"
+        android:layout_margin="10dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="EXP VÄRDEN"
+            android:textColor="#000000"
+            android:textSize="24sp"
+            android:layout_weight="1"
+            android:gravity="center"/>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="3"
+            android:layout_weight="4"
             android:gravity="center"
-            android:orientation="horizontal"
-            android:background="@color/background_green_light">
+            android:orientation="horizontal">
 
             <LinearLayout
                 android:layout_width="0dp"
@@ -139,17 +150,27 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Attendance Value"
-                    android:textSize="18sp"
-                    android:textColor="#000000" />
+                    android:text="Deltaga"
+                    android:textColor="#000000"
+                    android:textSize="18sp" />
 
                 <TextView
                     android:id="@+id/eventAdminAttendanceValue"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Value"
+                    android:textColor="#000000"
+                    android:textSize="24sp" />
+
+                <EditText
+                    android:id="@+id/eventAdminEditAttendance"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:inputType="number"
+                    android:text="Value"
+                    android:textColor="#000000"
                     android:textSize="24sp"
-                    android:textColor="#000000" />
+                    android:visibility="gone" />
             </LinearLayout>
 
             <LinearLayout
@@ -162,17 +183,27 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Winning Value"
-                    android:textSize="18sp"
-                    android:textColor="#000000" />
+                    android:text="Klickvinst"
+                    android:textColor="#000000"
+                    android:textSize="18sp" />
 
                 <TextView
-                    android:id="@+id/eventAdminWinningValue"
+                    android:id="@+id/eventAdminWin1Value"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Value"
+                    android:textColor="#000000"
+                    android:textSize="24sp" />
+
+                <EditText
+                    android:id="@+id/eventAdminEditWin1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:inputType="number"
+                    android:text="Value"
+                    android:textColor="#000000"
                     android:textSize="24sp"
-                    android:textColor="#000000" />
+                    android:visibility="gone" />
             </LinearLayout>
 
             <LinearLayout
@@ -185,17 +216,60 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Recruitment Value"
-                    android:textSize="18sp"
-                    android:textColor="#000000" />
+                    android:text="Spelvinst"
+                    android:textColor="#000000"
+                    android:textSize="18sp" />
+
+                <TextView
+                    android:id="@+id/eventAdminWin2Value"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Value"
+                    android:textColor="#000000"
+                    android:textSize="24sp" />
+
+                <EditText
+                    android:id="@+id/eventAdminEditWin2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:inputType="number"
+                    android:text="Value"
+                    android:textColor="#000000"
+                    android:textSize="24sp"
+                    android:visibility="gone" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Rekrytering"
+                    android:textColor="#000000"
+                    android:textSize="18sp" />
 
                 <TextView
                     android:id="@+id/eventAdminRecruitmentValue"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Value"
+                    android:textColor="#000000"
+                    android:textSize="24sp" />
+
+                <EditText
+                    android:id="@+id/eventAdminEditRecruitment"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:inputType="number"
+                    android:text="Value"
+                    android:textColor="#000000"
                     android:textSize="24sp"
-                    android:textColor="#000000" />
+                    android:visibility="gone" />
             </LinearLayout>
 
             <LinearLayout
@@ -208,27 +282,38 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Team Change Value"
-                    android:textSize="18sp"
-                    android:textColor="#000000" />
+                    android:text="Byta Lag"
+                    android:textColor="#000000"
+                    android:textSize="18sp" />
 
                 <TextView
                     android:id="@+id/eventAdminTeamChangeValue"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Value"
+                    android:textColor="#000000"
+                    android:textSize="24sp" />
+
+                <EditText
+                    android:id="@+id/eventAdminEditTeamChange"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:inputType="number"
+                    android:text="Value"
+                    android:textColor="#000000"
                     android:textSize="24sp"
-                    android:textColor="#000000" />
+                    android:visibility="gone" />
             </LinearLayout>
         </LinearLayout>
+
         <Button
             android:id="@+id/eventAdminEditValues"
             android:layout_width="100dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:backgroundTint="@color/button_background"
+            android:text="ÄNDRA"
             android:textColor="@color/button_text"
-            android:text="EDIT"
             app:strokeColor="#000000"
             app:strokeWidth="2dp" />
     </LinearLayout>
@@ -241,37 +326,105 @@
         android:orientation="horizontal"
         app:layout_constraintBottom_toTopOf="@+id/layout4"
         app:layout_constraintTop_toBottomOf="@+id/layout2"
-        app:layout_constraintVertical_weight="1">
+        app:layout_constraintVertical_weight="2"
+        android:padding="10dp">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Winning Team: "
-            android:textSize="24sp"
-            android:textColor="#000000" />
-
-        <Button
-            android:id="@+id/eventAdminWinningRedButton"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
             android:layout_weight="1"
-            android:backgroundTint="@color/winning_red"
-            android:text="Red Team Wins"
-            app:strokeColor="#000000"
-            app:strokeWidth="2dp"
-            android:layout_marginEnd="5sp"/>
+            android:orientation="vertical"
+            android:gravity="center"
+            android:layout_marginRight="20dp">
 
-        <Button
-            android:id="@+id/eventAdminWinningBlueButton"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:text="KLICKVINNARE"
+                android:textColor="#000000"
+                android:textSize="24sp"
+                android:gravity="center"/>
+            <Button
+                android:id="@+id/eventAdminWin1NoWinner"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="2"
+                android:backgroundTint="@color/white"
+                android:text="No Winner"
+                android:textColor="@color/black"
+                app:strokeColor="#000000"
+                app:strokeWidth="2dp" />
+
+            <Button
+                android:id="@+id/eventAdminWin1RedButton"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="2"
+                android:backgroundTint="@color/winning_red"
+                android:text="Red Team"
+                app:strokeColor="#000000"
+                app:strokeWidth="2dp" />
+
+            <Button
+                android:id="@+id/eventAdminWin1BlueButton"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="2"
+                android:backgroundTint="@color/winning_blue"
+                android:text="Blue Team"
+                android:textColor="#FFFFFF"
+                app:strokeColor="#000000"
+                app:strokeWidth="2dp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
             android:layout_weight="1"
-            android:backgroundTint="@color/winning_blue"
-            android:text="Blue Team Wins"
-            android:textColor="#FFFFFF"
-            app:strokeColor="#000000"
-            app:strokeWidth="2dp"
-            android:layout_marginStart="5sp"/>
+            android:orientation="vertical"
+            android:gravity="center"
+            android:layout_marginLeft="20dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:text="SPELVINNARE "
+                android:textColor="#000000"
+                android:textSize="24sp"
+                android:gravity="center"/>
+            <Button
+                android:id="@+id/eventAdminWin2NoWinner"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="2"
+                android:backgroundTint="@color/white"
+                android:text="No Winner"
+                android:textColor="@color/black"
+                app:strokeColor="#000000"
+                app:strokeWidth="2dp" />
+            <Button
+                android:id="@+id/eventAdminWin2RedButton"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="2"
+                android:backgroundTint="@color/winning_red"
+                android:text="Red Team"
+                app:strokeColor="#000000"
+                app:strokeWidth="2dp" />
+
+            <Button
+                android:id="@+id/eventAdminWin2BlueButton"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="2"
+                android:backgroundTint="@color/winning_blue"
+                android:text="Blue Team"
+                android:textColor="#FFFFFF"
+                app:strokeColor="#000000"
+                app:strokeWidth="2dp" />
+        </LinearLayout>
     </LinearLayout>
 
     <!-- 4. Game Masters -->
@@ -279,26 +432,28 @@
         android:id="@+id/layout4"
         android:layout_width="match_parent"
         android:layout_height="0dp"
+        android:background="@color/background_green_light"
         android:gravity="center"
         android:orientation="vertical"
-        android:background="@color/background_green_light"
+        android:visibility="gone"
         app:layout_constraintBottom_toTopOf="@+id/layout5"
         app:layout_constraintTop_toBottomOf="@+id/layout3"
-        app:layout_constraintVertical_weight="1">
+        app:layout_constraintVertical_weight="1"
+        tools:layout_editor_absoluteX="10dp">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
+            android:layout_weight="2"
             android:gravity="center"
             android:orientation="horizontal"
-            android:layout_weight="2"
             app:layout_constraintHorizontal_weight="3">>
 
             <TextView
                 android:layout_width="0dp"
-                android:layout_weight="1"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
+                android:layout_weight="1"
                 android:gravity="center"
                 android:text="Namn"
                 android:textColor="#000000"
@@ -306,9 +461,9 @@
 
             <TextView
                 android:layout_width="0dp"
-                android:layout_weight="1"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
+                android:layout_weight="1"
                 android:gravity="center"
                 android:text="Inclockning"
                 android:textColor="#000000"
@@ -316,9 +471,9 @@
 
             <TextView
                 android:layout_width="0dp"
-                android:layout_weight="1"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
+                android:layout_weight="1"
                 android:gravity="center"
                 android:text="Utclockning"
                 android:textColor="#000000"
@@ -331,8 +486,8 @@
             android:layout_height="0dp"
             android:layout_weight="1"
             android:backgroundTint="@color/button_background"
-            android:textColor="@color/button_text_dark"
             android:text="Add"
+            android:textColor="@color/button_text_dark"
             app:strokeColor="#000000"
             app:strokeWidth="2dp" />
 
@@ -347,15 +502,16 @@
         android:orientation="vertical"
         app:layout_constraintBottom_toTopOf="@+id/layout6"
         app:layout_constraintTop_toBottomOf="@+id/layout4"
-        app:layout_constraintVertical_weight="1">
+        app:layout_constraintVertical_weight="2"
+        android:padding="10dp">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:layout_marginTop="10dp"
-            android:text="Report Text"
-            android:textColor="#FFFFFF"
+            android:text="RAPPORT"
+            android:textColor="#000000"
             android:textSize="24sp" />
 
         <EditText
@@ -365,11 +521,11 @@
             android:layout_marginTop="10dp"
             android:background="@drawable/rounded_border"
             android:gravity="top|start"
-            android:hint="Report Text"
+            android:hint="Händelser utöver det vanliga, saker som är slut eller trasiga."
             android:inputType="textMultiLine|textCapSentences"
             android:padding="10dp"
-            android:textColor="#FFFFFF"
-            android:textColorHint="#FFFFFF" />
+            android:textColor="#000000"
+            android:textColorHint="#808080" />
     </LinearLayout>
     <!-- 6. Navigation buttons -->
     <LinearLayout
@@ -380,28 +536,31 @@
         android:orientation="horizontal"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/layout5"
-        app:layout_constraintVertical_weight="1">
+        app:layout_constraintVertical_weight="1"
+        android:padding="10dp">
 
         <Button
             android:id="@+id/eventAdminToEventListButton"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_weight="1"
             android:backgroundTint="@color/button_background"
-            android:text="Event List"
+            android:text="BAKÅT"
             android:textColor="@color/button_text_dark"
             app:strokeColor="#000000"
-            app:strokeWidth="2dp" />
+            app:strokeWidth="2dp"
+            android:layout_marginRight="5dp"/>
 
         <Button
             android:id="@+id/eventAdminToEventViewButton"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_weight="1"
-            android:backgroundTint="@color/button_background"
-            android:text="Event View"
-            android:textColor="@color/button_text_dark"
+            android:backgroundTint="@color/buttonGreen"
+            android:text="SPELA"
+            android:textColor="@color/text_white"
             app:strokeColor="#000000"
-            app:strokeWidth="2dp" />
+            app:strokeWidth="2dp"
+            android:layout_marginLeft="5dp"/>
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -32,8 +32,6 @@ import kotlin.math.abs
 import kotlinx.serialization.json.Json
 import org.json.JSONArray
 import java.util.UUID
-import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
 
 class EventView : Fragment() {
     private lateinit var currActivity: MainActivity
@@ -67,7 +65,6 @@ class EventView : Fragment() {
     private lateinit var bottomPanelNewRound: LinearLayout
     private lateinit var playerRoleButtonPanel: LinearLayout
     private lateinit var loadingDialogue: AlertDialog
-    private var playerIdGenerator: PlayerIdGenerator? = null
     private var healerAmount: Int = 0
     private var rogueAmount: Int = 0
     private var mageAmount: Int = 0
@@ -112,7 +109,6 @@ class EventView : Fragment() {
         bottomPanelPlayer = binding.bottomPanelPlayer
         playerRoleButtonPanel = binding.playerRoleButtonPanel
 
-        setupPlayerIdGenerator()
         loadingPopup()
         getTicketIdsLocal(event)
 
@@ -122,6 +118,9 @@ class EventView : Fragment() {
         binding.venueText.text = "Venue: ${event.venue}"
         binding.playerAmountText.text = "Tickets: ${event.ticketAmount} / ${event.playerMax}"
         binding.roundText.text = event.round.toString()
+
+        checkGameEnded()
+
 
         binding.scrollingPanel.setOnTouchListener { _, _ ->
             layoutFunction()
@@ -218,7 +217,8 @@ class EventView : Fragment() {
         binding.spendExpButton.setOnClickListener {
             findNavController().navigate(
                 EventViewDirections.actionEventViewToLevelUpFragment(
-                    selectedTicket.playerId ?: ""
+                    selectedTicket.playerId ?: "",
+                    event.eventId
                 )
             )
         }
@@ -307,6 +307,9 @@ class EventView : Fragment() {
         binding.awardExpButton.setOnClickListener {
             openAwardExp()
         }
+        binding.setWinnerButton.setOnClickListener {
+            openWinnerPopup()
+        }
         binding.refreshButton.setOnClickListener {
             loadingDialogue.show()
             getEventLocal()
@@ -318,8 +321,13 @@ class EventView : Fragment() {
         binding.assignTeamAutoAssignButton.setOnClickListener {
             autoAssignLoop()
         }
-        binding.endEventButton.setOnClickListener {
-            endEvent()
+        binding.eventBackButton.setOnClickListener {
+            currActivity.event = event
+            findNavController().navigate(
+                EventViewDirections.actionEventViewToEventAdminFrag(
+                    currEventId
+                )
+            )
         }
     }
 
@@ -523,6 +531,7 @@ class EventView : Fragment() {
                     Log.i("check", "{${ticket.fullName} found nothing. Should create player")
                     updatedTicket
                 }
+
                 else -> {
                     Log.i("check", "{${ticket.fullName} had an error")
                     ticket
@@ -859,10 +868,7 @@ class EventView : Fragment() {
     }
 
     private fun createNewPlayer(ticket: Ticket): Player {
-        val newPlayerId = playerIdGenerator?.generateNewPlayerId() ?: run {
-            Log.e("createNewPlayer", "Error generating player ID")
-            "AAA000" // Fallback to default in case of error
-        }
+        val newPlayerId = UUID.randomUUID().toString()
 
         return Player(
             playerId = newPlayerId,
@@ -1239,6 +1245,114 @@ class EventView : Fragment() {
         }
     }
 
+    fun openWinnerPopup() {
+        val dialogView = LayoutInflater.from(context).inflate(R.layout.set_winner_popup, null)
+
+        val builder = AlertDialog.Builder(context)
+            .setView(dialogView)
+
+        val alertDialog = builder.show()
+
+        val clickWinButton = dialogView.findViewById<Button>(R.id.sw_clickWinnerButton)
+        val gameWinButton = dialogView.findViewById<Button>(R.id.sw_gameWinnerButton)
+        var clickWinRed = event.clickWinner == "Red"
+        var gameWinRed = event.gameWinner == "Red"
+        var clickWinModified = false
+        var gameWinModified = false
+
+        // Set initial button colors
+        if (event.clickWinner != "") {
+            clickWinModified = true
+            if (clickWinRed) {
+                clickWinButton.setBackgroundColor(
+                    ContextCompat.getColor(
+                        requireContext(),
+                        R.color.teamRedColor
+                    )
+                )
+            } else {
+                clickWinButton.setBackgroundColor(
+                    ContextCompat.getColor(
+                        requireContext(),
+                        R.color.teamBlueColor
+                    )
+                )
+            }
+        }
+        if (event.gameWinner != "") {
+            gameWinModified = true
+            if (gameWinRed) {
+                gameWinButton.setBackgroundColor(
+                    ContextCompat.getColor(
+                        requireContext(),
+                        R.color.teamRedColor
+                    )
+                )
+            } else {
+                gameWinButton.setBackgroundColor(
+                    ContextCompat.getColor(
+                        requireContext(),
+                        R.color.teamBlueColor
+                    )
+                )
+            }
+        }
+
+        clickWinButton.setOnClickListener {
+            clickWinModified = true
+            clickWinRed = !clickWinRed // Toggle the value
+            if (clickWinRed) {
+                clickWinButton.setBackgroundColor(
+                    ContextCompat.getColor(
+                        requireContext(),
+                        R.color.teamRedColor
+                    )
+                )
+            } else {
+                clickWinButton.setBackgroundColor(
+                    ContextCompat.getColor(
+                        requireContext(),
+                        R.color.teamBlueColor
+                    )
+                )
+            }
+        }
+        gameWinButton.setOnClickListener {
+            gameWinModified = true
+            gameWinRed = !gameWinRed // Toggle the value
+            if (gameWinRed) {
+                gameWinButton.setBackgroundColor(
+                    ContextCompat.getColor(
+                        requireContext(),
+                        R.color.teamRedColor
+                    )
+                )
+            } else {
+                gameWinButton.setBackgroundColor(
+                    ContextCompat.getColor(
+                        requireContext(),
+                        R.color.teamBlueColor
+                    )
+                )
+            }
+        }
+
+        dialogView.findViewById<Button>(R.id.sw_cancelButton).setOnClickListener {
+            Toast.makeText(context, "Cancelled", Toast.LENGTH_SHORT).show()
+            alertDialog.dismiss()
+        }
+        dialogView.findViewById<Button>(R.id.sw_saveButton).setOnClickListener {
+            Toast.makeText(context, "Saved", Toast.LENGTH_SHORT).show()
+            // TODO: update event with winners
+            event.clickWinner = if (clickWinModified) if (clickWinRed) "Red" else "Blue" else ""
+            event.gameWinner = if (gameWinModified) if (gameWinRed) "Red" else "Blue" else ""
+            DBF.updateData(event)
+            alertDialog.dismiss()
+            checkGameEnded()
+        }
+    }
+
+
     fun autoSetRoleAmounts() {
         val redTeamSize = redTeam.size
         val blueTeamSize = blueTeam.size
@@ -1287,66 +1401,6 @@ class EventView : Fragment() {
         // Update database
         //DBF.updateData(selectedTicket)
         ticketDatabase.update(selectedTicket)
-    }
-
-    private fun endEvent() {
-        // Find eventId
-        // Go to report screen
-        var team = 0;
-
-        val dialogView = LayoutInflater.from(context).inflate(R.layout.report_popup, null)
-
-        val builder = AlertDialog.Builder(context)
-            .setView(dialogView)
-
-        val alertDialog = builder.show()
-
-        // Set texts
-        val title: TextView = dialogView.findViewById(R.id.rp_titleText)
-        title.text = event.title
-
-        val dateText: TextView = dialogView.findViewById(R.id.rp_dateText)
-        dateText.text = event.actualDate
-
-        val timeText: TextView = dialogView.findViewById(R.id.rp_timeText)
-        timeText.text = event.actualStartTime
-
-        val venueText: TextView = dialogView.findViewById(R.id.rp_venueText)
-        venueText.text = event.venue
-
-        val attendanceValue: EditText = dialogView.findViewById(R.id.rp_attendanceValue)
-        attendanceValue.setText(event.ExpAttendanceValue.toString())
-
-        val recruitValue: EditText = dialogView.findViewById(R.id.rp_recruitValue)
-        recruitValue.setText(event.ExpRecruitValue.toString())
-
-        //val winningValue: EditText = dialogView.findViewById(R.id.rp_winningValue)
-        //winningValue.setText(event.ExpWinValue.toString())
-
-        val winningTeam: Button = dialogView.findViewById(R.id.rp_teamButton)
-        winningTeam.setOnClickListener {
-            if (team == 0 || team == 2) {
-                winningTeam.setBackgroundColor(requireContext().resources.getColor(R.color.teamBlueColor))
-                team = 1
-            } else if (team == 1) {
-                winningTeam.setBackgroundColor(requireContext().resources.getColor(R.color.teamRedColor))
-                team = 2
-            }
-        }
-
-        dialogView.findViewById<Button>(R.id.rp_exitButton).setOnClickListener {
-            //event.ExpAttendanceValue = attendanceValue.text.toString().toInt()
-            //event.ExpRecruitValue = recruitValue.text.toString().toInt()
-            //event.ExpWinningValue = winningValue.text.toString().toInt()
-
-            alertDialog.dismiss()
-            findNavController().navigate(EventViewDirections.actionEventViewToEventList(currEventId))
-        }
-
-        dialogView.findViewById<Button>(R.id.rp_cancelButton).setOnClickListener {
-            Toast.makeText(context, "Cancelled", Toast.LENGTH_SHORT).show()
-            alertDialog.dismiss()
-        }
     }
 
     fun setGroupName(ticket: Ticket) {
@@ -1752,28 +1806,33 @@ class EventView : Fragment() {
             ),
             Ticket(
                 "T18", "Fedward", "Wilson", 8, "Emma Wilson", "555-789-4561",
-                "741 Vine St", "Springfield", "edward@example.com", null, "red", 0, 0, 7, 0, 0,
+                "741 Vine St", "Springfield", "edward@example.com", null, "", 0, 0, 7, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, null, "E1"
+            ),
+            Ticket(
+                "T31", "Gedward", "Nilson", 8, "Emma Wilson", "555-789-4561",
+                "741 Vine St", "Springfield", "edward@example.com", null, "", 0, 0, 7, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, null, "E1"
             ),
             Ticket(
                 "T19", "Drank", "Adams", 7, "Frank Adams", "555-123-7890",
-                "369 Oak St", "Springfield", "edward@example.com", null, "blue", 1, 0, 10, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, null, "E2"
+                "369 Oak St", "Springfield", "edward@example.com", null, "Blue", 1, 0, 10, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, "null", "E1"
             ),
             Ticket(
                 "T20", "Feorge", "Garcia", 6, "George Garcia", "555-456-1234",
                 "852 Chestnut St", "Springfield", "george@example.com", null, "", 1, 0, 9, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, null, "E2"
+                0, 0, 0, 0, 0, 0, 0, null, "E1"
             ),
             Ticket(
                 "T21", "Fannah", "Scott", 5, "Henry Scott", "555-789-0123",
                 "753 Main St", "Springfield", "hannah@example.com", null, "", 0, 0, 12, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, null, "E2"
+                0, 0, 0, 0, 0, 0, 0, null, "E1"
             ),
             Ticket(
                 "T22", "Aliviera", "Barnham", 5, "Henry Scott", "555-789-0123",
                 "753 Main St", "Springfield", "hannah@example.com", null, "", 0, 0, 12, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, null, "E2"
+                0, 0, 0, 0, 0, 0, 0, null, "E1"
             )
         )
 
@@ -1783,59 +1842,61 @@ class EventView : Fragment() {
 
         val players = listOf(
             Player(
-                "12345",
-                "Fane",
-                "Doe",
-                15,
-                205,
-                1000,
-                5,
-                5,
-                1,
-                1,
-                1,
-                1,
-                0,
-                0,
-                0,
-                0,
-                mutableListOf("susanne", "thorvald"),
-                mutableListOf("susanne@email.com", "thorvald@email.com"),
-                mutableListOf("0918239013", "128309312"),
-                mutableListOf("nyckeldalen 3", "spårvagnen 4"),
+                playerId = "ABC123",
+                firstName = "Fane",
+                lastName = "Doe",
+                age = 15,
+                exp2021 = 205,
+                exp2022 = 1000,
+                exp2023 = 5,
+                extraExp = 5,
+                healerLevel = 1,
+                healerUltimateA = true,
+                rogueLevel = 1,
+                rogueUltimateA = true,
+                mageLevel = 1,
+                mageUltimateA = true,
+                knightLevel = 1,
+                knightUltimateA = true,
+                warriorHealer = 0,
+                warriorRogue = 0,
+                warriorMage = 0,
+                warriorKnight = 0,
+                bookerNames = mutableListOf("susanne", "thorvald"),
+                bookerEmails = mutableListOf("susanne@email.com", "thorvald@email.com"),
+                bookerPhones = mutableListOf("0918239013", "128309312"),
+                bookerAddresses = mutableListOf("nyckeldalen 3", "spårvagnen 4")
             ),
             Player(
-                "54321", "Jane", "Doe", 15, 205, 1000,
-                5, 5, 1, 1, 1, 1, 0, 0, 0, 0,
-                mutableListOf("susanne"), mutableListOf("susanne@email.com"),
-                mutableListOf("0918239013"), mutableListOf("nyckeldalen 3"),
+                playerId = "ABC124",
+                firstName = "Jane",
+                lastName = "Doe",
+                age = 15,
+                exp2021 = 205,
+                exp2022 = 1000,
+                exp2023 = 5,
+                extraExp = 5,
+                healerLevel = 1,
+                healerUltimateA = true,
+                rogueLevel = 1,
+                rogueUltimateA = true,
+                mageLevel = 1,
+                mageUltimateA = true,
+                knightLevel = 1,
+                knightUltimateA = true,
+                warriorHealer = 0,
+                warriorRogue = 0,
+                warriorMage = 0,
+                warriorKnight = 0,
+                bookerNames = mutableListOf("susanne"),
+                bookerEmails = mutableListOf("susanne@email.com"),
+                bookerPhones = mutableListOf("0918239013"),
+                bookerAddresses = mutableListOf("nyckeldalen 3")
             )
         )
+
         // Insert sample player into the playerDatabase
         players.forEach { playerDatabase.insert(it) }
-
-        // EVENT
-        val exampleEvent = Event(
-            eventId = "1",
-            title = "Example Event",
-            startTime = "2023-05-15T10:00:00",
-            endTime = "2023-05-15T18:00:00",
-            venue = "Example Venue",
-            reportText = "This is an example event for testing purposes.",
-            description = "This is an example event where participants will compete in various activities.",
-            winner = "John Doe",
-            ExpAttendanceValue = 50,
-            ExpWinningValue = 1000,
-            ExpTeamChangeValue = 20,
-            ExpRecruitValue = 10,
-            round = 1,
-            status = "Ej påbörjat"
-        )
-        val ticketIdsList = listOf(
-            "T1", "T2", "T3", "T4", "T5", "T6", "T7", "T0", "T11", "T12", "T13", "T14", "T15", "T16", "T17", "T18"
-        )
-        exampleEvent.ticketIDs.addAll(ticketIdsList)
-        eventDatabase.insert(exampleEvent)
     }
 
     private fun dismissKeyboard() {
@@ -1887,22 +1948,31 @@ class EventView : Fragment() {
         deselectPlayer()
     }
 
-    fun setupPlayerIdGenerator() {
-        DBF.getHighestPlayerId { highestId ->
-            playerIdGenerator = PlayerIdGenerator(highestId)
-        }
-    }
-
     fun addOneTicket() {
-        ticketDatabase.insert(Ticket(
-            "T30", "New", "Man", 16, "william Scott", "555-789-0123",
-            "753 Main St", "Springfield", "william@example.com", null, "", 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, null, event.eventId
-        ))
+        ticketDatabase.insert(
+            Ticket(
+                "T30", "New", "Man", 16, "william Scott", "555-789-0123",
+                "753 Main St", "Springfield", "william@example.com", null, "", 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, null, event.eventId
+            )
+        )
         event.ticketIDs.add("T30")
         Log.i("check", "additional ticket added")
 
         // Update the event in the local database
         eventDatabase.update(event)
+    }
+
+    private fun checkGameEnded() {
+        // Check if game is already over, and remove New Round Button
+        if (event.clickWinner != "" || event.gameWinner != ""){
+            binding.newRoundButton.visibility = View.GONE
+            binding.gameEndText.visibility = View.VISIBLE
+        }
+        else
+        {
+            binding.newRoundButton.visibility = View.VISIBLE
+            binding.gameEndText.visibility = View.GONE
+        }
     }
 }

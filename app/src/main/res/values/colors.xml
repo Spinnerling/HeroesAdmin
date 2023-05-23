@@ -6,7 +6,8 @@
     <color name="teal_200">#FF03DAC5</color>
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
+    <color name="grey">#AFAFAF</color>
+    <color name="white">#FFFFFF</color>
     <color name="healerColor">#FFF2E1</color>
     <color name="mageColor">#6C3CD8</color>
     <color name="rogueColor">#683D20</color>
@@ -23,7 +24,9 @@
     <color name="secondary_purple">#9b59b6</color>
     <color name="accent_yellow">#f1c40f</color>
     <color name="text_white">#FFFFFF</color>
+    <color name="light_pink">#E0938D</color>
     <color name="winning_red">#e74c3c</color>
+    <color name="light_blue">#96BCD8</color>
     <color name="winning_blue">#3498db</color>
     <color name="button_background">#F5F5F5</color>
     <color name="button_text">#2ecc71</color>

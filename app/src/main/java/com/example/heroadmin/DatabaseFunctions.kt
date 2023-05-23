@@ -3,6 +3,7 @@ package com.example.heroadmin
 import android.content.Context
 import android.telephony.PhoneNumberUtils
 import android.util.Log
+import android.view.inputmethod.InputMethodManager
 import com.android.volley.Request
 import com.android.volley.Response
 import com.android.volley.toolbox.JsonObjectRequest
@@ -14,6 +15,7 @@ import org.json.JSONArray
 import org.json.JSONObject
 import kotlinx.serialization.encodeToString
 import com.android.volley.NoConnectionError
+import com.example.heroadmin.LocalDatabaseSingleton.playerDatabase
 import kotlinx.coroutines.delay
 import java.util.Locale
 import kotlin.coroutines.resume
@@ -21,6 +23,7 @@ import kotlin.coroutines.suspendCoroutine
 
 
 class DatabaseFunctions(private val context: Context) {
+    private lateinit var currActivity: MainActivity
     lateinit var currEvent: Event
     lateinit var currTicket: Ticket
     lateinit var allTickets: MutableList<Ticket>
@@ -175,32 +178,12 @@ class DatabaseFunctions(private val context: Context) {
     }
 
     fun getPlayer(playerId: String): Player {
-        // Find player in the database by playerId, and get the JSON string of the player's data
-        // This will be replaced with the actual JSON string from the database
-        val jsonString = """
-        {
-            "playerId": "player123",
-            "firstName": "Bobb",
-            "lastName": "Polo",
-            "age": 16,
-            "exp2021": 1830,
-            "exp2022": 1830,
-            "exp2023": 0,
-            "healerLevel": 1,
-            "mageLevel": 1,
-            "rogueLevel": 1,
-            "knightLevel": 1,
-            "warriorHealer": 0,
-            "warriorRogue": 0,
-            "warriorMage": 0,
-            "warriorKnight": 0
-        }
-    """
 
-        // Deserialize the JSON string to a Player object
-        val player = Json.decodeFromString<Player>(jsonString)
 
-        return player
+//        // Deserialize the JSON string to a Player object
+//        val player = Json.decodeFromString<Player>(jsonString)
+
+        return playerDatabase.getById(playerId)!!
     }
 
     fun getPlayerEXP(playerId: String): Int {
@@ -417,21 +400,5 @@ class DatabaseFunctions(private val context: Context) {
                 MatchResult.Suggestions(playerListItems)
             }
         }
-    }
-
-    fun getHighestPlayerId(onComplete: (String?) -> Unit) {
-        val url = "https://your.api/endpoint/getHighestPlayerId"
-
-        apiCallGet(
-            url,
-            responseFunction = { response ->
-                val highestId = response.getString("highestId")
-                onComplete(highestId)
-            },
-            errorFunction = {
-                Log.e("getHighestPlayerId", "API call failed")
-                onComplete(null)
-            }
-        )
     }
 }

@@ -72,7 +72,8 @@ class EventList : Fragment() {
         }
 
         binding.refreshButton.setOnClickListener {
-            loadEvents()
+//            loadEvents()
+            loadEventsLocally()
         }
     }
 
@@ -120,6 +121,7 @@ class EventList : Fragment() {
 
     private fun getEvents(eventsJson: JSONObject, json: Json) {
         eventArray = DBF.getEventArray(eventsJson, json)
+        eventListList.clear()
 
         // Create an empty event list for each venue and type (past and future), put into ListList
         for (venue in venues) {
@@ -140,6 +142,7 @@ class EventList : Fragment() {
             } else {
                 event.venue = "Stockholm"
             }
+            Log.i("check", "Venue: ${event.venue}")
 
             for (i in venues.indices) {
                 // If event's venue is correct for the list, add event to past or future list
@@ -219,7 +222,7 @@ class EventList : Fragment() {
     private fun onEventItemClick(position: Int) {
         val event = eventArray[position].eventId
         (activity as MainActivity).event = eventArray[position]
-        findNavController().navigate(EventListDirections.actionEventListToEventView(event))
+        findNavController().navigate(EventListDirections.actionEventListToEventAdminFrag(event))
     }
 
     private fun createSampleEvents() {

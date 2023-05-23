@@ -27,7 +27,6 @@ class AssignTeamRecyclerAdapter (private val ticketArray: MutableList<Ticket>, p
 
         holder.nameText.text = ticket.fullName
         holder.ageText.text = ticket.age.toString()
-        holder.playerIdText.text = ticket.playerId
         holder.bookerEmailText.text = ticket.bookerEmail
         holder.contactName.text = ticket.bookerName
         holder.contactPhone.text = ticket.bookerPhone
@@ -45,13 +44,14 @@ class AssignTeamRecyclerAdapter (private val ticketArray: MutableList<Ticket>, p
             holder.notePanel.visibility = View.VISIBLE
         }
 
-        if (holder.playerIdText.text == "" || holder.playerIdText.text == "0"){
+        if (ticket.playerId == ""){
             holder.checkIdButton.visibility = View.VISIBLE
             holder.playerIdText.visibility = View.GONE
         }
         else {
             holder.checkIdButton.visibility = View.GONE
             holder.playerIdText.visibility = View.VISIBLE
+            holder.playerIdText.text = "Found"
         }
 
         if (ticket.note == ""){

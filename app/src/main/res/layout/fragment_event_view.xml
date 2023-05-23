@@ -23,7 +23,7 @@
             android:orientation="horizontal">
 
             <Button
-                android:id="@+id/endEventButton"
+                android:id="@+id/eventBackButton"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_marginRight="10dp"
@@ -677,7 +677,8 @@
             android:layout_height="wrap_content"
             android:background="@color/background_green_light"
             android:orientation="horizontal"
-            android:visibility="visible">
+            android:visibility="visible"
+            android:gravity="center">
 
             <LinearLayout
                 android:id="@+id/info"
@@ -736,6 +737,16 @@
                 app:strokeColor="#000000"
                 app:strokeWidth="2dp"
                 android:layout_margin="10dp"/>
+
+            <TextView
+                android:id="@+id/gameEndText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Game Ended"
+                android:textSize="24dp"
+                android:textStyle="bold"
+                android:layout_marginRight="30dp"
+                android:visibility="gone" />
 
         </LinearLayout>
 

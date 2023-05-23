@@ -242,7 +242,7 @@
                 android:layout_weight="1"
                 android:gravity="center_horizontal"
                 android:orientation="vertical"
-                android:visibility="gone">
+                android:visibility="visible">
 
                 <ImageButton
                     android:id="@+id/upgrade1button"
@@ -386,7 +386,7 @@
                 android:layout_weight="1"
                 android:gravity="center_horizontal|top"
                 android:orientation="vertical"
-                android:visibility="visible">
+                android:visibility="gone">
 
                 <ImageButton
                     android:id="@+id/warrior1button"
