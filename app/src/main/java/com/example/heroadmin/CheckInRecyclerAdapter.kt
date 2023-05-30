@@ -66,8 +66,6 @@ class CheckInRecyclerAdapter(private var ticketArray: MutableList<Ticket>, priva
 
         holder.checkInButton.setOnClickListener{
             eventView.checkInTicket(ticket)
-
-            eventView.autoSetRoleAmounts()
         }
 
         holder.teamButton.setOnClickListener{

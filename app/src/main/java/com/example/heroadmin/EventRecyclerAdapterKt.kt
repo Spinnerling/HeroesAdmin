@@ -32,6 +32,7 @@ class EventRecyclerAdapterKt(private val eventArray: MutableList<Event>, private
         holder.playerAmountText.text = "$ticketAmount deltagare"
         val status = event.status
         holder.statusText.text = status
+        Log.i("status", "Updating list: ${event.status}")
     }
 
 }

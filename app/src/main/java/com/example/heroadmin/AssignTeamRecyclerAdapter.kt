@@ -57,6 +57,10 @@ class AssignTeamRecyclerAdapter (private val ticketArray: MutableList<Ticket>, p
         if (ticket.note == ""){
             holder.hideNoteButton.visibility = View.INVISIBLE
             holder.editNoteButton.text = "Add Note"
+        } else {
+            // Set the views as they should be when the note is not empty
+            holder.hideNoteButton.visibility = View.VISIBLE
+            holder.editNoteButton.text = "Edit Note"
         }
 
         holder.checkIdButton.setOnClickListener {

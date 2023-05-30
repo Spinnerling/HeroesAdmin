@@ -376,7 +376,9 @@ class DatabaseFunctions(private val context: Context) {
 
         delay(500) // Add delay to simulate network latency
 
-        val players = playerDatabase.getAll().filter { player ->
+        // Make a copy of the database values before filtering
+        val allPlayers = playerDatabase.getAll().toList()
+        val players = allPlayers.filter { player ->
             player.firstName == ticket.firstName && player.lastName == ticket.lastName
         }
 

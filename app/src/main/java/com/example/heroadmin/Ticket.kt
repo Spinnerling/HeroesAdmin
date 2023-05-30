@@ -20,6 +20,7 @@ data class Ticket(
     var expPersonal: Int? = 0,
     var benched: Int? = 0,
     var currentRole: Int? = 0,
+    var lastRole: Int? = 0,
     var roundsMage: Int? = 0,
     var roundsRogue: Int? = 0,
     var roundsWarrior: Int? = 0,
@@ -41,6 +42,7 @@ data class Ticket(
     var noteHandled = false
     var groupSize = 1
     var group = ""
+    var emailGroup = ""
 
     private fun checkPowerLevel(): Int {
         var multiplier: Float = 1.0F

@@ -19,6 +19,8 @@ data class Event(
     var ExpGameWinValue: Int? = null,
     var ExpTeamChangeValue: Int? = null,
     var ExpRecruitValue: Int? = null,
+    var blueGameWins: Int? = 0,
+    var redGameWins: Int? = 0,
     @SerialName("Round") var round: Int? = 0,
     @SerialName("Status") var status: String? = "Ej påbörjat"
 ) {
