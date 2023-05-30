@@ -24,6 +24,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.decodeFromString
@@ -405,51 +408,72 @@ class EventView : Fragment() {
         event.ticketIDs.clear() // Clear the existing ticket IDs
         event.ticketIDs.addAll(list)
 
-        getTicketIdsLocal(event)
+        fetchEventTickets(event.eventId)
     }
 
-    private fun getTicketIds(event: Event) {
-        // Get the event's ticket ids safely
-        event.ticketIDs.let { allTicketIds ->
-            // Create an array of the players connected to the tickets
-            allTickets = mutableListOf()
+    private fun fetchEventTickets(eventId: String) {
+        CoroutineScope(Dispatchers.IO).launch {
+            val ticketIds = getTicketIds(eventId)  // Fetch the ticket IDs
+            val tickets = getTickets(ticketIds ?: emptyList())  // Fetch the full Ticket objects
 
-            CoroutineScope(Dispatchers.IO).launch {
-                val ticketJobs = allTicketIds.map { ticketId ->
-                    async {
-                        val result = CompletableDeferred<Ticket?>()
-                        getTicket(ticketId) { ticket ->
-                            result.complete(ticket)
-                        }
-                        result.await()
-                    }
-                }
+            // Update the shared 'allTickets' list
+            allTickets.clear()
+            allTickets.addAll(tickets)
 
-                val fetchedTickets = ticketJobs.awaitAll().filterNotNull()
-                allTickets.clear()
-                allTickets.addAll(fetchedTickets)
-                // Automatically link Tickets to Players
-                allTickets.forEach { ticket ->
-                    automaticPlayerLink(ticket)
-                }
-
-                // Update UI with the new ticket list
-                withContext(Dispatchers.Main) {
-                    updateTicketLists()
-                    DBF.getTicketBookers(allTickets)
-                    loadingDialogue.dismiss()
-                    binding.refreshButton.isEnabled = true
-                }
+            // Switch to the Main dispatcher for UI updates
+            withContext(Dispatchers.Main) {
+                updateTicketLists()
+                DBF.getTicketBookers(allTickets)
+                loadingDialogue.dismiss()
+                binding.refreshButton.isEnabled = true
             }
-        } ?: run {
-            // Handle the case when event.tickets is null
-            // e.g., show an error message or set allTickets to an empty list
-            allTickets = mutableListOf()
         }
-        updateTicketLists()
-        DBF.getTicketBookers(allTickets)
-        loadingDialogue.dismiss()
-        binding.refreshButton.isEnabled = true
+    }
+
+    // Function to get ticket IDs for a specific event
+    private suspend fun getTicketIds(eventId: String): List<String>? {
+        // Define a MutableSharedFlow to collect ticket IDs from API responses
+        val ticketIdsFlow = MutableSharedFlow<String>()
+
+        // Find tickets in database by eventId, collect their IDs
+        DBF.apiCallGet(
+            "https://talltales.nu/API/api/tickets.php?event=$eventId",
+            { response ->
+                // Assuming your response contains a list of tickets, each with an 'id' field
+                val ticketsJsonArray = response.getJSONArray("data")
+                for (i in 0 until ticketsJsonArray.length()) {
+                    val ticketJson = ticketsJsonArray.getJSONObject(i)
+                    val ticketId = ticketJson.getString("ticketId")
+                    ticketIdsFlow.tryEmit(ticketId)  // Emit the ticket ID to the flow
+                }
+            },
+            {
+                // Handle error case here
+                // You may want to emit a special value or close the flow
+            }
+        )
+
+        // Collect ticket IDs from the flow into a list
+        return ticketIdsFlow.toList()
+    }
+
+    // Function to get full Ticket objects based on a list of ticket IDs
+    private suspend fun getTickets(ticketIds: List<String>): List<Ticket> {
+        return coroutineScope {
+            ticketIds.map { ticketId ->
+                async {
+                    // Use the existing getTicket function to fetch each Ticket
+                    // Wrapping in a runCatching block to handle exceptions and avoid failing the whole job
+                    runCatching {
+                        var ticket: Ticket? = null
+                        getTicket(ticketId) { fetchedTicket ->
+                            ticket = fetchedTicket
+                        }
+                        ticket
+                    }.getOrNull()  // getOrNull will return null if an exception was thrown
+                }
+            }.awaitAll().filterNotNull()  // awaitAll waits for all async jobs to complete, filterNotNull removes any null Tickets
+        }
     }
 
     private fun getTicket(ticketId: String, onComplete: (Ticket?) -> Unit) {
@@ -676,23 +700,6 @@ class EventView : Fragment() {
             } else {
                 // Show a message that no player is selected, or handle the case where a new player should be created
             }
-        }
-    }
-
-
-    private fun parseTicket2(response: JSONObject) {
-        // Deserialize the JSONObject into a Ticket object
-        val ticket = Json.decodeFromString<Ticket>(response.toString())
-
-        allTickets.add(ticket)
-
-        // If this is the last ticket to be parsed, update lists
-        if (allTickets.size >= (event.ticketIDs.size ?: 0)) {
-            updateTicketLists()
-            DBF.getTicketBookers(allTickets)
-
-            loadingDialogue.dismiss()
-            binding.refreshButton.isEnabled = true
         }
     }
 

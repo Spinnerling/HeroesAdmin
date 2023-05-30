@@ -1,8 +1,6 @@
 package com.example.heroadmin
 
 import android.content.Context
-import android.graphics.Color
-import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -10,7 +8,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import androidx.core.content.ContextCompat
-import androidx.core.view.ViewCompat
 import androidx.navigation.fragment.findNavController
 import com.example.heroadmin.databinding.FragmentEventAdminBinding
 import kotlinx.coroutines.CoroutineScope
@@ -111,20 +108,20 @@ class EventAdminFrag : Fragment() {
         binding.eventAdminEventTime.text = event.actualStartTime
         binding.eventAdminReportText.setText(event.reportText ?: "")
 
-        binding.eventAdminAttendanceValue.text = event.ExpAttendanceValue?.toString() ?: "20"
-        binding.eventAdminEditAttendance.setText(event.ExpAttendanceValue?.toString() ?: "20")
+        binding.eventAdminAttendanceValue.text = event.expAttendanceValue?.toString() ?: "20"
+        binding.eventAdminEditAttendance.setText(event.expAttendanceValue?.toString() ?: "20")
 
-        binding.eventAdminRecruitmentValue.text = event.ExpRecruitValue?.toString() ?: "20"
-        binding.eventAdminEditRecruitment.setText(event.ExpRecruitValue?.toString() ?: "20")
+        binding.eventAdminRecruitmentValue.text = event.expRecruitValue?.toString() ?: "20"
+        binding.eventAdminEditRecruitment.setText(event.expRecruitValue?.toString() ?: "20")
 
-        binding.eventAdminWin1Value.text = event.ExpClickWinValue?.toString() ?: "10"
-        binding.eventAdminEditWin1.setText(event.ExpClickWinValue?.toString() ?: "10")
+        binding.eventAdminWin1Value.text = event.expClickWinValue?.toString() ?: "10"
+        binding.eventAdminEditWin1.setText(event.expClickWinValue?.toString() ?: "10")
 
-        binding.eventAdminWin2Value.text = event.ExpGameWinValue?.toString() ?: "5"
-        binding.eventAdminEditWin2.setText(event.ExpGameWinValue?.toString() ?: "5")
+        binding.eventAdminWin2Value.text = event.expGameWinValue?.toString() ?: "5"
+        binding.eventAdminEditWin2.setText(event.expGameWinValue?.toString() ?: "5")
 
-        binding.eventAdminTeamChangeValue.text = event.ExpTeamChangeValue?.toString() ?: "5"
-        binding.eventAdminEditTeamChange.setText(event.ExpTeamChangeValue?.toString() ?: "5")
+        binding.eventAdminTeamChangeValue.text = event.expTeamChangeValue?.toString() ?: "5"
+        binding.eventAdminEditTeamChange.setText(event.expTeamChangeValue?.toString() ?: "5")
 
         currClickWinner = event.clickWinner.toString()
         currGameWinner = event.gameWinner.toString()
@@ -135,11 +132,11 @@ class EventAdminFrag : Fragment() {
         CoroutineScope(Dispatchers.IO).launch {
             event.apply {
                 reportText = binding.eventAdminReportText.text.toString()
-                ExpAttendanceValue = binding.eventAdminAttendanceValue.text.toString().toIntOrNull() ?: 0
-                ExpRecruitValue = binding.eventAdminRecruitmentValue.text.toString().toIntOrNull() ?: 0
-                ExpClickWinValue = binding.eventAdminWin1Value.text.toString().toIntOrNull() ?: 0
-                ExpGameWinValue = binding.eventAdminWin2Value.text.toString().toIntOrNull() ?: 0
-                ExpTeamChangeValue = binding.eventAdminTeamChangeValue.text.toString().toIntOrNull() ?: 0
+                expAttendanceValue = binding.eventAdminAttendanceValue.text.toString().toIntOrNull() ?: 0
+                expRecruitValue = binding.eventAdminRecruitmentValue.text.toString().toIntOrNull() ?: 0
+                expClickWinValue = binding.eventAdminWin1Value.text.toString().toIntOrNull() ?: 0
+                expGameWinValue = binding.eventAdminWin2Value.text.toString().toIntOrNull() ?: 0
+                expTeamChangeValue = binding.eventAdminTeamChangeValue.text.toString().toIntOrNull() ?: 0
                 clickWinner = currClickWinner
                 gameWinner = currGameWinner
             }
@@ -193,11 +190,11 @@ class EventAdminFrag : Fragment() {
         binding.layout2.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.background_green_light))
 
         event.apply {
-            ExpAttendanceValue = binding.eventAdminEditAttendance.text.toString().toIntOrNull() ?: 0
-            ExpRecruitValue = binding.eventAdminEditRecruitment.text.toString().toIntOrNull() ?: 0
-            ExpClickWinValue = binding.eventAdminEditWin1.text.toString().toIntOrNull() ?: 0
-            ExpGameWinValue = binding.eventAdminEditWin2.text.toString().toIntOrNull() ?: 0
-            ExpTeamChangeValue = binding.eventAdminEditTeamChange.text.toString().toIntOrNull() ?: 0
+            expAttendanceValue = binding.eventAdminEditAttendance.text.toString().toIntOrNull() ?: 0
+            expRecruitValue = binding.eventAdminEditRecruitment.text.toString().toIntOrNull() ?: 0
+            expClickWinValue = binding.eventAdminEditWin1.text.toString().toIntOrNull() ?: 0
+            expGameWinValue = binding.eventAdminEditWin2.text.toString().toIntOrNull() ?: 0
+            expTeamChangeValue = binding.eventAdminEditTeamChange.text.toString().toIntOrNull() ?: 0
         }
         dismissKeyboard()
         loadEventData()

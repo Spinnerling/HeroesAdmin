@@ -10,8 +10,10 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.example.heroadmin.databinding.FragmentLevelUpBinding
+import kotlinx.coroutines.launch
 
 class LevelUpFragment : Fragment() {
     private lateinit var binding: FragmentLevelUpBinding
@@ -50,9 +52,15 @@ class LevelUpFragment : Fragment() {
         args = LevelUpFragmentArgs.fromBundle(requireArguments())
         currPlayerId = args.passedPlayerId
         currEventId = args.passedEventId
-        DBF = DatabaseFunctions(v.context)
-        player = DBF.getPlayer(currPlayerId)
-        player.updateExp()
+        lifecycleScope.launch {
+            try {
+                DBF = DatabaseFunctions(v.context)
+                val player = DBF.getPlayer(currPlayerId)
+                player?.updateExp()
+            } catch (e: Exception) {
+                // handle the exception
+            }
+        }
         mainClassLevel = IntArray(5)
 
         binding.levelUpPlayerNameText.text = player.fullName

@@ -3,7 +3,6 @@ package com.example.heroadmin
 import android.content.Context
 import android.telephony.PhoneNumberUtils
 import android.util.Log
-import android.view.inputmethod.InputMethodManager
 import com.android.volley.Request
 import com.android.volley.Response
 import com.android.volley.toolbox.JsonObjectRequest
@@ -15,14 +14,18 @@ import org.json.JSONArray
 import org.json.JSONObject
 import kotlinx.serialization.encodeToString
 import com.android.volley.NoConnectionError
-import com.example.heroadmin.LocalDatabaseSingleton.playerDatabase
 import kotlinx.coroutines.delay
+import kotlinx.serialization.json.decodeFromJsonElement
+import kotlinx.serialization.json.jsonObject
 import java.util.Locale
 import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
+import com.google.i18n.phonenumbers.PhoneNumberUtil
+import com.google.i18n.phonenumbers.Phonenumber
 
 
-class DatabaseFunctions(private val context: Context) {
+class DatabaseFunctions(val context: Context) {
     private lateinit var currActivity: MainActivity
     lateinit var currEvent: Event
     lateinit var currTicket: Ticket
@@ -49,6 +52,45 @@ class DatabaseFunctions(private val context: Context) {
     }
 
     fun apiCallPost(url: String, jsonString: String) {
+        val mySingleton = MySingleton.getInstance(context)
+        Log.i("test", "Sending JSON string: $jsonString")
+
+        val putRequest: StringRequest = object : StringRequest(
+            Method.POST, url,
+            Response.Listener { response ->
+                // Handle the response from the server
+                Log.i("Post Success", "$response")
+                // Perform any necessary actions based on the server response
+            },
+            Response.ErrorListener { error ->
+                // Handle error cases
+                Log.i("Post Error", "$error")
+                if (error is NoConnectionError) {
+                    // Handle no connection error
+                    Log.i("Post Error", "No internet connection")
+                    connectionLost()
+                } else {
+                    // Handle other error types
+                }
+            }
+        ) {
+            override fun getHeaders(): Map<String, String> {
+                val headers: MutableMap<String, String> = HashMap()
+                headers["Content-Type"] = "application/json"
+                headers["Accept"] = "application/json"
+                return headers
+            }
+
+            override fun getBody(): ByteArray {
+                Log.i("json", jsonString)
+                return jsonString.toByteArray(charset("UTF-8"))
+            }
+        }
+
+        mySingleton.addToRequestQueue(putRequest)
+    }
+
+    fun apiCallPut(url: String, jsonString: String) {
         val mySingleton = MySingleton.getInstance(context)
         Log.i("test", "Sending JSON string: $jsonString")
 
@@ -153,11 +195,6 @@ class DatabaseFunctions(private val context: Context) {
         return eventList
     }
 
-    fun parseEventJson(jsonString: String, json: Json): Event {
-        // Deserialize the JSON to the Event class
-        return json.decodeFromString(Event.serializer(), jsonString)
-    }
-
     fun getAllPlayers(event: Event): MutableList<Player> {
         // Get the event's tickets
         var allTicketIds = mutableListOf<String>()
@@ -177,23 +214,24 @@ class DatabaseFunctions(private val context: Context) {
         return allPlayers
     }
 
-    fun getPlayer(playerId: String): Player {
+    suspend fun getPlayer(playerId: String): Player? = suspendCoroutine { continuation ->
+        val url = "https://talltales.nu/API/api/players/playerId=$playerId"
+        apiCallGet(url,
+            { responseJson ->
+                val jsonElement = Json.parseToJsonElement(responseJson.toString())
+                if (!jsonElement.jsonObject.isEmpty()) {
+                    val player = Json.decodeFromJsonElement<Player>(jsonElement)
+                    continuation.resume(player)
+                } else {
+                    continuation.resume(null)
+                }
+            },
+            {
+                continuation.resumeWithException(RuntimeException("Error getting player with id: $playerId"))
+            }
+        )
 
-
-//        // Deserialize the JSON string to a Player object
-//        val player = Json.decodeFromString<Player>(jsonString)
-
-        return playerDatabase.getById(playerId)!!
-    }
-
-    fun getPlayerEXP(playerId: String): Int {
-        // Find all tickets tied to the player, and add their total exp together
-        // val exp = [insert code here]
-
-        // Placeholder "found" exp
-        val exp = 123
-
-        return exp
+//        return playerDatabase.getById(playerId)!!
     }
 
     fun getRoleByNumber(number: Int): String {
@@ -233,51 +271,57 @@ class DatabaseFunctions(private val context: Context) {
     fun getTicketBookers(ticketList: MutableList<Ticket>) {
         allTickets = ticketList
 
+        // Create a Set to store unique phone numbers
+        val uniqueNumbers = mutableSetOf<String>()
+
         for (ticket in allTickets) {
             if (ticket.playerId != "") {
                 continue
             }
 
-            // Find ticket's guardian among previous guardians by their phone number
-            val formattedNumber = ticket.bookerPhone?.let { formatPhoneNumber(it) }
-            ticket.bookerPhone = formattedNumber
+            // Add phone number to set
+            ticket.bookerPhone?.let { formatPhoneNumber(it) }?.also { uniqueNumbers.add(it) }
+        }
+
+        for (number in uniqueNumbers) {
             apiCallGet(
-                "https://talltales.nu/API/api/guardian_players.php?id=$formattedNumber",
-                ::findPlayersByGuardian, {}
-            )
-            apiCallGet(
-                "https://talltales.nu/API/api/guardian_players.php?id=$formattedNumber",
-                ::findGuardiansByName, {}
+                "https://talltales.nu/API/api/booker_players.php?id=$number",
+                { response ->
+                    findPlayersByBooker(response)
+                    findBookersByName(response)
+                },
+                {}
             )
         }
     }
 
-    private fun findGuardiansByName(response: JSONObject) {
+    private fun findBookersByName(response: JSONObject) {
         val dataArray: JSONArray = response.getJSONArray("data")
-        val guardianList = MutableList(dataArray.length()) {
+        val bookerList = MutableList(dataArray.length()) {
             dataArray.getJSONObject(it)
         }
 
-        // Get all the guardian's players
-        for (guardian in guardianList) {
+        // Get all the booker's players
+        for (booker in bookerList) {
             apiCallGet(
-                "https://talltales.nu/API/api/guardian.php?Name=${guardian.getString("GuardianID")}",
-                ::findPlayersByGuardian, {}
+                "https://talltales.nu/API/api/booker.php?Name=${booker.getString("BookerID")}",
+                ::findPlayersByBooker, {}
             )
         }
     }
 
-    private fun findPlayersByGuardian(response: JSONObject) {
+    private fun findPlayersByBooker(response: JSONObject) {
         val dataArray: JSONArray = response.getJSONArray("data")
         val playerList = MutableList(dataArray.length()) {
             dataArray.getString(it)
         }
 
-        // Get all the guardian's players
+        // Get all the booker's players
         for (playerId in playerList) {
             apiCallGet("https://talltales.nu/API/api/player.php", ::compareNames, {})
         }
     }
+
 
     private fun compareNames(response: JSONObject) {
         val dataArray: JSONArray = response.getJSONArray("data")
@@ -300,7 +344,17 @@ class DatabaseFunctions(private val context: Context) {
     }
 
     private fun formatPhoneNumber(number: String): String {
-        return PhoneNumberUtils.formatNumber(number)
+        val phoneNumberUtil = PhoneNumberUtil.getInstance()
+        val phoneNumber: Phonenumber.PhoneNumber
+
+        try {
+            phoneNumber = phoneNumberUtil.parse(number, "your_default_region_code")
+        } catch (e: Exception) {
+            // Handle parsing exception
+            return number
+        }
+
+        return phoneNumberUtil.format(phoneNumber, PhoneNumberUtil.PhoneNumberFormat.NATIONAL)
     }
 
     fun setTicketTeamColor(ticket: Ticket, setBlue: Boolean) {
@@ -308,7 +362,7 @@ class DatabaseFunctions(private val context: Context) {
 
         // Update database
         val jsonString = createJsonString(ticket)
-        apiCallPost( "https://talltales.nu/API/api/update-ticket.php", jsonString)
+        apiCallPut( "https://talltales.nu/API/api/update-ticket.php", jsonString)
     }
 
     inline fun <reified T> createJsonString(data: T): String {
@@ -319,7 +373,7 @@ class DatabaseFunctions(private val context: Context) {
         val jsonString = createJsonString(data)
         val className = T::class.java.simpleName.lowercase(Locale.ROOT)
         val endpoint = "https://talltales.nu/API/api/update-$className.php"
-        apiCallPost(endpoint, jsonString)
+        apiCallPut(endpoint, jsonString)
     }
 
     sealed class MatchResult {

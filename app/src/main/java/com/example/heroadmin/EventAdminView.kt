@@ -87,11 +87,11 @@ class EventAdminFragment : Fragment() {
         CoroutineScope(Dispatchers.IO).launch {
             event.apply {
                 reportText = binding.eventAdminReportText.text.toString()
-                ExpAttendanceValue = binding.eventAdminAttendanceValue.text.toString().toInt()
-                ExpRecruitValue = binding.eventAdminRecruitmentValue.text.toString().toInt()
-                ExpClickWinValue = binding.eventAdminWin1Value.text.toString().toInt()
-                ExpGameWinValue = binding.eventAdminWin2Value.text.toString().toInt()
-                ExpTeamChangeValue = binding.eventAdminTeamChangeValue.text.toString().toInt()
+                expAttendanceValue = binding.eventAdminAttendanceValue.text.toString().toInt()
+                expRecruitValue = binding.eventAdminRecruitmentValue.text.toString().toInt()
+                expClickWinValue = binding.eventAdminWin1Value.text.toString().toInt()
+                expGameWinValue = binding.eventAdminWin2Value.text.toString().toInt()
+                expTeamChangeValue = binding.eventAdminTeamChangeValue.text.toString().toInt()
             }
 
             val jsonData = Json.encodeToString(event)
