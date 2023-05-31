@@ -552,7 +552,8 @@ class EventView : Fragment() {
     }
 
     private suspend fun automaticPlayerLink(ticket: Ticket): Ticket {
-        return if (ticket.playerId == null) {
+        return if (ticket.playerId == "" || ticket.playerId == null) {
+
             when (val result = DBF.matchTicketToPlayerLocal(ticket, playerDatabase)) {
                 is DatabaseFunctions.MatchResult.DefiniteMatch -> {
                     val updatedTicket = ticket.copy(playerId = result.playerId)
@@ -565,7 +566,7 @@ class EventView : Fragment() {
                     val updatedTicket = ticket.copy(suggestions = result.suggestions)
                     ticketDatabase.update(updatedTicket)
                     val amount = result.suggestions.size
-                    Log.i("check", "{${ticket.fullName} found {$amount} suggestions")
+                    Log.i("suggestions", "{${ticket.fullName} found {$amount} suggestions")
                     updatedTicket
                 }
 
@@ -937,10 +938,10 @@ class EventView : Fragment() {
             rogueLevel = 1,
             mageLevel = 1,
             knightLevel = 1,
-            warriorHealer = 0,
-            warriorRogue = 0,
-            warriorMage = 0,
-            warriorKnight = 0,
+            warriorHealer = false,
+            warriorRogue = false,
+            warriorMage = false,
+            warriorKnight = false,
             bookerNames = mutableListOf(ticket.bookerName!!),
             bookerEmails = mutableListOf(ticket.bookerEmail!!),
             bookerPhones = mutableListOf(ticket.bookerPhone!!),
@@ -1756,78 +1757,78 @@ class EventView : Fragment() {
         val tickets = listOf(
             Ticket(
                 "T1", "Marcus", "Bildtgård", 15, "Jane Doe", "555-123-4567",
-                "123 Main St", "Springfield", "john@example.com", null, "", 0, 0, 10, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, null, "E1"
+                "123 Main St", "Springfield", "john@example.com", null, "", 0, 0, 100, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, null, ""
             ),
             Ticket(
                 "T2", "Annelie", "Öhman", 12, "John Doe", "555-987-6543",
-                "456 Elm St", "Springfield", "john@example.com", null, "", 0, 0, 8, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, null, "E1"
+                "456 Elm St", "Springfield", "john@example.com", null, "", 0, 0, 100, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, null, ""
             ),
             Ticket(
                 "T3", "Peter", "Losonci", 13, "Bob Smith", "555-456-7890",
-                "789 Oak St", "Springfield", "alice@example.com", null, "", 0, 0, 12, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, null, "E1"
+                "789 Oak St", "Springfield", "alice@example.com", null, "", 0, 0, 100, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, null, ""
             ),
             Ticket(
                 "T4", "Mattias", "Evaldsson Fritz", 12, "Alice Brown", "555-321-0987",
-                "321 Birch St", "Springfield", "alice@example.com", null, "", 0, 0, 9, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, null, "E1"
+                "321 Birch St", "Springfield", "alice@example.com", null, "", 0, 0, 100, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, null, ""
             ),
             Ticket(
                 "T5", "Vandela", "Aghed", 11, "Diana Johnson", "555-654-3210",
-                "654 Pine St", "Springfield", "alice@example.com", null, "", 0, 0, 6, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, null, "E1"
+                "654 Pine St", "Springfield", "alice@example.com", null, "", 0, 0, 100, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, null, ""
             ),
             Ticket(
                 "T6", "Emilia", "Hagman", 10, "Charlie Miller", "555-852-1470",
-                "852 Maple St", "Springfield", "diana@example.com", null, "", 0, 0, 5, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, null, "E1"
+                "852 Maple St", "Springfield", "diana@example.com", null, "", 0, 0, 100, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, null, ""
             ),
             Ticket(
                 "T7", "Renée", "Olsson", 9, "David Taylor", "555-555-5555",
-                "10 Oak St", "Springfield", "eva@example.com", null, "", 0, 0, 11, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, null, "E1"
+                "10 Oak St", "Springfield", "eva@example.com", null, "", 0, 0, 100, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, null, ""
             ),
             Ticket(
                 "T0", "Enoo", "Rasmussen", 8, "Emma Wilson", "555-789-4561",
-                "741 Vine St", "Springfield", "edward@example.com", null, "", 0, 0, 7, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, null, "E1"
+                "741 Vine St", "Springfield", "edward@example.com", null, "", 0, 0, 100, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, null, ""
             ),
             Ticket(
                 "T8", "Elin", "Torndal", 7, "Frank Adams", "555-123-7890",
-                "369 Oak St", "Springfield", "edward@example.com", null, "", 0, 0, 10, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, null, "E2"
+                "369 Oak St", "Springfield", "edward@example.com", null, "", 0, 0, 100, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, null, ""
             ),
             Ticket(
                 "T9", "Julia", "Löf", 6, "George Garcia", "555-456-1234",
-                "852 Chestnut St", "Springfield", "george@example.com", null, "", 0, 0, 9, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, null, "E2"
+                "852 Chestnut St", "Springfield", "george@example.com", null, "", 0, 0, 100, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, null, ""
             ),
             Ticket(
                 "T10", "Anna", "Wuolo", 5, "Henry Scott", "555-789-0123",
-                "753 Main St", "Springfield", "hannah@example.com", null, "", 0, 0, 12, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, null, "E2"
+                "753 Main St", "Springfield", "hannah@example.com", null, "", 0, 0, 100, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, null, ""
             ),
             Ticket(
                 "T11", "Fredrik", "Åslund", 15, "Jane Doe", "555-123-4567",
-                "123 Main St", "Springfield", "john@example.com", null, "", 0, 0, 10, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, null, "E1"
+                "123 Main St", "Springfield", "john@example.com", null, "", 0, 0, 100, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, null, ""
             ),
             Ticket(
                 "T12", "Karolina", "Nilsson", 14, "John Doe", "555-987-6543",
-                "456 Elm St", "Springfield", "john@example.com", null, "", 0, 0, 8, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, null, "E1"
+                "456 Elm St", "Springfield", "john@example.com", null, "", 0, 0, 100, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, null, ""
             ),
             Ticket(
                 "T13", "Olof", "Berg", 13, "Bob Smith", "555-456-7890",
-                "789 Oak St", "Springfield", "alice@example.com", null, "", 0, 0, 12, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, null, "E1"
+                "789 Oak St", "Springfield", "alice@example.com", null, "", 0, 0, 100, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, null, ""
             ),
             Ticket(
                 "T14", "Filip", "Lindahl", 12, "Alice Brown", "555-321-0987",
-                "321 Birch St", "Springfield", "alice@example.com", null, "", 0, 0, 9, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, null, "E1"
+                "321 Birch St", "Springfield", "alice@example.com", null, "", 0, 0, 100, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, null, ""
             ),
             Ticket(
                 "T15",
@@ -1843,7 +1844,7 @@ class EventView : Fragment() {
                 "",
                 0,
                 0,
-                6,
+                100,
                 0,
                 0,
                 0,
@@ -1854,12 +1855,12 @@ class EventView : Fragment() {
                 0,
                 0,
                 null,
-                "E1"
+                ""
             ),
             Ticket(
                 "T16", "Cecilia", "Lindh", 10, "Charlie Miller", "555-852-1470",
-                "852 Maple St", "Springfield", "diana@example.com", null, "", 0, 0, 5, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, null, "E1"
+                "852 Maple St", "Springfield", "diana@example.com", null, "", 0, 0, 100, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, null, ""
             ),
             Ticket(
                 "T17",
@@ -1875,7 +1876,7 @@ class EventView : Fragment() {
                 "",
                 0,
                 0,
-                11,
+                100,
                 0,
                 0,
                 0,
@@ -1886,17 +1887,17 @@ class EventView : Fragment() {
                 0,
                 0,
                 null,
-                "E1"
+                ""
             ),
             Ticket(
                 "T18", "Isabelle", "Utbult", 8, "Emma Wilson", "555-789-4561",
-                "741 Vine St", "Springfield", "edward@example.com", null, "", 0, 0, 7, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, null, "E1"
+                "741 Vine St", "Springfield", "edward@example.com", null, "", 0, 0, 100, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, null, ""
             ),
             Ticket(
                 "T31", "Adam", "Asp", 8, "Emma Wilson", "555-789-4561",
-                "741 Vine St", "Springfield", "edward@example.com", null, "", 0, 0, 7, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, null, "E1"
+                "741 Vine St", "Springfield", "edward@example.com", null, "", 0, 0, 100, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, null, ""
             )
         )
 
@@ -1907,25 +1908,29 @@ class EventView : Fragment() {
         val players = listOf(
             Player(
                 playerId = "ABC123",
-                firstName = "Fane",
-                lastName = "Doe",
+                firstName = "Fredrik",
+                lastName = "Åslund",
                 age = 15,
                 exp2021 = 205,
                 exp2022 = 1000,
-                exp2023 = 5,
+                exp2023 = 1000,
                 extraExp = 5,
                 healerLevel = 1,
-                healerUltimateA = true,
+                healerUltimateA = false,
+                healerUltimateB = false,
                 rogueLevel = 1,
-                rogueUltimateA = true,
+                rogueUltimateA = false,
+                rogueUltimateB = false,
                 mageLevel = 1,
-                mageUltimateA = true,
+                mageUltimateA = false,
+                mageUltimateB = false,
                 knightLevel = 1,
-                knightUltimateA = true,
-                warriorHealer = 0,
-                warriorRogue = 0,
-                warriorMage = 0,
-                warriorKnight = 0,
+                knightUltimateA = false,
+                knightUltimateB = false,
+                warriorHealer = false,
+                warriorRogue = false,
+                warriorMage = false,
+                warriorKnight = false,
                 bookerNames = mutableListOf("susanne", "thorvald"),
                 bookerEmails = mutableListOf("susanne@email.com", "thorvald@email.com"),
                 bookerPhones = mutableListOf("0918239013", "128309312"),
@@ -1948,10 +1953,10 @@ class EventView : Fragment() {
                 mageUltimateA = true,
                 knightLevel = 1,
                 knightUltimateA = true,
-                warriorHealer = 0,
-                warriorRogue = 0,
-                warriorMage = 0,
-                warriorKnight = 0,
+                warriorHealer = false,
+                warriorRogue = false,
+                warriorMage = false,
+                warriorKnight = false,
                 bookerNames = mutableListOf("susanne"),
                 bookerEmails = mutableListOf("susanne@email.com"),
                 bookerPhones = mutableListOf("0918239013"),

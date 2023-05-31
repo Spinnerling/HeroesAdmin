@@ -1,5 +1,6 @@
 package com.example.heroadmin
 
+import android.graphics.PorterDuff
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -8,6 +9,8 @@ import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.LinearLayout
 import android.widget.TextView
+import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
@@ -22,24 +25,22 @@ class LevelUpFragment : Fragment() {
     private lateinit var DBF: DatabaseFunctions
     private lateinit var currPlayerId: String
     private var currSection = 0
-    private lateinit var mainClassLevel: IntArray
     private lateinit var buttonList: Array<ImageButton>
     private lateinit var warriorButtonList: Array<ImageButton>
     private lateinit var warriorExpTextArray: Array<TextView>
     private lateinit var specialSection: LinearLayout
     private lateinit var warriorSection: LinearLayout
     private var isSpecialSection: Boolean = false
-    private var currentRole: Int = 0
+    private var canHaveBoth: Boolean = false
 
-    private val expArray: Array<IntArray> = arrayOf(
-        intArrayOf(0, 50, 75, 100, 100), // Healer levels' experience costs
-        intArrayOf(0, 50, 75, 100, 100), // Rogue levels' experience costs
-        intArrayOf(0, 50, 75, 100, 100), // Mage levels' experience costs
-        intArrayOf(0, 50, 75, 100, 100), // Knight levels' experience costs
-        intArrayOf(0, 100, 100, 100, 100) // Warrior levels' experience costs
+    private val upgradeSpecialCost: Array<Int> = arrayOf(
+        0, 50, 75, 100, 100 // Special classes levels' experience costs
+    )
+    private val upgradeWarriorCost: Array<Int> = arrayOf(
+        0, 100, 100, 100, 100 // Warrior experience costs
     )
 
-    private lateinit var expTextArray: Array<TextView>
+    private lateinit var specialExpTextArray: Array<TextView>
     private lateinit var args: LevelUpFragmentArgs
     private var currEventId: String = ""
 
@@ -52,29 +53,28 @@ class LevelUpFragment : Fragment() {
         args = LevelUpFragmentArgs.fromBundle(requireArguments())
         currPlayerId = args.passedPlayerId
         currEventId = args.passedEventId
-        lifecycleScope.launch {
-            try {
-                DBF = DatabaseFunctions(v.context)
-                val player = DBF.getPlayer(currPlayerId)
-                player?.updateExp()
-            } catch (e: Exception) {
-                // handle the exception
-            }
-        }
-        mainClassLevel = IntArray(5)
-
-        binding.levelUpPlayerNameText.text = player.fullName
-        updateExpText()
 
         specialSection = binding.specialClassList
         warriorSection = binding.warriorList
 
         buttonList = arrayOf(
-            binding.upgrade1button,
-            binding.upgrade2button,
-            binding.upgrade3button,
-            binding.upgrade4button,
-            binding.upgrade5button
+            binding.level1Button,
+            binding.level2Button,
+            binding.level3Button,
+            binding.ultimateAButton,
+            binding.ultimateBButton
+        )
+
+        for (button in buttonList.indices) {
+            buttonList[button].setOnClickListener { buttonClick(button) }
+        }
+
+        specialExpTextArray = arrayOf(
+            binding.level1Exp,
+            binding.level2Exp,
+            binding.level3Exp,
+            binding.ultimateAExp,
+            binding.ultimateBExp
         )
 
         warriorButtonList = arrayOf(
@@ -82,15 +82,7 @@ class LevelUpFragment : Fragment() {
             binding.warrior2button,
             binding.warrior3button,
             binding.warrior4button,
-            binding.upgrade5button
-        )
-
-        expTextArray = arrayOf(
-            binding.upgrade1exp,
-            binding.upgrade2exp,
-            binding.upgrade3exp,
-            binding.upgrade4exp,
-            binding.upgrade5exp
+            binding.warrior5button
         )
 
         warriorExpTextArray = arrayOf(
@@ -98,7 +90,7 @@ class LevelUpFragment : Fragment() {
             binding.warrior2exp,
             binding.warrior3exp,
             binding.warrior4exp,
-            binding.upgrade5exp
+            binding.warrior5exp
         )
 
         with(binding) {
@@ -119,199 +111,190 @@ class LevelUpFragment : Fragment() {
             )
         }
 
-        val buttons = arrayOf(
-            binding.upgrade1button,
-            binding.upgrade2button,
-            binding.upgrade3button,
-            binding.upgrade4button,
-            binding.upgrade5button,
-            binding.warrior1button,
-            binding.warrior2button,
-            binding.warrior3button,
-            binding.warrior4button,
-            binding.upgrade5button
-        )
-
-        for (button in buttons) {
-            button.setOnClickListener { buttonClick(button) }
-        }
-
-        changeSection(R.color.healerColor, 0)
+        updatePlayerLocal()
 
         return binding.root
     }
 
+    private fun updatePlayer() {
+        lifecycleScope.launch {
+            try {
+                DBF = DatabaseFunctions(v.context)
+                player = DBF.getPlayerLocal(currPlayerId)!!
+                player.updateUsedExp()
+                binding.levelUpPlayerNameText.text = player.fullName
+                updateExpText()
+                changeSection(R.color.healerColor, 0)
+            } catch (e: Exception) {
+                // handle the exception
+            }
+        }
+    }
+
+    private fun updatePlayerLocal() {
+        Log.i("player", "updating player locally: ${currPlayerId}")
+        DBF = DatabaseFunctions(v.context)
+        player = DBF.getPlayerLocal(currPlayerId)!!
+        player.updateUsedExp()
+        binding.levelUpPlayerNameText.text = player.fullName
+        updateExpText()
+        changeSection(R.color.healerColor, 0)
+    }
+
     private fun updateExpText() {
-        player.updateExp()
+        Log.i("player", "updating exp text")
+        player.updateUsedExp()
         binding.levelUpExpRemText.text = player.remExp.toString()
         Log.i("test", "Updated exp text. Rem exp: " + player.remExp)
+        Log.i("Level", "Levels:\nHealer: ${player.healerLevel}, ${player.healerUltimateA}, ${player.healerUltimateB}\n")
     }
 
-    private fun buttonClick(button: ImageButton) {
-        val level = buttonList.indexOf(button)
-        if (level == -1) {
-            Log.i("test", "Could not find upgrade button")
-            return
-        } else {
-            val mainClass = currSection
-
-            if (player.getClassLevel(mainClass) == level + 1 && level + 1 > 1 && !isUltimateUpgrade(
-                    mainClass,
-                    level
-                )
-            ) {
-                // Case 3: Remove the current level (except level 1 and ultimate upgrades)
-                player.upgradeClass(mainClass, level)
-                updateUpgrades(currSection)
-                updateExpText()
-            } else if (player.getClassLevel(mainClass) > level + 1) {
-                // Case 2: Set the level to the pressed upgrade level
-                player.upgradeClass(mainClass, level + 1)
-                updateUpgrades(currSection)
-                updateExpText()
-            } else if (player.remExp >= expArray[mainClass][level] || (isSpecialSection && level == 0 && currentRole == currSection)) {
-                // Case 1: Buy the upgrade if the player has enough experience or it's a warrior unlockable
-                if (isUltimateUpgrade(mainClass, level)) {
-                    if (mainClass == 3 && level == 3) {
-                        // Special case for knight's second ultimate
-                        player.upgradeClass(mainClass, level)
-                        setChosenUltimate(mainClass, false) // Choose ultimate B (false) for knight
-                    } else if (mainClass == 3 && level == 4) {
-                        player.upgradeClass(mainClass, level)
-                        setChosenUltimate(mainClass, true) // Choose ultimate A (true) for knight
-                    } else {
-                        setChosenUltimate(mainClass, true) // Choose ultimate A (true) for other classes
-                    }
-                } else {
-                    removeOtherUltimateUpgrades(mainClass)
+    fun buttonClick(buttonIndex: Int) {
+        val classLevel = player.getClassLevel(currSection)
+        val expCost = upgradeSpecialCost[buttonIndex]
+        when (buttonIndex) {
+            in 0..2 -> {
+                if (classLevel == buttonIndex + 1 && buttonIndex != 0) {
+                    player.setClassLevel(currSection, buttonIndex)
+                    player.setUltimateA(currSection, false)
+                    player.setUltimateB(currSection, false)
+                } else if (classLevel > buttonIndex + 1) {
+                    player.setClassLevel(currSection, buttonIndex + 1)
+                    player.setUltimateA(currSection, false)
+                    player.setUltimateB(currSection, false)
+                } else if (player.remExp >= expCost) {
+                    player.setClassLevel(currSection, buttonIndex + 1)
                 }
-                player.upgradeClass(mainClass, level + 1)
-                player.remExp -= expArray[mainClass][level] // Deduct the upgrade cost from the player's remaining XP
-                updateUpgrades(currSection)
-                updateExpText()
-            }
-        }
-    }
-
-    private fun setChosenUltimate(mainClass: Int, isUltimateA: Boolean) {
-        when (mainClass) {
-            0 -> {
-                player.healerUltimateA = isUltimateA
-            }
-            1 -> {
-                player.rogueUltimateA = isUltimateA
-            }
-            2 -> {
-                player.mageUltimateA = isUltimateA
             }
             3 -> {
-                player.knightUltimateA = isUltimateA
+                if (!player.getUltimateA(currSection) && player.remExp >= expCost) {
+                    player.setClassLevel(currSection, 4)
+                    player.setUltimateA(currSection, true)
+                    if (!canHaveBoth) {
+                        player.setUltimateB(currSection, false)
+                    }
+                } else if (player.getUltimateA(currSection)) {
+                    player.setUltimateA(currSection, false)
+                    if (!player.getUltimateB(currSection)) player.setClassLevel(currSection, 3)
+                }
+            }
+            4 -> {
+                if (!player.getUltimateB(currSection) && player.remExp >= expCost) {
+                    player.setClassLevel(currSection, 4)
+                    player.setUltimateB(currSection, true)
+                    if (!canHaveBoth) {
+                        player.setUltimateA(currSection, false)
+                    }
+                } else if (player.getUltimateB(currSection)) {
+                    player.setUltimateB(currSection, false)
+                    if (!player.getUltimateA(currSection)) player.setClassLevel(currSection, 3)
+                }
             }
         }
+        updateExpText()
+        updateUpgrades()
     }
 
-    private fun isUltimateUpgrade(mainClass: Int, level: Int): Boolean {
-        return level == 3 || level == 4
+    private fun removeOtherUltimateUpgrades(classNum: Int, isA: Boolean) {
+        player.setUltimateA(classNum, isA)
+        player.setUltimateB(classNum, !isA)
     }
 
-    private fun removeOtherUltimateUpgrades(mainClass: Int) {
-        when (mainClass) {
-            0 -> {
-                player.rogueUltimateA = false
-                player.mageUltimateA = false
-                player.knightUltimateA = false
-            }
-
-            1 -> {
-                player.healerUltimateA = false
-                player.mageUltimateA = false
-                player.knightUltimateA = false
-            }
-
-            2 -> {
-                player.healerUltimateA = false
-                player.rogueUltimateA = false
-                player.knightUltimateA = false
-            }
-
-            3 -> {
-                player.healerUltimateA = false
-                player.rogueUltimateA = false
-                player.mageUltimateA = false
-            }
+    fun updateUpgrades() {
+        buttonList.forEachIndexed { index, button ->
+            setButtonOwnership(button, index)
         }
+        updateButtonImages()
     }
 
-    private fun updateUpgrades(currentRole: Int) {
-        val currentExpTextArray = if (isSpecialSection) expTextArray else warriorExpTextArray
-        val classLevel = player.getClassLevel(currentRole)
-        val numOfLevels = if (currentRole != 4) 4 else 5
-
-        for (level in 0 until numOfLevels) {
-            if (level < currentExpTextArray.size && level < buttonList.size) {
-                val isOwned =
-                    (classLevel >= level + 1 && !(level == 3 && !getUltimateStatus(currentRole))) || (isSpecialSection && level == 0 && currentRole != 4 && currentRole == this.currentRole)
-                val expText = if (isOwned) "OWNED" else "${expArray[currentRole][level]} EXP"
-                currentExpTextArray[level].text = expText
-                setButtonOwnership(buttonList[level], isOwned, true)
-            }
+    private fun updateUpgradesOld() {
+        val currentClassLevel = when (currSection) {
+            0 -> player.healerLevel
+            1 -> player.rogueLevel
+            2 -> player.mageLevel
+            3 -> player.knightLevel
+            else -> 1
         }
 
-        Log.i("test", "Player Level for Role $currentRole: ${player.getClassLevel(currentRole)}")
-        Log.i("test", "Player Ultimate for Role $currentRole: ${getUltimateStatus(currentRole)}")
-    }
-
-    private fun getUltimateStatus(mainClass: Int): Boolean {
-        return when (mainClass) {
+        val ultimateAStatus = when (currSection) {
             0 -> player.healerUltimateA
             1 -> player.rogueUltimateA
             2 -> player.mageUltimateA
             3 -> player.knightUltimateA
             else -> false
         }
+
+        val ultimateBStatus = when (currSection) {
+            0 -> player.healerUltimateB
+            1 -> player.rogueUltimateB
+            2 -> player.mageUltimateB
+            3 -> player.knightUltimateB
+            else -> false
+        }
+
+        // Buttons
+        for (i in buttonList.indices) {
+            var isOwned = false
+            var available = false
+            if (i < 3){
+                isOwned = i <= currentClassLevel
+                available = player.remExp >= upgradeSpecialCost[i] || isOwned
+            }
+            if (i == 3) isOwned = ultimateAStatus
+            if (i == 4) isOwned = ultimateBStatus
+            setButtonOwnership(buttonList[i], i)
+        }
+
+        updateButtonImages()
     }
 
-    private fun changeSection(colorRes: Int, currentRole: Int) {
-        currSection = currentRole
-        binding.subclassListBackground.background.setTint(resources.getColor(colorRes))
-        this.currentRole = currentRole
+    fun setButtonOwnership(button: ImageButton, index: Int) {
+        val isOwned: Boolean = when (index) {
+            in 0..2 -> player.getClassLevel(currSection) > index
+            3 -> player.getUltimateA(currSection)
+            4 -> player.getUltimateB(currSection)
+            else -> false
+        }
+        if (isOwned) {
+            // Setting a border
+            button.background =
+                context?.let { ContextCompat.getDrawable(it, R.drawable.button_border) }
 
-        if (currentRole != 4) {
+            // Clearing color filter to show the original image color
+            button.clearColorFilter()
+            button.isEnabled = true
+            button.alpha = 1.0f
+        } else if (player.remExp >= upgradeSpecialCost[index]) {
+            // Removing the border
+            button.background = null
+
+            // Applying a gray color filter to indicate it's not owned yet
+            context?.let { ContextCompat.getColor(it, android.R.color.darker_gray) }
+                ?.let { button.setColorFilter(it, PorterDuff.Mode.MULTIPLY) }
+            button.isEnabled = true
+            button.alpha = 1.0f
+        } else {
+//            button.isEnabled = false
+            button.alpha = 0.3f
+        }
+    }
+
+    private fun changeSection(colorRes: Int, section: Int) {
+        currSection = section
+        binding.subclassListBackground.background.setTint(resources.getColor(colorRes))
+
+        if (section != 4) {
             isSpecialSection = true
             specialSection.visibility = View.VISIBLE
             warriorSection.visibility = View.GONE
-            updateUpgrades(currentRole)
+            updateUpgrades()
         } else {
             isSpecialSection = false
             specialSection.visibility = View.GONE
             warriorSection.visibility = View.VISIBLE
-            updateUpgrades(currentRole)
+            updateUpgrades()
         }
         updateButtonImages()
-    }
-
-    private fun setButtonOwnership(button: ImageButton, isOwned: Boolean, available: Boolean) {
-        if (isOwned) {
-            button.background.setTint(resources.getColor(R.color.teal_700))
-        } else {
-            button.background.setTint(resources.getColor(R.color.white))
-        }
-
-        if (available) {
-            button.isEnabled = true
-            button.alpha = 1.0f
-        } else {
-            button.isEnabled = false
-            button.alpha = 0.3f
-        }
-
-        val buttonText =
-            if (isOwned) "OWNED" else "${expArray[currSection][buttonList.indexOf(button)]} EXP"
-        val expTextView =
-            if (isSpecialSection) expTextArray[buttonList.indexOf(button)] else warriorExpTextArray[buttonList.indexOf(
-                button
-            )]
-        expTextView.text = buttonText
     }
 
     private fun updateButtonImages() {

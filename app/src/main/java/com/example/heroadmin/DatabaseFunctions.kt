@@ -14,6 +14,7 @@ import org.json.JSONArray
 import org.json.JSONObject
 import kotlinx.serialization.encodeToString
 import com.android.volley.NoConnectionError
+import com.example.heroadmin.LocalDatabaseSingleton.playerDatabase
 import kotlinx.coroutines.delay
 import kotlinx.serialization.json.decodeFromJsonElement
 import kotlinx.serialization.json.jsonObject
@@ -234,6 +235,10 @@ class DatabaseFunctions(val context: Context) {
 //        return playerDatabase.getById(playerId)!!
     }
 
+    fun getPlayerLocal(playerId: String): Player?{
+        return playerDatabase.getById(playerId)!!
+    }
+
     fun getRoleByNumber(number: Int): String {
         var role = ""
 
@@ -427,7 +432,7 @@ class DatabaseFunctions(val context: Context) {
     }
 
     suspend fun matchTicketToPlayerLocal(ticket: Ticket, playerDatabase: LocalDatabase<Player, String>): MatchResult {
-
+        Log.i("matches", "Started matchTicketToPlayerLocal")
         delay(500) // Add delay to simulate network latency
 
         // Make a copy of the database values before filtering
@@ -437,9 +442,13 @@ class DatabaseFunctions(val context: Context) {
         }
 
         return when {
-            players.isEmpty() -> MatchResult.NoMatch
+            players.isEmpty() -> {
+                Log.i("matches", "No matches found for ticket: ${ticket.firstName}")
+                MatchResult.NoMatch
+            }
             players.size == 1 -> {
                 val player = players.first()
+                Log.i("matches", "Definite match found: ${player.playerId} for ticket: ${ticket.firstName}")
                 // You can add additional checks here to confirm it's a definite match
                 MatchResult.DefiniteMatch(player.playerId)
             }
@@ -453,6 +462,7 @@ class DatabaseFunctions(val context: Context) {
                         age = player.age!!
                     )
                 }
+                Log.i("matches", "Multiple matches found for ticket: $ticket. Suggestions: $playerListItems")
                 MatchResult.Suggestions(playerListItems)
             }
         }
