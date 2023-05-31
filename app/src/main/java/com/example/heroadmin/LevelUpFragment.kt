@@ -30,7 +30,6 @@ class LevelUpFragment : Fragment() {
     private lateinit var warriorExpTextArray: Array<TextView>
     private lateinit var specialSection: LinearLayout
     private lateinit var warriorSection: LinearLayout
-    private var isSpecialSection: Boolean = false
     private var canHaveBoth: Boolean = false
 
     private val upgradeSpecialCost: Array<Int> = arrayOf(
@@ -84,6 +83,9 @@ class LevelUpFragment : Fragment() {
             binding.warrior4button,
             binding.warrior5button
         )
+        for (button in warriorButtonList.indices) {
+            warriorButtonList[button].setOnClickListener { warriorButtonClick(button) }
+        }
 
         warriorExpTextArray = arrayOf(
             binding.warrior1exp,
@@ -195,56 +197,10 @@ class LevelUpFragment : Fragment() {
         updateUpgrades()
     }
 
-    private fun removeOtherUltimateUpgrades(classNum: Int, isA: Boolean) {
-        player.setUltimateA(classNum, isA)
-        player.setUltimateB(classNum, !isA)
-    }
-
     fun updateUpgrades() {
         buttonList.forEachIndexed { index, button ->
             setButtonOwnership(button, index)
         }
-        updateButtonImages()
-    }
-
-    private fun updateUpgradesOld() {
-        val currentClassLevel = when (currSection) {
-            0 -> player.healerLevel
-            1 -> player.rogueLevel
-            2 -> player.mageLevel
-            3 -> player.knightLevel
-            else -> 1
-        }
-
-        val ultimateAStatus = when (currSection) {
-            0 -> player.healerUltimateA
-            1 -> player.rogueUltimateA
-            2 -> player.mageUltimateA
-            3 -> player.knightUltimateA
-            else -> false
-        }
-
-        val ultimateBStatus = when (currSection) {
-            0 -> player.healerUltimateB
-            1 -> player.rogueUltimateB
-            2 -> player.mageUltimateB
-            3 -> player.knightUltimateB
-            else -> false
-        }
-
-        // Buttons
-        for (i in buttonList.indices) {
-            var isOwned = false
-            var available = false
-            if (i < 3){
-                isOwned = i <= currentClassLevel
-                available = player.remExp >= upgradeSpecialCost[i] || isOwned
-            }
-            if (i == 3) isOwned = ultimateAStatus
-            if (i == 4) isOwned = ultimateBStatus
-            setButtonOwnership(buttonList[i], i)
-        }
-
         updateButtonImages()
     }
 
@@ -255,15 +211,18 @@ class LevelUpFragment : Fragment() {
             4 -> player.getUltimateB(currSection)
             else -> false
         }
+
         if (isOwned) {
             // Setting a border
-            button.background =
-                context?.let { ContextCompat.getDrawable(it, R.drawable.button_border) }
+            button.background = context?.let { ContextCompat.getDrawable(it, R.drawable.button_border) }
 
             // Clearing color filter to show the original image color
             button.clearColorFilter()
             button.isEnabled = true
             button.alpha = 1.0f
+
+            // Set experience text to "UNLOCKED"
+            specialExpTextArray[index].text = "UNLOCKED"
         } else if (player.remExp >= upgradeSpecialCost[index]) {
             // Removing the border
             button.background = null
@@ -273,9 +232,15 @@ class LevelUpFragment : Fragment() {
                 ?.let { button.setColorFilter(it, PorterDuff.Mode.MULTIPLY) }
             button.isEnabled = true
             button.alpha = 1.0f
+
+            // Set experience text to the cost
+            specialExpTextArray[index].text = upgradeSpecialCost[index].toString()
         } else {
-//            button.isEnabled = false
+//        button.isEnabled = false
             button.alpha = 0.3f
+
+            // Set experience text to the cost
+            specialExpTextArray[index].text = upgradeSpecialCost[index].toString()
         }
     }
 
@@ -284,15 +249,13 @@ class LevelUpFragment : Fragment() {
         binding.subclassListBackground.background.setTint(resources.getColor(colorRes))
 
         if (section != 4) {
-            isSpecialSection = true
             specialSection.visibility = View.VISIBLE
             warriorSection.visibility = View.GONE
             updateUpgrades()
         } else {
-            isSpecialSection = false
             specialSection.visibility = View.GONE
             warriorSection.visibility = View.VISIBLE
-            updateUpgrades()
+            updateWarriorUpgrades()
         }
         updateButtonImages()
     }
@@ -356,4 +319,81 @@ class LevelUpFragment : Fragment() {
             }
         }
     }
+
+    fun warriorButtonClick(buttonIndex: Int) {
+        val expCost = upgradeWarriorCost[buttonIndex]
+        when (buttonIndex) {
+            0 -> { // base button
+                player.warriorHealer = false
+                player.warriorRogue = false
+                player.warriorMage = false
+                player.warriorKnight = false
+            }
+            1 -> { // warriorHealer
+                player.warriorHealer = !player.warriorHealer && player.remExp >= expCost
+            }
+            2 -> { // warriorRogue
+                player.warriorRogue = !player.warriorRogue && player.remExp >= expCost
+            }
+            3 -> { // warriorMage
+                player.warriorMage = !player.warriorMage && player.remExp >= expCost
+            }
+            4 -> { // warriorKnight
+                player.warriorKnight = !player.warriorKnight && player.remExp >= expCost
+            }
+        }
+        updateExpText()
+        updateWarriorUpgrades()
+    }
+
+    fun updateWarriorUpgrades() {
+        warriorButtonList.forEachIndexed { index, button ->
+            setWarriorButtonOwnership(button, index)
+        }
+        updateButtonImages()
+    }
+
+    fun setWarriorButtonOwnership(button: ImageButton, index: Int) {
+        val isOwned: Boolean = when (index) {
+            0 -> true
+            1 -> player.warriorHealer
+            2 -> player.warriorRogue
+            3 -> player.warriorMage
+            4 -> player.warriorKnight
+            else -> false
+        }
+
+        if (isOwned) {
+            // Setting a border
+            button.background = context?.let { ContextCompat.getDrawable(it, R.drawable.button_border) }
+
+            // Clearing color filter to show the original image color
+            button.clearColorFilter()
+            button.isEnabled = true
+            button.alpha = 1.0f
+
+            // Set experience text to "UNLOCKED"
+            warriorExpTextArray[index].text = "UNLOCKED"
+
+        } else if (player.remExp >= upgradeWarriorCost[index]) {
+            // Removing the border
+            button.background = null
+
+            // Applying a gray color filter to indicate it's not owned yet
+            context?.let { ContextCompat.getColor(it, android.R.color.darker_gray) }
+                ?.let { button.setColorFilter(it, PorterDuff.Mode.MULTIPLY) }
+            button.isEnabled = true
+            button.alpha = 1.0f
+
+            // Set experience text to the cost
+            warriorExpTextArray[index].text = upgradeWarriorCost[index].toString()
+
+        } else {
+            button.alpha = 0.3f
+            // Set experience text to the cost
+            warriorExpTextArray[index].text = upgradeWarriorCost[index].toString()
+        }
+    }
+
+
 }

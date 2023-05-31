@@ -12,7 +12,6 @@ data class Player(
     var exp2021: Int? = 0,
     var exp2022: Int? = 0,
     var exp2023: Int? = 0,
-    var extraExp: Int? = 0,
     var healerLevel: Int = 1,
     var rogueLevel: Int = 1,
     var mageLevel: Int = 1,
@@ -104,7 +103,7 @@ data class Player(
             1 -> rogueUltimateA
             2 -> mageUltimateA
             3 -> knightUltimateA
-            else -> throw IllegalArgumentException("Invalid class number")
+            else -> false
         }
     }
 
@@ -114,7 +113,7 @@ data class Player(
             1 -> rogueUltimateB
             2 -> mageUltimateB
             3 -> knightUltimateB
-            else -> throw IllegalArgumentException("Invalid class number")
+            else -> false
         }
     }
 
