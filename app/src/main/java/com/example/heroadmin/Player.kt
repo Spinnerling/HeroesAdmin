@@ -40,13 +40,13 @@ data class Player(
     val remExp get() = totalExp - usedExp
 
     fun updateUsedExp() {
-        val levelCosts = listOf(0, 50, 75, 100, 100)
+        val levelCosts = listOf(0, 50, 75, 0)
 
         // Calculate the total cost of each special class
-        val healerExp = levelCosts[healerLevel - 1]
-        val rogueExp = levelCosts[rogueLevel - 1]
-        val mageExp = levelCosts[mageLevel - 1]
-        val knightExp = levelCosts[knightLevel - 1]
+        val healerExp = levelCosts.take(healerLevel).sum()
+        val rogueExp = levelCosts.take(rogueLevel).sum()
+        val mageExp = levelCosts.take(mageLevel).sum()
+        val knightExp = levelCosts.take(knightLevel).sum()
 
         // Calculate the cost of unlockables
         val unlockableCost = 100

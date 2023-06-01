@@ -33,7 +33,7 @@ class AssignTeamRecyclerAdapter (private val ticketArray: MutableList<Ticket>, p
         holder.bookerName.text = ticket.bookerName
         holder.note.text = ticket.note
 
-        if (ticket.groupSize > 1 && ticket.group != "SELF" && ticket.group != ""){
+        if (ticket.group != "SELF" && ticket.group != ""){
             holder.groupName.text = "Group: ${ticket.group}"
         }
         else {

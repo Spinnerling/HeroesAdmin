@@ -128,75 +128,12 @@
             android:textSize="16sp" />
     </LinearLayout>
 
-    <TextView
-        android:id="@+id/textView24"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/background_green_medium"
-        android:paddingLeft="5dp"
-        android:text="Guardian"
-        android:textColor="#FFFFFF"
-        android:textSize="20sp" />
-
     <LinearLayout
         android:id="@+id/guardianInfo"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="20dp"
-        android:orientation="horizontal">
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginRight="10dp"
-            android:layout_weight="2"
-            android:orientation="vertical"
-            android:padding="5dp">
-
-            <TextView
-                android:id="@+id/textView9"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Name"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/ti_guardianName"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="TextView"
-                android:textColor="#000000"
-                android:textSize="16sp" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="2"
-            android:orientation="vertical"
-            android:padding="5dp">
-
-            <TextView
-                android:id="@+id/textView10"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Phone Nr"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/ti_guardianPhone"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="TextView"
-                android:textColor="#000000"
-                android:textSize="16sp" />
-        </LinearLayout>
-
-    </LinearLayout>
+        android:orientation="horizontal"/>
 
     <TextView
         android:layout_width="match_parent"
@@ -211,7 +148,6 @@
         android:id="@+id/bookerInfo"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="20dp"
         android:orientation="horizontal">
 
         <LinearLayout
@@ -248,15 +184,14 @@
             android:padding="5dp">
 
             <TextView
-                android:id="@+id/textView17"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Email"
+                android:text="Phone Nr"
                 android:textStyle="bold" />
 
             <TextView
-                android:id="@+id/ti_bookerEmail"
+                android:id="@+id/ti_booker_phone"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
@@ -265,6 +200,31 @@
                 android:textSize="16sp" />
         </LinearLayout>
 
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="20dp"
+        android:layout_weight="2"
+        android:orientation="vertical"
+        android:padding="5dp">
+
+        <TextView
+            android:id="@+id/textView17"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Email"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/ti_bookerEmail"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="TextView"
+            android:textColor="#000000"
+            android:textSize="16sp" />
     </LinearLayout>
 
     <Button
@@ -276,4 +236,6 @@
         android:textColor="#000000"
         app:strokeColor="#000000"
         app:strokeWidth="2dp" />
+
+
 </LinearLayout>

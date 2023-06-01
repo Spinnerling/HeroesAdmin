@@ -54,7 +54,8 @@ class EventList : Fragment() {
         loadVenue()
 
         createSampleEvents()
-        loadEventsLocally()
+        //loadEventsLocally()
+        loadEvents()
 
         // Set an onItemSelectedListener for the dropdownMenu
         dropdownMenu.onItemClickListener = AdapterView.OnItemClickListener { parent, _, position, _ ->
@@ -72,15 +73,15 @@ class EventList : Fragment() {
         }
 
         binding.refreshButton.setOnClickListener {
-//            loadEvents()
-            loadEventsLocally()
+            loadEvents()
+//            loadEventsLocally()
         }
     }
 
     private fun loadEvents(){
         binding.eventStatusText.text = "Loading Events..."
         DBF.apiCallGet(
-            "https://talltales.nu/API/api/eventlist.php",
+            "https://www.talltales.nu/API/api/get-event.php",
             { eventsJson -> getEvents(eventsJson, json) },
             {}
         )
@@ -120,6 +121,7 @@ class EventList : Fragment() {
     }
 
     private fun getEvents(eventsJson: JSONObject, json: Json) {
+        Log.i("events", "")
         eventArray = DBF.getEventArray(eventsJson, json)
         eventListList.clear()
 
@@ -136,18 +138,20 @@ class EventList : Fragment() {
         // Divvy up all the events into correct event list (past or future)
         for (event in eventArray) {
 
+            Log.i("check", "Venues: ${event.venue}, Event: ${event.title}")
             // Fix venue name
-            if (event.venue == "917" || event.venue == "Visby") {
-                event.venue = "Visby"
-            } else {
-                event.venue = "Stockholm"
+            when (event.venue) {
+                "917" -> event.venue = "Visby"
+                "10691" -> event.venue = "Stockholm"
+                "23307" -> event.venue = "Göteborg"
+                "23314" -> event.venue = "Örebro"
+                "23312" -> event.venue = "Malmö"
+                "23310" -> event.venue = "Uppsala"
             }
-            Log.i("check", "Venue: ${event.venue}")
 
             for (i in venues.indices) {
                 // If event's venue is correct for the list, add event to past or future list
                 if (event.venue == venues[i]) {
-                    Log.d("asdasdasd", event.title)
                     if (event.startTime!! < currentTime.toString()) {
                         eventListList[i * 2].add(event) // Add to past list
                     } else {

@@ -10,8 +10,12 @@
     <string name="eventParticipants">42 / 72 players</string>
 
     <string-array name="venues">
+        <item>Göteborg</item>
+        <item>Malmö</item>
         <item>Stockholm</item>
+        <item>Uppsala</item>
         <item>Visby</item>
+        <item>Örebro</item>
     </string-array>
 
     <string-array name="groupNames">

@@ -122,7 +122,7 @@ class LevelUpFragment : Fragment() {
         lifecycleScope.launch {
             try {
                 DBF = DatabaseFunctions(v.context)
-                player = DBF.getPlayerLocal(currPlayerId)!!
+                player = DBF.getPlayer(currPlayerId)!!
                 player.updateUsedExp()
                 binding.levelUpPlayerNameText.text = player.fullName
                 updateExpText()
@@ -147,6 +147,7 @@ class LevelUpFragment : Fragment() {
         Log.i("player", "updating exp text")
         player.updateUsedExp()
         binding.levelUpExpRemText.text = player.remExp.toString()
+        DBF.updateData(player)
         Log.i("test", "Updated exp text. Rem exp: " + player.remExp)
         Log.i("Level", "Levels:\nHealer: ${player.healerLevel}, ${player.healerUltimateA}, ${player.healerUltimateB}\n")
     }
@@ -246,7 +247,7 @@ class LevelUpFragment : Fragment() {
 
     private fun changeSection(colorRes: Int, section: Int) {
         currSection = section
-        binding.subclassListBackground.background.setTint(resources.getColor(colorRes))
+//        binding.subclassListBackground.background.setTint(resources.getColor(colorRes))
 
         if (section != 4) {
             specialSection.visibility = View.VISIBLE

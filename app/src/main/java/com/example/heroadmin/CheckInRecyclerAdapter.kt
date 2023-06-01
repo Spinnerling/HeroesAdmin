@@ -39,7 +39,7 @@ class CheckInRecyclerAdapter(private var ticketArray: MutableList<Ticket>, priva
             holder.notePanel.visibility = View.VISIBLE
         }
 
-        if (ticket.groupSize > 1 && ticket.group != "SELF" && ticket.group != ""){
+        if (ticket.group != "SELF" && ticket.group != ""){
             holder.groupName.text = "Group: ${ticket.group}"
         }
         else {

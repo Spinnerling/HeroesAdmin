@@ -5,27 +5,26 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class Event(
-    @SerialName("ID") var eventId: String,
-    @SerialName("Event_Title") var title: String,
-    @SerialName("Event_Start_date") var startTime: String,
-    @SerialName("Event_End_Date") var endTime: String,
-    @SerialName("Venue_ID") var venue: String,
+    @SerialName("eventID") var eventId: String,
+    var title: String,
+    var startTime: String,
+    var endTime: String,
+    var venue: String,
     var reportText: String? = "",
     var description: String? = "",
     var clickWinner: String? = "",
     var gameWinner: String? = "",
-    var expAttendanceValue: Int? = null,
-    var expClickWinValue: Int? = null,
-    var expGameWinValue: Int? = null,
-    var expTeamChangeValue: Int? = null,
-    var expRecruitValue: Int? = null,
+    var expAttendanceValue: Int? = 20,
+    var expClickWinValue: Int? = 5,
+    var expGameWinValue: Int? = 10,
+    var expTeamChangeValue: Int? = 5,
+    var expRecruitValue: Int? = 10,
     var blueGameWins: Int? = 0,
     var redGameWins: Int? = 0,
-    @SerialName("Round") var round: Int? = 0,
-    @SerialName("Status") var status: String? = "Ej påbörjat"
+    var round: Int? = 0,
+    var status: String? = "Ej påbörjat",
+    @SerialName("tickets") var ticketIDs: MutableList<String> = mutableListOf()
 ) {
-    @SerialName("TicketIDs")
-    var ticketIDs: MutableList<String> = mutableListOf()
     var time = offsetTime(startTime.substring(11, 16))
     var actualStartTime: String? = time
 

@@ -40,12 +40,12 @@ class DatabaseFunctions(val context: Context) {
         val requestQueue = Volley.newRequestQueue(context)
         val stringRequest = StringRequest(Request.Method.GET, url,
             { response ->
-                Log.d("check", "response: $response")
+                Log.d("test", "response: $response")
                 responseFunction(JSONObject(response))
             },
             { error ->
                 errorFunction()
-                Log.i("test", "Error! Failed call to api: " + url)
+                Log.i("test", "Error! Failed call to api: $url. Error: $error")
             }
         )
         requestQueue.cache.clear()

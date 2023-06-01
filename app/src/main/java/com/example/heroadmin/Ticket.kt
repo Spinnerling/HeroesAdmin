@@ -42,7 +42,6 @@ data class Ticket(
     var noteHandled = false
     var groupSize = 1
     var group = ""
-    var emailGroup = ""
 
     private fun checkPowerLevel(): Int {
         var multiplier: Float = 1.0F

@@ -678,7 +678,7 @@
             android:background="@color/background_green_light"
             android:gravity="center"
             android:orientation="horizontal"
-            android:visibility="visible">
+            android:visibility="gone">
 
             <RelativeLayout
                 android:layout_width="0dp"
@@ -706,8 +706,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_centerInParent="true"
-                    android:orientation="horizontal"
-                    android:gravity="center">
+                    android:gravity="center"
+                    android:orientation="horizontal">
 
                     <Button
                         android:id="@+id/blueWinsMinus"
@@ -765,14 +765,14 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_alignParentTop="true"
-                    android:gravity="center"
-                    android:background="@color/teamRedColor">
+                    android:background="@color/teamRedColor"
+                    android:gravity="center">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Red Wins:"
-                        android:textColor="@color/text_white"/>
+                        android:textColor="@color/text_white" />
 
                 </LinearLayout>
 
@@ -781,8 +781,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_centerInParent="true"
-                    android:orientation="horizontal"
-                    android:gravity="center">
+                    android:gravity="center"
+                    android:orientation="horizontal">
 
                     <Button
                         android:id="@+id/redWinsMinus"
@@ -796,7 +796,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="0"
-                        android:textSize="24dp"/>
+                        android:textSize="24dp" />
 
                     <Button
                         android:id="@+id/redWinsPlus"
@@ -1140,7 +1140,7 @@
             android:background="@color/background_green_light"
             android:orientation="vertical"
             android:padding="10dp"
-            android:visibility="gone">
+            android:visibility="visible">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -1347,6 +1347,18 @@
                             android:layout_weight="1"
                             android:backgroundTint="#D7FFCF"
                             android:text="Award Exp"
+                            android:textColor="#000000"
+                            app:strokeColor="#000000"
+                            app:strokeWidth="2dp" />
+
+                        <Button
+                            android:id="@+id/de_checkin"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_marginRight="5dp"
+                            android:layout_weight="1"
+                            android:backgroundTint="#D7FFCF"
+                            android:text="De-Checkin"
                             android:textColor="#000000"
                             app:strokeColor="#000000"
                             app:strokeWidth="2dp" />

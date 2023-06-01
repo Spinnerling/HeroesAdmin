@@ -47,13 +47,13 @@ class EventView : Fragment() {
     val ticketDatabase = LocalDatabaseSingleton.ticketDatabase
     val playerDatabase = LocalDatabaseSingleton.playerDatabase
     val eventDatabase = LocalDatabaseSingleton.eventDatabase
-    private lateinit var allTickets: MutableList<Ticket>
-    private lateinit var redTeam: MutableList<Ticket>
-    private lateinit var blueTeam: MutableList<Ticket>
+    private var allTickets: MutableList<Ticket> = mutableListOf()
+    private var redTeam: MutableList<Ticket> = mutableListOf()
+    private var blueTeam: MutableList<Ticket> = mutableListOf()
     private var redBench: MutableList<Ticket> = mutableListOf()
     private var blueBench: MutableList<Ticket> = mutableListOf()
-    private lateinit var assignList: MutableList<Ticket>
-    private lateinit var checkInList: MutableList<Ticket>
+    private var assignList: MutableList<Ticket> = mutableListOf()
+    private var checkInList: MutableList<Ticket> = mutableListOf()
     private lateinit var assignTeamAdapter: AssignTeamRecyclerAdapter
     private lateinit var checkInAdapter: CheckInRecyclerAdapter
     private lateinit var redTeamAdapter: TeamRecyclerAdapter
@@ -273,6 +273,7 @@ class EventView : Fragment() {
                     team = "Blue"
                 }
                 ticketDatabase.update(ticket)
+                DBF.updateData(ticket)
             }
             updateTicketLists()
             autoSetRoleAmounts()
@@ -332,6 +333,9 @@ class EventView : Fragment() {
         binding.awardExpButton.setOnClickListener {
             openAwardExp()
         }
+        binding.deCheckin.setOnClickListener {
+            ResetTicket()
+        }
         binding.setWinnerButton.setOnClickListener {
             openWinnerPopup()
         }
@@ -341,7 +345,7 @@ class EventView : Fragment() {
             binding.refreshButton.isEnabled = false
         }
         binding.emptyButton.setOnClickListener {
-            addOneTicket() // TODO: Remove
+            //Future shenanigans, save for later
         }
         binding.assignTeamAutoAssignButton.setOnClickListener {
             autoAssignLoop()
@@ -412,16 +416,23 @@ class EventView : Fragment() {
     }
 
     private fun fetchEventTickets(eventId: String) {
+        Log.i("tickets", "Started fetchEventTickets")
         CoroutineScope(Dispatchers.IO).launch {
             val ticketIds = getTicketIds(eventId)  // Fetch the ticket IDs
-            val tickets = getTickets(ticketIds ?: emptyList())  // Fetch the full Ticket objects
+            Log.i("tickets", "Ticket Ids: $ticketIds")  // Log the fetched ticket IDs
 
-            // Update the shared 'allTickets' list
-            allTickets.clear()
-            allTickets.addAll(tickets)
+            val tickets = getTickets(ticketIds ?: emptyList())  // Fetch the full Ticket objects
+            Log.i("tickets", "Fetched Tickets: $tickets")  // Log the fetched tickets
 
             // Switch to the Main dispatcher for UI updates
             withContext(Dispatchers.Main) {
+                // Update the shared 'allTickets' list
+                allTickets.clear()
+                allTickets.addAll(tickets)
+
+                Log.i("tickets", "allTickets size: ${allTickets.size}")  // Log the size of 'allTickets'
+
+                initializeTicketGroups()
                 updateTicketLists()
                 DBF.getTicketBookers(allTickets)
                 loadingDialogue.dismiss()
@@ -472,7 +483,8 @@ class EventView : Fragment() {
                         ticket
                     }.getOrNull()  // getOrNull will return null if an exception was thrown
                 }
-            }.awaitAll().filterNotNull()  // awaitAll waits for all async jobs to complete, filterNotNull removes any null Tickets
+            }.awaitAll()
+                .filterNotNull()  // awaitAll waits for all async jobs to complete, filterNotNull removes any null Tickets
         }
     }
 
@@ -529,6 +541,8 @@ class EventView : Fragment() {
                 withContext(Dispatchers.Main) {
                     Log.i("check", "Is run!")
                     updateTicketLists()
+                    initializeTicketGroups()
+                    updateTicketLists()
                     DBF.getTicketBookers(allTickets)
                     binding.refreshButton.isEnabled = true
                     Log.d("check", "Dismissing loading dialogue...")
@@ -575,6 +589,7 @@ class EventView : Fragment() {
                     playerDatabase.insert(newPlayer)
                     val updatedTicket = ticket.copy(playerId = newPlayer.playerId)
                     ticketDatabase.update(updatedTicket)
+                    DBF.updateData(ticket)
                     Log.i("check", "{${ticket.fullName} found nothing. Should create player")
                     updatedTicket
                 }
@@ -692,7 +707,7 @@ class EventView : Fragment() {
                 ticket.playerId = currentSelectedItem.playerId
 
                 // Save the updated ticket
-                //DBF.updateData(ticket)
+                DBF.updateData(ticket)
                 ticketDatabase.update(ticket)
                 updateTicketLists()
 
@@ -751,8 +766,6 @@ class EventView : Fragment() {
             }
         }
 
-        updateTicketGroups()
-
         when (assignSorting) {
             0 -> sortAssignByName()
             1 -> sortAssignByAge()
@@ -779,7 +792,7 @@ class EventView : Fragment() {
         updateTeamPower()
     }
 
-    private fun updateTicketGroups() {
+    fun initializeTicketGroups() {
         val emailToGroupMap = mutableMapOf<String, Int>()
         val usedGroupNumbers = mutableSetOf<Int>()
         val groupToSizeMap = mutableMapOf<Int, Int>()
@@ -806,9 +819,10 @@ class EventView : Fragment() {
             groupToSizeMap[groupNumber] = groupSize + 1
         }
 
-        // Second pass: Assign group sizes to tickets.
+        // Second pass: Assign group sizes to tickets now that groups are made.
         for (ticket in assignList) {
             if (ticket.group == "SELF") {
+                ticket.groupSize = 1
                 continue
             }
 
@@ -840,60 +854,61 @@ class EventView : Fragment() {
             if (ticket.group != "SELF" && ticket.group != "") {
                 ticket.group = reassignedGroupMap[ticket.group] ?: ticket.group
             }
+            DBF.updateData(ticket)
         }
     }
-//         VERSION 2, not updating first person's button in each group
-//        val emailToGroupMap = mutableMapOf<String, Int>()
-//        val usedGroupNumbers = mutableSetOf<Int>()
-//        val groupToSizeMap = mutableMapOf<Int, Int>()
-//
-//        // Single pass to assign group numbers, sizes and emailGroup
-//        for (ticket in assignList) {
-//            if (ticket.group == "SELF") {
-//                continue
-//            }
-//
-//            val bookerEmail = ticket.bookerEmail ?: continue
-//
-//            val groupNumber = emailToGroupMap[bookerEmail] ?: run {
-//                var newGroupNumber = 1
-//                while (usedGroupNumbers.contains(newGroupNumber)) {
-//                    newGroupNumber++
-//                }
-//                usedGroupNumbers.add(newGroupNumber)
-//                newGroupNumber
-//            }
-//
-//            emailToGroupMap[bookerEmail] = groupNumber
-//
-//            if (ticket.emailGroup.isNullOrEmpty()) {
-//                ticket.emailGroup = groupNumber.toString()
-//            }
-//
-//            ticket.group = groupNumber.toString()
-//
-//            val groupSize = groupToSizeMap[groupNumber] ?: 0
-//            groupToSizeMap[groupNumber] = groupSize + 1
-//
-//            ticket.groupSize = groupToSizeMap[groupNumber] ?: 1
-//        }
-//
-//        // Reassign group identifiers
-//        val reassignedGroupMap = mutableMapOf<String, String>()
-//        var newIdentifier = 1
-//
-//        // Sort groups by size in descending order and reassign identifiers
-//        groupToSizeMap.entries.sortedByDescending { it.value }.forEach { entry ->
-//            reassignedGroupMap[entry.key.toString()] = newIdentifier.toString()
-//            newIdentifier++
-//        }
-//
-//        // Update the ticket groups with the new identifiers
-//        for (ticket in assignList) {
-//            if (ticket.group != "SELF" && ticket.group != "") {
-//                ticket.group = reassignedGroupMap[ticket.group] ?: ticket.group
-//            }
-//        }
+
+
+    fun updateTicketGroups(tickets: List<Ticket>) {
+        // Create a map to store group - size mapping
+        val groupSizeMap = mutableMapOf<String, Int>()
+
+        // Calculate the size for each group
+        tickets.forEach { ticket ->
+            val group = ticket.group
+            groupSizeMap[group] = groupSizeMap.getOrDefault(group, 0) + 1
+        }
+
+        // Assign the calculated size to each ticket's groupSize property
+        tickets.forEach { ticket ->
+            ticket.groupSize = groupSizeMap.getOrDefault(ticket.group, 1)
+            DBF.updateData(ticket)
+        }
+    }
+
+    fun setGroupName(ticket: Ticket) {
+        // Open popup
+        val dialogView = LayoutInflater.from(context).inflate(R.layout.group_popup, null)
+
+        val builder = AlertDialog.Builder(context)
+            .setView(dialogView)
+
+        val alertDialog = builder.show()
+        val name: TextView = dialogView.findViewById(R.id.groupPopup_nameText)
+        name.text = ticket.fullName
+
+        val editText = dialogView.findViewById<EditText>(R.id.groupPopup_EditName)
+        editText.setText(ticket.group, TextView.BufferType.EDITABLE)
+        editText.requestFocus()
+
+        dialogView.findViewById<Button>(R.id.groupPopup_acceptButton).setOnClickListener {
+            val groupName = editText.text.toString().lowercase()
+
+            // Check if the input groupName is a valid group number
+            if (groupName.toIntOrNull() != null) {
+                ticket.group = groupName
+                updateTicketGroups(allTickets)
+                updateTicketLists()
+                alertDialog.dismiss()
+            } else {
+                Toast.makeText(context, "Must be a valid number", Toast.LENGTH_SHORT).show()
+            }
+        }
+        dialogView.findViewById<Button>(R.id.groupPopup_cancelButton).setOnClickListener {
+            Toast.makeText(context, "Cancelled", Toast.LENGTH_SHORT).show()
+            alertDialog.dismiss()
+        }
+    }
 
 
     fun setGroupColor(group: String, setBlue: Boolean, setDatabase: Boolean) {
@@ -908,7 +923,7 @@ class EventView : Fragment() {
 
                 if (setDatabase) {
                     // Update database
-                    //DBF.updateData(ticket)
+                    DBF.updateData(ticket)
                     ticketDatabase.update(ticket)
                 }
 
@@ -937,6 +952,14 @@ class EventView : Fragment() {
             rogueLevel = 1,
             mageLevel = 1,
             knightLevel = 1,
+            healerUltimateA = false,
+            healerUltimateB = false,
+            rogueUltimateA = false,
+            rogueUltimateB = false,
+            mageUltimateA = false,
+            mageUltimateB = false,
+            knightUltimateA = false,
+            knightUltimateB = false,
             warriorHealer = false,
             warriorRogue = false,
             warriorMage = false,
@@ -1012,27 +1035,6 @@ class EventView : Fragment() {
             }
         }
 
-        /*
-                // Find group stats
-                val statList: MutableList<MutableList<Any>> = mutableListOf()
-
-                for (group in groupList) {
-                    val groupStats: MutableList<Any> = mutableListOf("", 0, 0, 0, 0)
-                    for (ticket in assignList) {
-                        if (ticket.group == group) {
-                            groupStats[0] = group
-                            groupStats[1] = groupStats[1] as Int + ticket.powerLevel
-                            groupStats[2] = groupStats[2] as Int + 1
-                            if (ticket.age > 12) {
-                                groupStats[3] = groupStats[3] as Int + 1
-                            } else if (ticket.age < 7) {
-                                groupStats[4] = groupStats[4] as Int + 1
-                            }
-                        }
-                    }
-                    statList.add(groupStats)
-                }*/
-
         // Assign all groups
         for (group in groupList) {
             if (bluePowerLevel > redPowerLevel) {
@@ -1055,6 +1057,7 @@ class EventView : Fragment() {
                 }
             }
             updateTeamPower()
+            DBF.updateData(ticket)
         }
     }
 
@@ -1226,7 +1229,7 @@ class EventView : Fragment() {
             autoSetRoleAmounts()
 
             // Update database
-            //DBF.updateData(ticket)
+            DBF.updateData(ticket)
             ticketDatabase.update(ticket)
             updateEventStatus()
 
@@ -1255,10 +1258,8 @@ class EventView : Fragment() {
         userId.text = ticket.playerId
         val ticketNote: TextView = dialogView.findViewById(R.id.ti_Note)
         ticketNote.text = ticket.note
-        val guardianName: TextView = dialogView.findViewById(R.id.ti_guardianName)
-        guardianName.text = ticket.bookerName
-        val guardianPhone: TextView = dialogView.findViewById(R.id.ti_guardianPhone)
-        guardianPhone.text = ticket.bookerPhone
+        val bookerPhone: TextView = dialogView.findViewById(R.id.ti_booker_phone)
+        bookerPhone.text = ticket.bookerPhone
         val bookerName: TextView = dialogView.findViewById(R.id.ti_bookerName)
         bookerName.text = ticket.bookerName
         val bookerEmail: TextView = dialogView.findViewById(R.id.ti_bookerEmail)
@@ -1289,7 +1290,7 @@ class EventView : Fragment() {
                 ticket.expPersonal = ticket.expPersonal?.plus(number.toInt())
 
                 // Update database
-                //DBF.updateData(selectedTicket)
+                DBF.updateData(selectedTicket)
                 ticketDatabase.update(selectedTicket)
 
                 alertDialog.dismiss()
@@ -1300,6 +1301,35 @@ class EventView : Fragment() {
             alertDialog.dismiss()
         }
     }
+
+    private fun ResetTicket() {
+        val ticket = selectedTicket
+        deselectPlayer()
+        val player = ticket.playerId?.let { playerDatabase.getById(it) }
+        if (player != null) {
+            player.healerLevel = 0
+            player.healerUltimateA = false
+            player.healerUltimateB = false
+            player.rogueLevel = 0
+            player.rogueUltimateA = false
+            player.rogueUltimateB = false
+            player.mageLevel = 0
+            player.mageUltimateA = false
+            player.mageUltimateB = false
+            player.knightLevel = 0
+            player.knightUltimateA = false
+            player.knightUltimateB = false
+            player.warriorHealer = false
+            player.warriorRogue = false
+            player.warriorMage = false
+            player.warriorKnight = false
+        }
+        ticket.checkedIn = 0
+        ticket.teamColor = ""
+        DBF.updateData(ticket)
+        updateTicketLists()
+    }
+
 
     fun openWinnerPopup() {
         val dialogView = LayoutInflater.from(context).inflate(R.layout.set_winner_popup, null)
@@ -1455,50 +1485,8 @@ class EventView : Fragment() {
         autoSetRoleAmounts()
 
         // Update database
-        //DBF.updateData(selectedTicket)
+        DBF.updateData(selectedTicket)
         ticketDatabase.update(selectedTicket)
-    }
-
-    fun setGroupName(ticket: Ticket) {
-        // Open popup
-
-        val dialogView = LayoutInflater.from(context).inflate(R.layout.group_popup, null)
-
-        val builder = AlertDialog.Builder(context)
-            .setView(dialogView)
-
-        val alertDialog = builder.show()
-        val name: TextView = dialogView.findViewById(R.id.groupPopup_nameText)
-        name.text = ticket.fullName
-
-        val editText = dialogView.findViewById<EditText>(R.id.groupPopup_EditName)
-        editText.setText(ticket.group, TextView.BufferType.EDITABLE)
-        editText.requestFocus()
-
-        dialogView.findViewById<Button>(R.id.groupPopup_acceptButton).setOnClickListener {
-            val groupName = editText.text.toString().lowercase()
-            if (groupName != "") {
-                // Check if the input groupName is a valid group number
-                if (groupName.toIntOrNull() != null) {
-                    ticket.group = groupName
-                } else {
-                    // Generate a new group number for the person
-                    val usedGroupNumbers =
-                        assignList.mapNotNull { it.group.toIntOrNull() }.toMutableList()
-                    var newGroupNumber = 1
-                    while (usedGroupNumbers.contains(newGroupNumber)) {
-                        newGroupNumber++
-                    }
-                    ticket.group = newGroupNumber.toString()
-                }
-                updateTicketLists()
-                alertDialog.dismiss()
-            }
-        }
-        dialogView.findViewById<Button>(R.id.groupPopup_cancelButton).setOnClickListener {
-            Toast.makeText(context, "Cancelled", Toast.LENGTH_SHORT).show()
-            alertDialog.dismiss()
-        }
     }
 
     fun editNote(ticket: Ticket) {
@@ -1524,7 +1512,7 @@ class EventView : Fragment() {
             updateTicketLists()
 
             // Update database
-            //DBF.updateData(ticket)
+            DBF.updateData(ticket)
             ticketDatabase.update(ticket)
 
             alertDialog.dismiss()
@@ -1553,7 +1541,6 @@ class EventView : Fragment() {
         if (assignList.isEmpty()) {
             return
         }
-
         // Sort the list by group and full name
         assignList = assignList.sortedWith(
             compareBy(
@@ -1641,7 +1628,6 @@ class EventView : Fragment() {
         blueBench.forEach { it.currentRole = 7 }
         redBench.forEach { it.currentRole = 7 }
 
-        val finishedRoles = Array(6) { mutableListOf<Ticket>() }
         val totalAmount = roleAmounts.sum()
 
         val guaranteedTickets = team.filter { it.guaranteedRole!! in 1..6 }
@@ -1652,6 +1638,7 @@ class EventView : Fragment() {
                 ticket.lastRole = role
                 roleAmounts[role - 1]--
             }
+            DBF.updateData(ticket)
         }
 
         val remainingTickets = team.filter { it.currentRole == 7 }
@@ -1684,6 +1671,7 @@ class EventView : Fragment() {
                 ticket.lastRole = roleIndex + 1
                 roleAmounts[roleIndex]--
                 roleAssignmentTracker[roleIndex].add(ticket)
+                DBF.updateData(ticket)
             }
         }
 
@@ -1707,6 +1695,7 @@ class EventView : Fragment() {
                 ticket.currentRole = role
                 ticket.lastRole = role
                 assignedRoles.add(role)
+                DBF.updateData(ticket)
             }
         }
 
@@ -1743,12 +1732,14 @@ class EventView : Fragment() {
             if (ticket.currentRole == ticket.guaranteedRole) {
                 ticket.guaranteedRole = 0
             }
+            DBF.updateData(ticket)
         }
     }
 
     private fun updateRound(increase: Boolean) {
         if (increase) event.round = event.round!! + 1 else event.round = event.round!! - 1
         binding.roundText.text = event.round.toString()
+        DBF.updateData(event)
     }
 
     fun loadTestData() {
@@ -2006,6 +1997,8 @@ class EventView : Fragment() {
         } else {
             selectedTicket.benched = 0
         }
+
+        DBF.updateData(selectedTicket)
         updateTicketLists()
         autoSetRoleAmounts()
     }
@@ -2067,7 +2060,8 @@ class EventView : Fragment() {
             ticketTeamDivision -> "Lagindelning"
             else -> "Ej påbörjat"
         }
-        eventDatabase.update(event)
+        eventDatabase.update(event) //TODO: remove Local
+        DBF.updateData(event)
         Log.i("status", "Event Status: ${event.status}")
     }
 }
