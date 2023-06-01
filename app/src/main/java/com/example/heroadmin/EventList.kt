@@ -33,7 +33,7 @@ class EventList : Fragment() {
     private lateinit var venues: Array<String>
     private lateinit var dropdownMenu: AutoCompleteTextView
     private lateinit var DBF : DatabaseFunctions
-    private val json = Json { ignoreUnknownKeys = true }
+    private val json = Json { ignoreUnknownKeys = true; coerceInputValues = true }
     private var displayPastEvents: Boolean = false
     private val SHARED_PREFS = "sharedPrefs"
     private val VENUE_KEY = "venue"
@@ -53,7 +53,7 @@ class EventList : Fragment() {
         // Load the saved venue, if any
         loadVenue()
 
-        createSampleEvents()
+//        createSampleEvents()
         //loadEventsLocally()
         loadEvents()
 
@@ -224,9 +224,9 @@ class EventList : Fragment() {
     }
 
     private fun onEventItemClick(position: Int) {
-        val event = eventArray[position].eventId
-        (activity as MainActivity).event = eventArray[position]
-        findNavController().navigate(EventListDirections.actionEventListToEventAdminFrag(event))
+        val event = eventAdapter.list[position]
+        (activity as MainActivity).event = event
+        findNavController().navigate(EventListDirections.actionEventListToEventAdminFrag(event.eventId))
     }
 
     private fun createSampleEvents() {

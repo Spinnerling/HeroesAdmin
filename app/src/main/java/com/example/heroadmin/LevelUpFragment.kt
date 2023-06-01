@@ -46,7 +46,7 @@ class LevelUpFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_level_up, container, false)
         v = binding.root
         args = LevelUpFragmentArgs.fromBundle(requireArguments())
@@ -134,7 +134,7 @@ class LevelUpFragment : Fragment() {
     }
 
     private fun updatePlayerLocal() {
-        Log.i("player", "updating player locally: ${currPlayerId}")
+        Log.i("player", "updating player locally: $currPlayerId")
         DBF = DatabaseFunctions(v.context)
         player = DBF.getPlayerLocal(currPlayerId)!!
         player.updateUsedExp()
@@ -152,7 +152,7 @@ class LevelUpFragment : Fragment() {
         Log.i("Level", "Levels:\nHealer: ${player.healerLevel}, ${player.healerUltimateA}, ${player.healerUltimateB}\n")
     }
 
-    fun buttonClick(buttonIndex: Int) {
+    private fun buttonClick(buttonIndex: Int) {
         val classLevel = player.getClassLevel(currSection)
         val expCost = upgradeSpecialCost[buttonIndex]
         when (buttonIndex) {
@@ -198,14 +198,14 @@ class LevelUpFragment : Fragment() {
         updateUpgrades()
     }
 
-    fun updateUpgrades() {
+    private fun updateUpgrades() {
         buttonList.forEachIndexed { index, button ->
             setButtonOwnership(button, index)
         }
         updateButtonImages()
     }
 
-    fun setButtonOwnership(button: ImageButton, index: Int) {
+    private fun setButtonOwnership(button: ImageButton, index: Int) {
         val isOwned: Boolean = when (index) {
             in 0..2 -> player.getClassLevel(currSection) > index
             3 -> player.getUltimateA(currSection)
@@ -321,7 +321,7 @@ class LevelUpFragment : Fragment() {
         }
     }
 
-    fun warriorButtonClick(buttonIndex: Int) {
+    private fun warriorButtonClick(buttonIndex: Int) {
         val expCost = upgradeWarriorCost[buttonIndex]
         when (buttonIndex) {
             0 -> { // base button
@@ -347,14 +347,14 @@ class LevelUpFragment : Fragment() {
         updateWarriorUpgrades()
     }
 
-    fun updateWarriorUpgrades() {
+    private fun updateWarriorUpgrades() {
         warriorButtonList.forEachIndexed { index, button ->
             setWarriorButtonOwnership(button, index)
         }
         updateButtonImages()
     }
 
-    fun setWarriorButtonOwnership(button: ImageButton, index: Int) {
+    private fun setWarriorButtonOwnership(button: ImageButton, index: Int) {
         val isOwned: Boolean = when (index) {
             0 -> true
             1 -> player.warriorHealer

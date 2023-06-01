@@ -678,7 +678,7 @@
             android:background="@color/background_green_light"
             android:gravity="center"
             android:orientation="horizontal"
-            android:visibility="gone">
+            android:visibility="visible">
 
             <RelativeLayout
                 android:layout_width="0dp"
@@ -1140,7 +1140,7 @@
             android:background="@color/background_green_light"
             android:orientation="vertical"
             android:padding="10dp"
-            android:visibility="visible">
+            android:visibility="gone">
 
             <LinearLayout
                 android:layout_width="match_parent"

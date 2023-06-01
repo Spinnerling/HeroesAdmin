@@ -4,32 +4,32 @@ import kotlin.math.floor
 
 @Serializable
 data class Ticket(
-    val ticketId: String? = "",
-    var firstName: String? = null,
-    var lastName: String? = null,
-    val age: Int? = null,
-    val bookerName: String? = null,
-    var bookerPhone: String? = null,
-    val bookerAddress: String? = null,
-    val bookerPostort: String? = null,
-    val bookerEmail: String? = null,
-    var note: String? = null,
-    var teamColor: String? = null,
-    var checkedIn: Int? = 0,
-    var recruits: Int? = 0,
-    var expPersonal: Int? = 0,
-    var benched: Int? = 0,
-    var currentRole: Int? = 0,
-    var lastRole: Int? = 0,
-    var roundsMage: Int? = 0,
-    var roundsRogue: Int? = 0,
-    var roundsWarrior: Int? = 0,
-    var roundsHealer: Int? = 0,
-    var roundsKnight: Int? = 0,
-    var roundsSpecialRole: Int? = 0,
-    var guaranteedRole: Int? = 0,
-    var playerId: String? = null,
-    val eventId: String? = null,
+    val ticketId: String = "",
+    var firstName: String = "",
+    var lastName: String = "",
+    val age: Int = 0,
+    val bookerName: String = "",
+    var bookerPhone: String = "",
+    val bookerAddress: String = "",
+    val bookerPostort: String = "",
+    val bookerEmail: String = "",
+    var note: String = "",
+    var teamColor: String = "",
+    var checkedIn: Int = 0,
+    var recruits: Int = 0,
+    var expPersonal: Int = 0,
+    var benched: Int = 0,
+    var currentRole: Int = 0,
+    var lastRole: Int = 0,
+    var roundsMage: Int = 0,
+    var roundsRogue: Int = 0,
+    var roundsWarrior: Int = 0,
+    var roundsHealer: Int = 0,
+    var roundsKnight: Int = 0,
+    var roundsSpecialRole: Int = 0,
+    var guaranteedRole: Int = 0,
+    var playerId: String = "",
+    val eventId: String = "",
     var suggestions: List<PlayerListItem>? = null
 ) {
     val fullName: String
@@ -45,13 +45,13 @@ data class Ticket(
 
     private fun checkPowerLevel(): Int {
         var multiplier: Float = 1.0F
-        age?.let {
+        age.let {
             if (it >= 13) {
                 multiplier = 1.5F
             } else if (it <= 6) {
                 multiplier = 0.75F
             }
         }
-        return floor((age?.toFloat() ?: 0.0F) * multiplier).toInt()
+        return floor((age.toFloat() ?: 0.0F) * multiplier).toInt()
     }
 }

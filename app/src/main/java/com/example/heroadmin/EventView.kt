@@ -35,6 +35,8 @@ import kotlin.math.abs
 import kotlinx.serialization.json.Json
 import org.json.JSONArray
 import java.util.UUID
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine as suspendCoroutine1
 
 class EventView : Fragment() {
     private lateinit var currActivity: MainActivity
@@ -105,7 +107,6 @@ class EventView : Fragment() {
     @SuppressLint("SetTextI18n")
     override fun onResume() {
         super.onResume()
-
         // Find elements
         bottomPanel = binding.bottomPanel
         bottomPanelNewRound = binding.bottomPanelNewRound
@@ -113,14 +114,8 @@ class EventView : Fragment() {
         playerRoleButtonPanel = binding.playerRoleButtonPanel
 
         loadingPopup()
-        getTicketIdsLocal(event)
+        getEvent()
 
-        // Set variables
-        binding.blueWinsValue.text = event.blueGameWins.toString()
-        binding.redWinsValue.text = event.redGameWins.toString()
-        binding.roundText.text = event.round.toString()
-
-        checkGameEnded()
 
         binding.scrollingPanel.setOnTouchListener { _, _ ->
             layoutFunction()
@@ -224,25 +219,25 @@ class EventView : Fragment() {
         }
 
         binding.blueWinsPlus.setOnClickListener {
-            event.blueGameWins = event.blueGameWins!! + 1
+            event.blueGameWins = event.blueGameWins + 1
             binding.blueWinsValue.text = event.blueGameWins.toString()
             DBF.updateData(event)
         }
         binding.blueWinsMinus.setOnClickListener {
-            if (event.blueGameWins!! > 0) {
-                event.blueGameWins = event.blueGameWins!! - 1
+            if (event.blueGameWins > 0) {
+                event.blueGameWins = event.blueGameWins - 1
                 binding.blueWinsValue.text = event.blueGameWins.toString()
                 DBF.updateData(event)
             }
         }
         binding.redWinsPlus.setOnClickListener {
-            event.redGameWins = event.redGameWins!! + 1
+            event.redGameWins = event.redGameWins + 1
             binding.redWinsValue.text = event.redGameWins.toString()
             DBF.updateData(event)
         }
         binding.redWinsMinus.setOnClickListener {
-            if (event.redGameWins!! > 0) {
-                event.redGameWins = event.redGameWins!! - 1
+            if (event.redGameWins > 0) {
+                event.redGameWins = event.redGameWins - 1
                 binding.redWinsValue.text = event.redGameWins.toString()
                 DBF.updateData(event)
             }
@@ -341,7 +336,7 @@ class EventView : Fragment() {
         }
         binding.refreshButton.setOnClickListener {
             loadingDialogue.show()
-            getEventLocal()
+            getEvent()
             binding.refreshButton.isEnabled = false
         }
         binding.emptyButton.setOnClickListener {
@@ -371,10 +366,11 @@ class EventView : Fragment() {
     }
 
     private fun getEvent() {
+        Log.i("start", "Calling API for event: $currEventId")
         DBF.apiCallGet(
-            "https://talltales.nu/API/api/event.php?id=" + currEventId,
-            ::refreshEvent, {}
-        )
+            "https://www.talltales.nu/API/api/get-event.php?eventID=$currEventId",
+            ::refreshEvent
+        ) {}
     }
 
     fun getEventLocal() {
@@ -400,108 +396,86 @@ class EventView : Fragment() {
     }
 
     private fun refreshEvent(response: JSONObject) {
-        val json = Json { ignoreUnknownKeys = true }
-        Log.d("check", "JSON input: ${response.toString()}")
-        val eventData = response.getJSONArray("data").getJSONObject(0)
+        val json = Json { ignoreUnknownKeys = true; coerceInputValues = true }
+        Log.d("start", "JSON input for Event: ${response.toString()}")
+        val eventData = response.getJSONObject("data")
         event = json.decodeFromString<Event>(eventData.toString())
-        val jsonArray = eventData.getJSONArray("TicketIDs")
-        val list = MutableList(jsonArray.length()) {
-            jsonArray.getString(it)
-        }
+//        val jsonArray = eventData.getJSONArray("TicketIDs")
+//        val list = MutableList(jsonArray.length()) {
+//            jsonArray.getString(it)
+//        }
+        Log.i("start", "Refreshing event...")
+        // Set variables
+        binding.blueWinsValue.text = event.blueGameWins.toString()
+        binding.redWinsValue.text = event.redGameWins.toString()
+        binding.roundText.text = event.round.toString()
 
-        event.ticketIDs.clear() // Clear the existing ticket IDs
-        event.ticketIDs.addAll(list)
+        checkGameEnded()
+//
+//        event.ticketIDs.clear() // Clear the existing ticket IDs
+//        event.ticketIDs.addAll(list)
 
         fetchEventTickets(event.eventId)
     }
 
     private fun fetchEventTickets(eventId: String) {
-        Log.i("tickets", "Started fetchEventTickets")
         CoroutineScope(Dispatchers.IO).launch {
-            val ticketIds = getTicketIds(eventId)  // Fetch the ticket IDs
-            Log.i("tickets", "Ticket Ids: $ticketIds")  // Log the fetched ticket IDs
 
-            val tickets = getTickets(ticketIds ?: emptyList())  // Fetch the full Ticket objects
-            Log.i("tickets", "Fetched Tickets: $tickets")  // Log the fetched tickets
+            val tickets = getTickets(event.ticketIDs ?: emptyList())  // Fetch the full Ticket objects
 
             // Switch to the Main dispatcher for UI updates
             withContext(Dispatchers.Main) {
                 // Update the shared 'allTickets' list
                 allTickets.clear()
-                allTickets.addAll(tickets)
+                allTickets.addAll(tickets.filterNotNull())
 
                 Log.i("tickets", "allTickets size: ${allTickets.size}")  // Log the size of 'allTickets'
 
                 initializeTicketGroups()
                 updateTicketLists()
-                DBF.getTicketBookers(allTickets)
                 loadingDialogue.dismiss()
                 binding.refreshButton.isEnabled = true
             }
         }
     }
 
-    // Function to get ticket IDs for a specific event
-    private suspend fun getTicketIds(eventId: String): List<String>? {
-        // Define a MutableSharedFlow to collect ticket IDs from API responses
-        val ticketIdsFlow = MutableSharedFlow<String>()
-
-        // Find tickets in database by eventId, collect their IDs
-        DBF.apiCallGet(
-            "https://talltales.nu/API/api/tickets.php?event=$eventId",
-            { response ->
-                // Assuming your response contains a list of tickets, each with an 'id' field
-                val ticketsJsonArray = response.getJSONArray("data")
-                for (i in 0 until ticketsJsonArray.length()) {
-                    val ticketJson = ticketsJsonArray.getJSONObject(i)
-                    val ticketId = ticketJson.getString("ticketId")
-                    ticketIdsFlow.tryEmit(ticketId)  // Emit the ticket ID to the flow
-                }
-            },
-            {
-                // Handle error case here
-                // You may want to emit a special value or close the flow
-            }
-        )
-
-        // Collect ticket IDs from the flow into a list
-        return ticketIdsFlow.toList()
-    }
-
     // Function to get full Ticket objects based on a list of ticket IDs
-    private suspend fun getTickets(ticketIds: List<String>): List<Ticket> {
+    private suspend fun getTickets(ticketIds: List<String>): List<Ticket?> {
         return coroutineScope {
             ticketIds.map { ticketId ->
                 async {
                     // Use the existing getTicket function to fetch each Ticket
                     // Wrapping in a runCatching block to handle exceptions and avoid failing the whole job
                     runCatching {
-                        var ticket: Ticket? = null
-                        getTicket(ticketId) { fetchedTicket ->
-                            ticket = fetchedTicket
-                        }
-                        ticket
+                        getTicket(ticketId)
                     }.getOrNull()  // getOrNull will return null if an exception was thrown
                 }
-            }.awaitAll()
-                .filterNotNull()  // awaitAll waits for all async jobs to complete, filterNotNull removes any null Tickets
+            }.awaitAll()  // awaitAll waits for all async jobs to complete
         }
     }
 
-    private fun getTicket(ticketId: String, onComplete: (Ticket?) -> Unit) {
-        // Find ticket in database by ticketId, return an array of its contents
-        DBF.apiCallGet(
-            "https://talltales.nu/API/api/ticket.php?id=$ticketId",
-            { response ->
-                val ticket = parseTicket(response)
-                onComplete(ticket)
-            },
-            {
-                // Handle error case here
-                onComplete(null)
-            }
-        )
+
+    private suspend fun getTicket(ticketId: String): Ticket? {
+        // suspendCoroutine will suspend the execution until resume is called
+        return suspendCoroutine1 { continuation ->
+            // Find ticket in database by ticketId, return an array of its contents
+            Log.i("tickets", "Getting Ticket: $ticketId")
+            DBF.apiCallGet(
+                "https://www.talltales.nu/API/api/get-ticket.php?ticketId=$ticketId",
+                { response ->
+                    val ticket = parseTicket(response)
+                    continuation.resume(ticket)  // resume the suspended coroutine
+                    Log.i("tickets", "Got Ticket: $ticketId with team: ${ticket.teamColor}")
+                },
+                {
+                    // Handle error case here
+                    continuation.resume(null)  // resume the suspended coroutine
+                    Log.i("tickets", "Failed to get Ticket: $ticketId")
+                }
+            )
+        }
     }
+
 
     private fun getTicketIdsLocal(event: Event) {
         event.ticketIDs.let { allTicketIds ->
@@ -543,7 +517,6 @@ class EventView : Fragment() {
                     updateTicketLists()
                     initializeTicketGroups()
                     updateTicketLists()
-                    DBF.getTicketBookers(allTickets)
                     binding.refreshButton.isEnabled = true
                     Log.d("check", "Dismissing loading dialogue...")
                     loadingDialogue.dismiss()
@@ -566,7 +539,7 @@ class EventView : Fragment() {
     }
 
     private suspend fun automaticPlayerLink(ticket: Ticket): Ticket {
-        return if (ticket.playerId == "" || ticket.playerId == null) {
+        return if (ticket.playerId == "") {
 
             when (val result = DBF.matchTicketToPlayerLocal(ticket, playerDatabase)) {
                 is DatabaseFunctions.MatchResult.DefiniteMatch -> {
@@ -720,8 +693,14 @@ class EventView : Fragment() {
     }
 
     private fun parseTicket(response: JSONObject): Ticket {
-        // Deserialize the JSONObject into a Ticket object
-        return Json.decodeFromString(response.toString())
+        // Extract data from the JSONObject
+        val ticketJson = response.getJSONObject("data")
+
+        // Create a Json instance with ignoreUnknownKeys = true
+        val json = Json { ignoreUnknownKeys = true; coerceInputValues = true }
+
+        // Deserialize the JSONObject into a Ticket object using the created Json instance
+        return json.decodeFromString(ticketJson.toString()) // Line 695
     }
 
     private fun deselectPlayer() {
@@ -1747,78 +1726,78 @@ class EventView : Fragment() {
         val tickets = listOf(
             Ticket(
                 "T1", "Marcus", "Bildtgård", 15, "Jane Doe", "555-123-4567",
-                "123 Main St", "Springfield", "john@example.com", null, "", 0, 0, 100, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, null, ""
+                "123 Main St", "Springfield", "john@example.com", "", "", 0, 0, 100, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0, ""
             ),
             Ticket(
                 "T2", "Annelie", "Öhman", 12, "John Doe", "555-987-6543",
-                "456 Elm St", "Springfield", "john@example.com", null, "", 0, 0, 100, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, null, ""
+                "456 Elm St", "Springfield", "john@example.com", "", "", 0, 0, 100, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0, ""
             ),
             Ticket(
                 "T3", "Peter", "Losonci", 13, "Bob Smith", "555-456-7890",
-                "789 Oak St", "Springfield", "alice@example.com", null, "", 0, 0, 100, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, null, ""
+                "789 Oak St", "Springfield", "alice@example.com", "", "", 0, 0, 100, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0, ""
             ),
             Ticket(
                 "T4", "Mattias", "Evaldsson Fritz", 12, "Alice Brown", "555-321-0987",
-                "321 Birch St", "Springfield", "alice@example.com", null, "", 0, 0, 100, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, null, ""
+                "321 Birch St", "Springfield", "alice@example.com", "", "", 0, 0, 100, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0, ""
             ),
             Ticket(
                 "T5", "Vandela", "Aghed", 11, "Diana Johnson", "555-654-3210",
-                "654 Pine St", "Springfield", "alice@example.com", null, "", 0, 0, 100, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, null, ""
+                "654 Pine St", "Springfield", "alice@example.com", "", "", 0, 0, 100, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0, ""
             ),
             Ticket(
                 "T6", "Emilia", "Hagman", 10, "Charlie Miller", "555-852-1470",
-                "852 Maple St", "Springfield", "diana@example.com", null, "", 0, 0, 100, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, null, ""
+                "852 Maple St", "Springfield", "diana@example.com", "", "", 0, 0, 100, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0, ""
             ),
             Ticket(
                 "T7", "Renée", "Olsson", 9, "David Taylor", "555-555-5555",
-                "10 Oak St", "Springfield", "eva@example.com", null, "", 0, 0, 100, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, null, ""
+                "10 Oak St", "Springfield", "eva@example.com", "", "", 0, 0, 100, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0, ""
             ),
             Ticket(
                 "T0", "Enoo", "Rasmussen", 8, "Emma Wilson", "555-789-4561",
-                "741 Vine St", "Springfield", "edward@example.com", null, "", 0, 0, 100, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, null, ""
+                "741 Vine St", "Springfield", "edward@example.com", "", "", 0, 0, 100, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0, ""
             ),
             Ticket(
                 "T8", "Elin", "Torndal", 7, "Frank Adams", "555-123-7890",
-                "369 Oak St", "Springfield", "edward@example.com", null, "", 0, 0, 100, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, null, ""
+                "369 Oak St", "Springfield", "edward@example.com", "", "", 0, 0, 100, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0, ""
             ),
             Ticket(
                 "T9", "Julia", "Löf", 6, "George Garcia", "555-456-1234",
-                "852 Chestnut St", "Springfield", "george@example.com", null, "", 0, 0, 100, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, null, ""
+                "852 Chestnut St", "Springfield", "george@example.com", "", "", 0, 0, 100, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0, ""
             ),
             Ticket(
                 "T10", "Anna", "Wuolo", 5, "Henry Scott", "555-789-0123",
-                "753 Main St", "Springfield", "hannah@example.com", null, "", 0, 0, 100, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, null, ""
+                "753 Main St", "Springfield", "hannah@example.com", "", "", 0, 0, 100, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0, ""
             ),
             Ticket(
                 "T11", "Fredrik", "Åslund", 15, "Jane Doe", "555-123-4567",
-                "123 Main St", "Springfield", "john@example.com", null, "", 0, 0, 100, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, null, ""
+                "123 Main St", "Springfield", "john@example.com", "", "", 0, 0, 100, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0, ""
             ),
             Ticket(
                 "T12", "Karolina", "Nilsson", 14, "John Doe", "555-987-6543",
-                "456 Elm St", "Springfield", "john@example.com", null, "", 0, 0, 100, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, null, ""
+                "456 Elm St", "Springfield", "john@example.com", "", "", 0, 0, 100, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0, ""
             ),
             Ticket(
                 "T13", "Olof", "Berg", 13, "Bob Smith", "555-456-7890",
-                "789 Oak St", "Springfield", "alice@example.com", null, "", 0, 0, 100, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, null, ""
+                "789 Oak St", "Springfield", "alice@example.com", "", "", 0, 0, 100, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0, ""
             ),
             Ticket(
                 "T14", "Filip", "Lindahl", 12, "Alice Brown", "555-321-0987",
-                "321 Birch St", "Springfield", "alice@example.com", null, "", 0, 0, 100, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, null, ""
+                "321 Birch St", "Springfield", "alice@example.com", "", "", 0, 0, 100, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0, ""
             ),
             Ticket(
                 "T15",
@@ -1844,13 +1823,13 @@ class EventView : Fragment() {
                 0,
                 0,
                 0,
-                null,
+                0,
                 ""
             ),
             Ticket(
                 "T16", "Cecilia", "Lindh", 10, "Charlie Miller", "555-852-1470",
-                "852 Maple St", "Springfield", "diana@example.com", null, "", 0, 0, 100, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, null, ""
+                "852 Maple St", "Springfield", "diana@example.com", "", "", 0, 0, 100, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0, ""
             ),
             Ticket(
                 "T17",
@@ -1876,18 +1855,18 @@ class EventView : Fragment() {
                 0,
                 0,
                 0,
-                null,
+                0,
                 ""
             ),
             Ticket(
                 "T18", "Isabelle", "Utbult", 8, "Emma Wilson", "555-789-4561",
-                "741 Vine St", "Springfield", "edward@example.com", null, "", 0, 0, 100, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, null, ""
+                "741 Vine St", "Springfield", "edward@example.com", "", "", 0, 0, 100, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0, ""
             ),
             Ticket(
                 "T31", "Adam", "Asp", 8, "Emma Wilson", "555-789-4561",
-                "741 Vine St", "Springfield", "edward@example.com", null, "", 0, 0, 100, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, null, ""
+                "741 Vine St", "Springfield", "edward@example.com", "", "", 0, 0, 100, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0, ""
             )
         )
 
@@ -2012,8 +1991,8 @@ class EventView : Fragment() {
         ticketDatabase.insert(
             Ticket(
                 "T30", "New", "Man", 16, "william Scott", "555-789-0123",
-                "753 Main St", "Springfield", "william@example.com", null, "", 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, null, event.eventId
+                "753 Main St", "Springfield", "william@example.com", "", "", 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0, event.eventId
             )
         )
         event.ticketIDs.add("T30")
@@ -2024,8 +2003,9 @@ class EventView : Fragment() {
     }
 
     private fun checkGameEnded() {
+        Log.i("eventWin", "Event's winners: ${event.gameWinner}, ${event.clickWinner}")
         // Check if game is already over, and remove New Round Button
-        if (event.clickWinner != "" || event.gameWinner != "") {
+        if (event.clickWinner != "" && event.clickWinner != null || event.gameWinner != "" && event.gameWinner != null) {
             binding.newRoundButton.visibility = View.GONE
             binding.gameEndText.visibility = View.VISIBLE
         } else {

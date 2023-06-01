@@ -1,5 +1,6 @@
 package com.example.heroadmin
 
+import android.util.Log
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -10,18 +11,18 @@ data class Event(
     var startTime: String,
     var endTime: String,
     var venue: String,
-    var reportText: String? = "",
-    var description: String? = "",
-    var clickWinner: String? = "",
-    var gameWinner: String? = "",
-    var expAttendanceValue: Int? = 20,
-    var expClickWinValue: Int? = 5,
-    var expGameWinValue: Int? = 10,
-    var expTeamChangeValue: Int? = 5,
-    var expRecruitValue: Int? = 10,
-    var blueGameWins: Int? = 0,
-    var redGameWins: Int? = 0,
-    var round: Int? = 0,
+    var reportText: String = "",
+    var description: String = "",
+    var clickWinner: String = "",
+    var gameWinner: String = "",
+    var expAttendanceValue: Int = 20,
+    var expClickWinValue: Int = 5,
+    var expGameWinValue: Int = 10,
+    var expTeamChangeValue: Int = 5,
+    var expRecruitValue: Int = 10,
+    var blueGameWins: Int = 0,
+    var redGameWins: Int = 0,
+    var round: Int = 0,
     var status: String? = "Ej påbörjat",
     @SerialName("tickets") var ticketIDs: MutableList<String> = mutableListOf()
 ) {
@@ -36,8 +37,14 @@ data class Event(
         get() = ticketIDs.size
     var playerMax = 99
 
+    init {
+        if (gameWinner == null) gameWinner = ""
+        if (clickWinner == null) clickWinner = ""
+        Log.i("initEvent", "Event data: $blueGameWins, ")
+    }
+
     private fun offsetTime(time: String): String {
-        val offset = 2
+        val offset = 0
         val hour = time.substring(0, 2).toInt() + offset
         val minute = time.substring(3, 5)
 
