@@ -113,7 +113,7 @@ class LevelUpFragment : Fragment() {
             )
         }
 
-        updatePlayerLocal()
+        updatePlayer()
 
         return binding.root
     }

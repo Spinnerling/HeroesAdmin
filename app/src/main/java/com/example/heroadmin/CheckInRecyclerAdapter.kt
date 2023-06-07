@@ -34,12 +34,13 @@ class CheckInRecyclerAdapter(private var ticketArray: MutableList<Ticket>, priva
         holder.contactName.text = ticket.bookerName
         holder.contactPhone.text = ticket.bookerPhone
         holder.bookerEmail.text = ticket.bookerEmail
+        holder.playerId.text = ticket.playerId
 
         if (holder.note.text != "" && !ticket.noteHandled) {
             holder.notePanel.visibility = View.VISIBLE
         }
 
-        if (ticket.group != "SELF" && ticket.group != ""){
+        if (ticket.group != "SELF" && ticket.group != "" && ticket.group != null){
             holder.groupName.text = "Group: ${ticket.group}"
         }
         else {
@@ -56,11 +57,13 @@ class CheckInRecyclerAdapter(private var ticketArray: MutableList<Ticket>, priva
                 holder.itemInfoHeaders.visibility = View.GONE
                 holder.itemInfoTexts.visibility = View.GONE
                 holder.buttonPanel.visibility = View.GONE
+                holder.playerIdLayout.visibility = View.GONE
             }
             else {
                 holder.itemInfoHeaders.visibility = View.VISIBLE
                 holder.itemInfoTexts.visibility = View.VISIBLE
                 holder.buttonPanel.visibility = View.VISIBLE
+                holder.playerIdLayout.visibility = View.VISIBLE
             }
         }
 
@@ -70,19 +73,19 @@ class CheckInRecyclerAdapter(private var ticketArray: MutableList<Ticket>, priva
 
         holder.teamButton.setOnClickListener{
             if (ticket.teamColor == "Blue"){
-                if (ticket.group == ""){
+                if (ticket.group == "" || ticket.group == null){
                     DBF?.setTicketTeamColor(ticket, false)
                 }
                 else {
-                    eventView.setGroupColor(ticket.group, false, true)
+                    eventView.setGroupColor(ticket.group!!, false, true)
                 }
             }
             else {
-                if (ticket.group == ""){
+                if (ticket.group == "" || ticket.group == null){
                     DBF?.setTicketTeamColor(ticket, true)
                 }
                 else {
-                    eventView.setGroupColor(ticket.group, true, true)
+                    eventView.setGroupColor(ticket.group!!, true, true)
                 }
             }
 

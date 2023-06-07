@@ -141,8 +141,7 @@ class EventAdminFrag : Fragment() {
                 gameWinner = currGameWinner
             }
 
-            val jsonData = Json.encodeToString(event)
-            this@EventAdminFrag.DBF.apiCallPost("<API_URL>", jsonData)
+            DBF.updateData(event)
         }
     }
 

@@ -11,7 +11,7 @@ data class Event(
     var startTime: String,
     var endTime: String,
     var venue: String,
-    var reportText: String = "",
+    var reportText: String? = null,
     var description: String = "",
     var clickWinner: String = "",
     var gameWinner: String = "",

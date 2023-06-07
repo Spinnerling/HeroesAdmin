@@ -13,6 +13,7 @@ import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
 import android.widget.Button
 import android.widget.TextView
+import android.widget.Toast
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
@@ -32,7 +33,7 @@ class EventList : Fragment() {
     private var eventListList: MutableList<MutableList<Event>> = mutableListOf()
     private lateinit var venues: Array<String>
     private lateinit var dropdownMenu: AutoCompleteTextView
-    private lateinit var DBF : DatabaseFunctions
+    private lateinit var DBF: DatabaseFunctions
     private val json = Json { ignoreUnknownKeys = true; coerceInputValues = true }
     private var displayPastEvents: Boolean = false
     private val SHARED_PREFS = "sharedPrefs"
@@ -44,7 +45,8 @@ class EventList : Fragment() {
     override fun onResume() {
         super.onResume()
 
-        sharedPreferences = requireActivity().getSharedPreferences(SHARED_PREFS, Context.MODE_PRIVATE)
+        sharedPreferences =
+            requireActivity().getSharedPreferences(SHARED_PREFS, Context.MODE_PRIVATE)
         dropdownMenu = binding.dropDownMenu
         venues = resources.getStringArray(R.array.venues)
         val venuesArrayAdapter = ArrayAdapter(v.context, R.layout.dropdown_item, venues)
@@ -58,11 +60,12 @@ class EventList : Fragment() {
         loadEvents()
 
         // Set an onItemSelectedListener for the dropdownMenu
-        dropdownMenu.onItemClickListener = AdapterView.OnItemClickListener { parent, _, position, _ ->
-            val selectedVenue = parent.getItemAtPosition(position).toString()
-            saveVenue(selectedVenue)
-            setEventAdapter(selectedVenue, displayPastEvents)
-        }
+        dropdownMenu.onItemClickListener =
+            AdapterView.OnItemClickListener { parent, _, position, _ ->
+                val selectedVenue = parent.getItemAtPosition(position).toString()
+                saveVenue(selectedVenue)
+                setEventAdapter(selectedVenue, displayPastEvents)
+            }
 
         binding.mainActivityBtComingEvents.setOnClickListener {
             setEventAdapter(dropdownMenu.text.toString(), false)
@@ -78,12 +81,14 @@ class EventList : Fragment() {
         }
     }
 
-    private fun loadEvents(){
+    private fun loadEvents() {
         binding.eventStatusText.text = "Loading Events..."
         DBF.apiCallGet(
             "https://www.talltales.nu/API/api/get-event.php",
             { eventsJson -> getEvents(eventsJson, json) },
-            {}
+            {
+                binding.eventStatusText.text = "Kunde ej koppla upp till databasen"
+            }
         )
     }
 
@@ -99,7 +104,10 @@ class EventList : Fragment() {
         }
 
         val eventsJsonObject = JSONObject().apply {
-            put("data", eventsJsonArray) // Change "events" to "data" to match the expected key in getEventArray
+            put(
+                "data",
+                eventsJsonArray
+            ) // Change "events" to "data" to match the expected key in getEventArray
         }
 
         getEvents(eventsJsonObject, Json)
@@ -121,7 +129,6 @@ class EventList : Fragment() {
     }
 
     private fun getEvents(eventsJson: JSONObject, json: Json) {
-        Log.i("events", "")
         eventArray = DBF.getEventArray(eventsJson, json)
         eventListList.clear()
 
@@ -131,6 +138,10 @@ class EventList : Fragment() {
             val futureList: MutableList<Event> = mutableListOf()
             eventListList.add(pastList)
             eventListList.add(futureList)
+        }
+
+        if (eventListList.size != venues.size * 2) {
+            Toast.makeText(context, "Did not get all the lists", Toast.LENGTH_SHORT).show()
         }
 
         val currentTime = System.currentTimeMillis()
@@ -144,6 +155,7 @@ class EventList : Fragment() {
                 "917" -> event.venue = "Visby"
                 "10691" -> event.venue = "Stockholm"
                 "23307" -> event.venue = "Göteborg"
+                "2643" -> event.venue = "Göteborg"
                 "23314" -> event.venue = "Örebro"
                 "23312" -> event.venue = "Malmö"
                 "23310" -> event.venue = "Uppsala"
@@ -165,7 +177,12 @@ class EventList : Fragment() {
         loadedVenue?.let {
             setEventAdapter(it, displayPastEvents)
         }
-        Log.i("test", "GetEvent run. Venues: " + venues.size.toString() + " " + eventListList.size.toString())
+        Log.i(
+            "test",
+            "GetEvent run. Venues: " + venues.size.toString() + " " + eventListList.size.toString()
+        )
+
+        checkList()
     }
 
     private fun noEventConnection() {
@@ -192,13 +209,15 @@ class EventList : Fragment() {
         var list = mutableListOf<Event>()
 
         // Find the list that corresponds to the dropdown menu's option
-        for (i in venues.indices) {
-            var string = dropdownMenu.text.toString()
-            if (string == venues[i]) {
-                list = if (displayPastEvents) {
-                    eventListList[i * 2] // Use past event list
-                } else {
-                    eventListList[i * 2 + 1] // Use future event list
+        if (eventListList.size == venues.size * 2) {
+            for (i in venues.indices) {
+                var string = dropdownMenu.text.toString()
+                if (string == venues[i]) {
+                    list = if (displayPastEvents) {
+                        eventListList[i * 2] // Use past event list
+                    } else {
+                        eventListList[i * 2 + 1] // Use future event list
+                    }
                 }
             }
         }
@@ -210,9 +229,24 @@ class EventList : Fragment() {
         eventList.layoutManager = layoutManager
         eventList.itemAnimator = DefaultItemAnimator()
         eventList.adapter = eventAdapter
+        Log.i("checkList", "Setting adapter for venue: $venue, list size: ${list.size}")
 
-        if (list.size < 1){
-            binding.eventStatusText.text = "No events found"
+        checkList()
+    }
+
+    private fun checkList() {
+        val selectedVenue = dropdownMenu.text.toString()
+        var list = mutableListOf<Event>()
+
+        // Find the list that corresponds to the dropdown menu's option
+        for (i in venues.indices) {
+            if (selectedVenue == venues[i]) {
+                list = if (displayPastEvents) {
+                    eventListList[i * 2] // Use past event list
+                } else {
+                    eventListList[i * 2 + 1] // Use future event list
+                }
+            }
         }
 
         // Set text visibility
@@ -222,6 +256,7 @@ class EventList : Fragment() {
             binding.eventStatusText.visibility = View.VISIBLE
         }
     }
+
 
     private fun onEventItemClick(position: Int) {
         val event = eventAdapter.list[position]
@@ -239,7 +274,22 @@ class EventList : Fragment() {
             venue = "Stockholm"
         )
         val ticketIdsList = listOf(
-            "T1", "T2", "T3", "T4", "T5", "T6", "T7", "T0", "T11", "T12", "T13", "T14", "T15", "T16", "T17", "T18"
+            "T1",
+            "T2",
+            "T3",
+            "T4",
+            "T5",
+            "T6",
+            "T7",
+            "T0",
+            "T11",
+            "T12",
+            "T13",
+            "T14",
+            "T15",
+            "T16",
+            "T17",
+            "T18"
         )
         event1.ticketIDs.addAll(ticketIdsList)
         eventDatabase.insert(event1)

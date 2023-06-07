@@ -95,7 +95,7 @@ class EventAdminFragment : Fragment() {
             }
 
             val jsonData = Json.encodeToString(event)
-            this@EventAdminFragment.DBF.apiCallPost("<API_URL>", jsonData)
+//            this@EventAdminFragment.DBF.apiCallPut("<API_URL>", jsonData)
         }
     }
 

@@ -160,15 +160,6 @@
             android:textStyle="bold" />
 
         <TextView
-            android:id="@+id/assignTeam_BookingNameHeader"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="5dp"
-            android:layout_weight="1"
-            android:text="Booker Name"
-            android:textStyle="bold" />
-
-        <TextView
             android:id="@+id/assignTeam_BookerEmailHeader"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -178,6 +169,7 @@
             android:textStyle="bold" />
 
     </LinearLayout>
+
 
     <LinearLayout
         android:id="@+id/assignTeam_itemInfoTexts"
@@ -209,15 +201,6 @@
             android:textColor="#000000" />
 
         <TextView
-            android:id="@+id/assignTeam_BookerName"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="5dp"
-            android:layout_weight="1"
-            android:text="Nameson Booker"
-            android:textColor="#000000" />
-
-        <TextView
             android:id="@+id/assignTeam_bookingEmail"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -228,6 +211,33 @@
 
     </LinearLayout>
 
+    <LinearLayout
+        android:id="@+id/assignTeam_playerIdLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/background_green_medium"
+        android:orientation="horizontal"
+        android:padding="5dp"
+        android:visibility="gone">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="5dp"
+            android:layout_weight="1"
+            android:text="PlayerID:"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/assignTeam_playerIdText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="5dp"
+            android:layout_weight="8"
+            android:text="none"
+            android:textStyle="bold" />
+
+    </LinearLayout>
     <LinearLayout
         android:id="@+id/assignTeam_itemButtons"
         android:layout_width="match_parent"

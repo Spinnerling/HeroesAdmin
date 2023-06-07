@@ -30,8 +30,8 @@ class AssignTeamRecyclerAdapter (private val ticketArray: MutableList<Ticket>, p
         holder.bookerEmailText.text = ticket.bookerEmail
         holder.contactName.text = ticket.bookerName
         holder.contactPhone.text = ticket.bookerPhone
-        holder.bookerName.text = ticket.bookerName
         holder.note.text = ticket.note
+        holder.playerId.text = ticket.playerId ?: "Player ID not found"
 
         if (ticket.group != "SELF" && ticket.group != ""){
             holder.groupName.text = "Group: ${ticket.group}"
@@ -44,7 +44,7 @@ class AssignTeamRecyclerAdapter (private val ticketArray: MutableList<Ticket>, p
             holder.notePanel.visibility = View.VISIBLE
         }
 
-        if (ticket.playerId == ""){
+        if (ticket.playerId == "" || ticket.playerId == null){
             holder.checkIdButton.visibility = View.VISIBLE
             holder.playerIdText.visibility = View.GONE
         }
@@ -72,20 +72,22 @@ class AssignTeamRecyclerAdapter (private val ticketArray: MutableList<Ticket>, p
                 holder.itemInfoHeaders.visibility = View.GONE
                 holder.itemInfoTexts.visibility = View.GONE
                 holder.itemButtons.visibility = View.GONE
+                holder.playerIdLayout.visibility = View.GONE
             }
             else {
                 holder.itemInfoHeaders.visibility = View.VISIBLE
                 holder.itemInfoTexts.visibility = View.VISIBLE
                 holder.itemButtons.visibility = View.VISIBLE
+                holder.playerIdLayout.visibility = View.VISIBLE
             }
         }
 
         holder.blueButton.setOnClickListener{
-            if (ticket.group == ""){
+            if (ticket.group == "" || ticket.group == null){
                 DBF?.setTicketTeamColor(ticket, true)
             }
             else {
-                eventView.setGroupColor(ticket.group, true, true)
+                eventView.setGroupColor(ticket.group!!, true, true)
             }
 
             eventView.updateTicketLists()
@@ -96,11 +98,11 @@ class AssignTeamRecyclerAdapter (private val ticketArray: MutableList<Ticket>, p
         }
 
         holder.redButton.setOnClickListener{
-            if (ticket.group == ""){
+            if (ticket.group == "" || ticket.group == null){
                 DBF?.setTicketTeamColor(ticket, false)
             }
             else {
-                eventView.setGroupColor(ticket.group, false, true)
+                eventView.setGroupColor(ticket.group!!, false, true)
             }
 
             eventView.updateTicketLists()

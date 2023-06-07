@@ -1,8 +1,8 @@
 package com.example.heroadmin
 
 import android.content.Context
-import android.telephony.PhoneNumberUtils
 import android.util.Log
+import com.android.volley.DefaultRetryPolicy
 import com.android.volley.Request
 import com.android.volley.Response
 import com.android.volley.toolbox.JsonObjectRequest
@@ -14,6 +14,7 @@ import org.json.JSONArray
 import org.json.JSONObject
 import kotlinx.serialization.encodeToString
 import com.android.volley.NoConnectionError
+import com.android.volley.VolleyLog
 import com.example.heroadmin.LocalDatabaseSingleton.playerDatabase
 import kotlinx.coroutines.delay
 import kotlinx.serialization.json.decodeFromJsonElement
@@ -24,6 +25,9 @@ import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 import com.google.i18n.phonenumbers.PhoneNumberUtil
 import com.google.i18n.phonenumbers.Phonenumber
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import java.io.UnsupportedEncodingException
 
 
 class DatabaseFunctions(val context: Context) {
@@ -31,6 +35,8 @@ class DatabaseFunctions(val context: Context) {
     lateinit var currEvent: Event
     lateinit var currTicket: Ticket
     lateinit var allTickets: MutableList<Ticket>
+    val json = Json { ignoreUnknownKeys = true; coerceInputValues = true }
+    private val mySingleton = MySingleton.getInstance(context)
 
     fun apiCallGet(
         url: String,
@@ -53,26 +59,30 @@ class DatabaseFunctions(val context: Context) {
         requestQueue.add(stringRequest)
     }
 
-    fun apiCallPost(url: String, jsonString: String) {
+    fun apiCallPost(url: String,
+                   responseFunction: (eventsJson: JSONObject) -> Unit,
+                   errorFunction: () -> Unit,
+                   jsonString: String) {
         val mySingleton = MySingleton.getInstance(context)
         Log.i("test", "Sending JSON string: $jsonString")
 
-        val putRequest: StringRequest = object : StringRequest(
+        val postRequest: StringRequest = object : StringRequest(
             Method.POST, url,
             Response.Listener { response ->
                 // Handle the response from the server
                 Log.i("Post Success", "$response")
-                // Perform any necessary actions based on the server response
+                responseFunction(JSONObject(response))
             },
             Response.ErrorListener { error ->
                 // Handle error cases
-                Log.i("Post Error", "$error")
                 if (error is NoConnectionError) {
                     // Handle no connection error
                     Log.i("Post Error", "No internet connection")
                     connectionLost()
                 } else {
                     // Handle other error types
+                    Log.i("Post Error", "$error")
+                    errorFunction()
                 }
             }
         ) {
@@ -84,51 +94,112 @@ class DatabaseFunctions(val context: Context) {
             }
 
             override fun getBody(): ByteArray {
-                Log.i("json", jsonString)
-                return jsonString.toByteArray(charset("UTF-8"))
+                return try {
+                    Log.i("apiCallPost", "POST/getBody called")
+                    jsonString.toByteArray(Charsets.UTF_8)
+                } catch (uee: UnsupportedEncodingException) {
+                    Log.e("apiCallPost", "Unsupported Encoding while trying to get the bytes of $jsonString using UTF-8", uee)
+                    VolleyLog.wtf("Unsupported Encoding while trying to get the bytes of %s using UTF-8", jsonString)
+                    byteArrayOf()
+                }
             }
         }
+        postRequest.retryPolicy = DefaultRetryPolicy(
+            DefaultRetryPolicy.DEFAULT_TIMEOUT_MS * 2,
+            DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+            DefaultRetryPolicy.DEFAULT_BACKOFF_MULT
+        )
 
-        mySingleton.addToRequestQueue(putRequest)
+        // Set the cache to false
+
+        postRequest.setShouldCache(false)
+        mySingleton.addToRequestQueue(postRequest)
     }
 
-    fun apiCallPut(url: String, jsonString: String) {
-        val mySingleton = MySingleton.getInstance(context)
-        Log.i("test", "Sending JSON string: $jsonString")
+    fun apiCallPut(url: String, jsonString: String, callback: VolleyCallback) {
+        Log.i("apiCallPut", "Sending JSON string: $jsonString to URL: $url")
 
         val putRequest: StringRequest = object : StringRequest(
             Method.PUT, url,
             Response.Listener { response ->
                 // response
-                Log.i("Put Success", "$response")
+                Log.i("apiCallPut", "Received response: $response")
+                callback.onSuccess(response)
             },
             Response.ErrorListener { error ->
-                // error
-                Log.i("Put Error", "$error")
-
-                if (error is NoConnectionError) {
-                    // Handle no connection error
-                    Log.i("Put Error", "No internet connection")
-                    connectionLost()
-                } else {
-                    // Handle other error types
-                }
+                Log.e("apiCallPut", "Error in request: ${error.message}", error)
             }
         ) {
-            override fun getHeaders(): Map<String, String> {
-                val headers: MutableMap<String, String> = HashMap()
-                headers["Content-Type"] = "application/json"
-                headers["Accept"] = "application/json"
-                return headers
+            override fun getBodyContentType(): String {
+                return "application/json; charset=utf-8"
             }
 
             override fun getBody(): ByteArray {
-                Log.i("json", jsonString)
-                return jsonString.toByteArray(charset("UTF-8"))
+                return try {
+                    Log.i("apiCallPut", "PUT/getBody called")
+                    jsonString.toByteArray(Charsets.UTF_8)
+                } catch (uee: UnsupportedEncodingException) {
+                    Log.e("apiCallPut", "Unsupported Encoding while trying to get the bytes of $jsonString using UTF-8", uee)
+                    VolleyLog.wtf("Unsupported Encoding while trying to get the bytes of %s using UTF-8", jsonString)
+                    byteArrayOf()
+                }
             }
         }
 
+        putRequest.retryPolicy = DefaultRetryPolicy(
+            DefaultRetryPolicy.DEFAULT_TIMEOUT_MS * 2,
+            DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+            DefaultRetryPolicy.DEFAULT_BACKOFF_MULT
+        )
+
+        // Set the cache to false
+        putRequest.setShouldCache(false)
+
         mySingleton.addToRequestQueue(putRequest)
+    }
+
+//        fun apiCallPut(url: String, jsonString: String) {
+//        val mySingleton = MySingleton.getInstance(context)
+//        Log.i("apiCallPut", "Sending JSON string: $jsonString")
+//
+//        val putRequest: StringRequest = object : StringRequest(
+//            Method.PUT, url,
+//            Response.Listener { response ->
+//                // response
+//                Log.i("apiCallPut", "Response:  $response")
+//            },
+//            Response.ErrorListener { error ->
+//                // error
+//                Log.i("apiCallPut", "Error: $error")
+//
+//                if (error is NoConnectionError) {
+//                    // Handle no connection error
+//                    Log.i("apiCallPut", "No internet connection")
+//                    connectionLost()
+//                } else {
+//                    // Handle other error types
+//                }
+//            }
+//        ) {
+//            override fun getHeaders(): Map<String, String> {
+//                val headers: MutableMap<String, String> = HashMap()
+//                headers["Content-Type"] = "application/json"
+//                headers["Accept"] = "application/json"
+//                return headers
+//            }
+//
+//            override fun getBody(): ByteArray {
+//                Log.i("json", jsonString)
+//                return jsonString.toByteArray(charset("UTF-8"))
+//            }
+//        }
+//
+//        mySingleton.addToRequestQueue(putRequest)
+//    }
+
+    interface VolleyCallback {
+        fun onSuccess(result: String?)
+        fun onError(error: String?)
     }
 
     fun connectionLost() {
@@ -174,7 +245,7 @@ class DatabaseFunctions(val context: Context) {
         return eventIdArray
     }
 
-    fun getEventArray(responseJson: JSONObject, json: Json): MutableList<Event> {
+    fun getEventArray(responseJson: JSONObject, tjson: Json): MutableList<Event> {
         val eventList = mutableListOf<Event>()
 
         if (responseJson.has("data")) {
@@ -217,19 +288,25 @@ class DatabaseFunctions(val context: Context) {
     }
 
     suspend fun getPlayer(playerId: String): Player? = suspendCoroutine { continuation ->
-        val url = "https://talltales.nu/API/api/players/playerId=$playerId"
+        Log.i("player", "Getting player by id: $playerId")
+        val url = "https://www.talltales.nu/API/api/get-player.php?playerId=$playerId"
+
         apiCallGet(url,
             { responseJson ->
                 val jsonElement = Json.parseToJsonElement(responseJson.toString())
                 if (!jsonElement.jsonObject.isEmpty()) {
-                    val player = Json.decodeFromJsonElement<Player>(jsonElement)
+                    val player = json.decodeFromString<Player>(responseJson.toString())
+                    Log.i("player", "Successfully got player by id: $playerId")
                     continuation.resume(player)
                 } else {
                     continuation.resume(null)
+                    Log.i("player", "Got an empty json")
                 }
             },
             {
                 continuation.resumeWithException(RuntimeException("Error getting player with id: $playerId"))
+
+                Log.i("player", "Could not get player by id: $playerId")
             }
         )
 
@@ -367,20 +444,53 @@ class DatabaseFunctions(val context: Context) {
         ticket.teamColor = if (setBlue) "Blue" else "Red"
 
         // Update database
-        val jsonString = createJsonString(ticket)
-        apiCallPut( "https://talltales.nu/API/api/update-ticket.php", jsonString)
+        updateData(ticket)
     }
 
     inline fun <reified T> createJsonString(data: T): String {
-        return Json.encodeToString(data)
+        val json = Json { encodeDefaults = true }
+        return json.encodeToString(data)
     }
 
     inline fun <reified T> updateData(data: T) {
-        val jsonString = createJsonString(data)
         val className = T::class.java.simpleName.lowercase(Locale.ROOT)
-        val endpoint = "https://talltales.nu/API/api/update-$className.php"
-        apiCallPut(endpoint, jsonString)
+//  Log.i("apiCallPut","Updating $className data...")
+        val jsonString = createJsonString(data)
+        val url = "https://www.talltales.nu/API/api/update-$className.php"
+        apiCallPut(url, jsonString, object : VolleyCallback {
+            override fun onSuccess(result: String?) {
+                Log.i("apiCallPut", "Request completed: $result")
+            }
+
+            override fun onError(error: String?) {
+                Log.i("apiCallPut", "Request error: $error")
+            }
+        })
     }
+
+//    inline fun <reified T> updateData(data: T) {
+//        val className = T::class.java.simpleName.lowercase(Locale.ROOT)
+////        Log.i("apiCallPut","Updating $className data...")
+//        val jsonString = createJsonString(data)
+//        val url = "https://www.talltales.nu/API/api/update-$className.php"
+//        apiCallPut(url, jsonString)
+//    }
+
+    @Serializable
+    data class EventToSend(
+        @SerialName("eventID") var eventId: String,
+        var reportText: String? = null,
+        var clickWinner: String? = null,
+        var gameWinner: String? = null,
+        var expAttendanceValue: Int = 20,
+        var expClickWinValue: Int = 10,
+        var expGameWinValue: Int = 5,
+        var expTeamChangeValue: Int = 5,
+        var blueGameWins: Int = 0,
+        var redGameWins: Int = 0,
+        var round: Int = 0,
+        var status: String? = "Not started"
+    )
 
     sealed class MatchResult {
         data class DefiniteMatch(val playerId: String) : MatchResult()
@@ -389,45 +499,51 @@ class DatabaseFunctions(val context: Context) {
     }
 
     suspend fun matchTicketToPlayer(ticket: Ticket): MatchResult {
+        Log.i("playerLink", "Matching ticket: ${ticket.firstName}")
         return suspendCoroutine { continuation ->
-            val url = "https://your.api/endpoint?firstName=${ticket.firstName}&lastName=${ticket.lastName}&age=${ticket.age}&bookerName=${ticket.bookerName}"
+            val url = "https://www.talltales.nu/API/api/check-match.php"
 
-            apiCallGet(
-                url,
-                responseFunction = { response ->
+            apiCallPost(
+                url, { response ->
+
+                    Log.i("playerLink", "${ticket.firstName}: $response")
                     // Based on the response, call onResult with the appropriate MatchResult subclass instance
                     when (val matchType = response.getString("matchType")) {
                         "definite" -> {
                             val playerId = response.getString("playerId")
                             continuation.resume(MatchResult.DefiniteMatch(playerId))
                         }
-                        "suggestions" -> {
-                            val suggestedPlayers = response.getJSONArray("suggestedPlayers")
-                            val playerList = mutableListOf<PlayerListItem>()
 
-                            for (i in 0 until suggestedPlayers.length()) {
-                                val playerJson = suggestedPlayers.getJSONObject(i)
-                                val player = Json.decodeFromString<PlayerListItem>(playerJson.toString())
-                                playerList.add(player)
-                            }
+//                        "suggestions" -> {
+//                            val suggestedPlayers = response.getJSONArray("suggestedPlayers")
+//                            val playerList = mutableListOf<PlayerListItem>()
+//
+//                            for (i in 0 until suggestedPlayers.length()) {
+//                                val playerJson = suggestedPlayers.getJSONObject(i)
+//                                val player = json.decodeFromString<PlayerListItem>(playerJson.toString())
+//                                playerList.add(player)
+//                            }
+//
+//                            continuation.resume(MatchResult.Suggestions(playerList))
+//                        }
 
-                            continuation.resume(MatchResult.Suggestions(playerList))
-                        }
                         "noMatch" -> {
                             continuation.resume(MatchResult.NoMatch)
+                            Log.i("playerLink", "No match found: $response")
                         }
+
                         else -> {
-                            Log.e("matchTicketToPlayer", "Invalid matchType: $matchType")
                             continuation.resume(MatchResult.NoMatch) // You can decide how to handle this case
-                            Log.i("check", "{${ticket.fullName} had an error")
+                            Log.i("playerLink", "${ticket.fullName} had an error with matchType: $matchType")
                         }
                     }
                 },
                 errorFunction = {
                     // Handle error case here
-                    Log.e("matchTicketToPlayer", "API call failed")
+                    Log.e("playerLink", "API call failed")
                     continuation.resume(MatchResult.NoMatch) // You can decide how to handle this case
-                }
+                },
+                createJsonString(ticket)
             )
         }
     }

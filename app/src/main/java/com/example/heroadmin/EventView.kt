@@ -4,6 +4,8 @@ import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.Context
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -25,8 +27,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.decodeFromString
@@ -86,6 +86,7 @@ class EventView : Fragment() {
     private var blueTeenAmount = 0
     private var redTiniesAmount = 0
     private var blueTiniesAmount = 0
+    private var autoRoleAmounts = true
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -341,6 +342,7 @@ class EventView : Fragment() {
         }
         binding.emptyButton.setOnClickListener {
             //Future shenanigans, save for later
+            callNotification("This button does nothing.\nI promise.")
         }
         binding.assignTeamAutoAssignButton.setOnClickListener {
             autoAssignLoop()
@@ -352,6 +354,15 @@ class EventView : Fragment() {
                     currEventId
                 )
             )
+        }
+        binding.autoSetSwitch.isChecked = autoRoleAmounts
+        binding.autoSetSwitch.setOnClickListener {
+            if (autoRoleAmounts) {
+                autoRoleAmounts = false
+            } else {
+                autoRoleAmounts = true
+                autoSetRoleAmounts()
+            }
         }
     }
 
@@ -382,7 +393,8 @@ class EventView : Fragment() {
             withContext(Dispatchers.Main) {
                 fetchedEvent?.let {
                     Log.d("check", "Event fetched from local database") // Add this log statement
-                    val jsonEvent = JSONObject(Json.encodeToString(Event.serializer(), it))
+                    val json = Json { encodeDefaults = true }
+                    val jsonEvent = JSONObject(json.encodeToString(Event.serializer(), it))
                     val response = JSONObject().apply {
                         put("data", JSONArray().apply { put(jsonEvent) })
                     }
@@ -420,24 +432,35 @@ class EventView : Fragment() {
 
     private fun fetchEventTickets(eventId: String) {
         CoroutineScope(Dispatchers.IO).launch {
+            val tickets =
+                getTickets(event.ticketIDs ?: emptyList())  // Fetch the full Ticket objects
 
-            val tickets = getTickets(event.ticketIDs ?: emptyList())  // Fetch the full Ticket objects
+            // Call automaticPlayerLink for each ticket
+            val updatedTickets = tickets.filterNotNull().map { ticket ->
+                async {
+                    automaticPlayerLink(ticket)
+                }
+            }.awaitAll()
+
+            // Update the shared 'allTickets' list
+            allTickets.clear()
+            allTickets.addAll(updatedTickets)
 
             // Switch to the Main dispatcher for UI updates
             withContext(Dispatchers.Main) {
-                // Update the shared 'allTickets' list
-                allTickets.clear()
-                allTickets.addAll(tickets.filterNotNull())
-
-                Log.i("tickets", "allTickets size: ${allTickets.size}")  // Log the size of 'allTickets'
-
-                initializeTicketGroups()
+                Log.i(
+                    "tickets",
+                    "Initializing. allTickets size: ${allTickets.size}"
+                )  // Log the size of 'allTickets'
+                checkForDoubles()
                 updateTicketLists()
+                initializeTicketGroups()
                 loadingDialogue.dismiss()
                 binding.refreshButton.isEnabled = true
             }
         }
     }
+
 
     // Function to get full Ticket objects based on a list of ticket IDs
     private suspend fun getTickets(ticketIds: List<String>): List<Ticket?> {
@@ -459,7 +482,6 @@ class EventView : Fragment() {
         // suspendCoroutine will suspend the execution until resume is called
         return suspendCoroutine1 { continuation ->
             // Find ticket in database by ticketId, return an array of its contents
-            Log.i("tickets", "Getting Ticket: $ticketId")
             DBF.apiCallGet(
                 "https://www.talltales.nu/API/api/get-ticket.php?ticketId=$ticketId",
                 { response ->
@@ -506,14 +528,10 @@ class EventView : Fragment() {
                     async { automaticPlayerLink(ticket) }
                 }
 
-                Log.d("check", "Before automaticPlayerLinkJobs.awaitAll()")
                 val linkedTickets = automaticPlayerLinkJobs.awaitAll()
-                Log.d("check", "After automaticPlayerLinkJobs.awaitAll()")
-                Log.d("check", "Linked tickets: ${linkedTickets.size}")
                 allTickets.clear()
                 allTickets.addAll(linkedTickets)
                 withContext(Dispatchers.Main) {
-                    Log.i("check", "Is run!")
                     updateTicketLists()
                     initializeTicketGroups()
                     updateTicketLists()
@@ -539,40 +557,45 @@ class EventView : Fragment() {
     }
 
     private suspend fun automaticPlayerLink(ticket: Ticket): Ticket {
-        return if (ticket.playerId == "") {
+        Log.i("playerLink", "Linking ticket to Player: ${ticket.firstName}")
+        return if (ticket.playerId == "" || ticket.playerId == null) {
 
-            when (val result = DBF.matchTicketToPlayerLocal(ticket, playerDatabase)) {
+            when (val result = DBF.matchTicketToPlayer(ticket)) {
                 is DatabaseFunctions.MatchResult.DefiniteMatch -> {
                     val updatedTicket = ticket.copy(playerId = result.playerId)
                     ticketDatabase.update(updatedTicket)
-                    Log.i("check", "{${ticket.fullName} found a definite match")
+                    Log.i(
+                        "playerLink",
+                        "{${ticket.fullName} found a definite match. Setting playerID:${result.playerId}"
+                    )
                     updatedTicket
                 }
 
-                is DatabaseFunctions.MatchResult.Suggestions -> {
-                    val updatedTicket = ticket.copy(suggestions = result.suggestions)
-                    ticketDatabase.update(updatedTicket)
-                    val amount = result.suggestions.size
-                    Log.i("suggestions", "{${ticket.fullName} found {$amount} suggestions")
-                    updatedTicket
-                }
+//                is DatabaseFunctions.MatchResult.Suggestions -> {
+//                    val updatedTicket = ticket.copy(suggestions = result.suggestions)
+//                    ticketDatabase.update(updatedTicket)
+//                    val amount = result.suggestions.size
+//                    Log.i("playerLink", "{${ticket.fullName} found {$amount} suggestions")
+//                    updatedTicket
+//                }
 
-                is DatabaseFunctions.MatchResult.NoMatch -> {
-                    val newPlayer: Player = createNewPlayer(ticket)
-                    playerDatabase.insert(newPlayer)
-                    val updatedTicket = ticket.copy(playerId = newPlayer.playerId)
-                    ticketDatabase.update(updatedTicket)
-                    DBF.updateData(ticket)
-                    Log.i("check", "{${ticket.fullName} found nothing. Should create player")
-                    updatedTicket
-                }
+//                is DatabaseFunctions.MatchResult.NoMatch -> {
+//                    val newPlayer: Player = createNewPlayer(ticket)
+//                    playerDatabase.insert(newPlayer)
+//                    val updatedTicket = ticket.copy(playerId = newPlayer.playerId)
+//                    ticketDatabase.update(updatedTicket)
+//                    DBF.updateData(ticket)
+//                    updatedTicket
+//                }
 
                 else -> {
-                    Log.i("check", "{${ticket.fullName} had an error")
+                    Log.i("playerLink", "{${ticket.fullName} gets something else")
                     ticket
                 }
             }
         } else {
+            // Ticket has playerID
+            Log.i("playerLink", "{${ticket.fullName} has playerID: ${ticket.playerId}")
             ticket
         }
     }
@@ -608,19 +631,17 @@ class EventView : Fragment() {
         recyclerView.layoutManager = LinearLayoutManager(context)
 
         // Fetch the players and create an instance of PlayerListItemAdapter
-        val playerListItems = ticket.suggestions?.mapNotNull { player ->
-            if (player.firstName != null && player.lastName != null && player.age != null) {
-                PlayerListItem(
-                    playerId = player.playerId,
-                    firstName = player.firstName!!,
-                    lastName = player.lastName!!,
-                    age = player.age!!,
-                    bookerNames = player.bookerNames,
-                    bookerPhones = player.bookerPhones,
-                    bookerEmails = player.bookerEmails,
-                    bookerAddresses = player.bookerAddresses
-                )
-            } else null
+        val playerListItems = ticket.suggestions?.map { player ->
+            PlayerListItem(
+                playerId = player.playerId,
+                firstName = player.firstName,
+                lastName = player.lastName,
+                age = player.age,
+                bookerNames = player.bookerNames,
+                bookerPhones = player.bookerPhones,
+                bookerEmails = player.bookerEmails,
+                bookerAddresses = player.bookerAddresses
+            )
         }?.toMutableList()
 
 // Declare selectedItem variable here
@@ -664,11 +685,24 @@ class EventView : Fragment() {
         recyclerView.adapter = adapter
         // Get the reference for the buttons
         val acceptButton = dialogView.findViewById<Button>(R.id.mpl_acceptButton)
+        val newPlayerButton = dialogView.findViewById<Button>(R.id.mpl_newPlayerButton)
         val cancelButton = dialogView.findViewById<Button>(R.id.mpl_cancelButton)
 
         // Set click listeners for the buttons
         cancelButton.setOnClickListener {
             Toast.makeText(context, "Cancelled", Toast.LENGTH_SHORT).show()
+            alertDialog.dismiss()
+        }
+
+        // Set click listeners for the buttons
+        newPlayerButton.setOnClickListener {
+            val newPlayer: Player = createNewPlayer(ticket)
+            playerDatabase.insert(newPlayer)
+            val updatedTicket = ticket.copy(playerId = newPlayer.playerId)
+            ticketDatabase.update(updatedTicket)
+            DBF.updateData(ticket)
+            Log.i("check", "{${ticket.fullName} found nothing. Should create player")
+            Toast.makeText(context, "New player created", Toast.LENGTH_SHORT).show()
             alertDialog.dismiss()
         }
 
@@ -726,9 +760,13 @@ class EventView : Fragment() {
         blueBench = mutableListOf()
 
         for (ticket in allTickets) {
+            // Skip this ticket if it's a double
+            if (ticket.double) continue
+
             when {
                 ticket.teamColor == "None" || ticket.teamColor == "" -> {
                     assignList.add(ticket)
+                    Log.i("tickets", "Updating assignList")
                 }
 
                 ticket.checkedIn == 0 -> {
@@ -755,7 +793,7 @@ class EventView : Fragment() {
         when (checkInSorting) {
             0 -> sortCheckInByName()
             1 -> sortCheckInByAge()
-            2 -> sortCheckInByNote()
+            2 -> sortCheckInByGroup()
             3 -> sortCheckInByColor()
         }
 
@@ -771,16 +809,14 @@ class EventView : Fragment() {
         updateTeamPower()
     }
 
-    fun initializeTicketGroups() {
+    private fun initializeTicketGroups() {
+        Log.i("tickets", "Starting initialization")
         val emailToGroupMap = mutableMapOf<String, Int>()
         val usedGroupNumbers = mutableSetOf<Int>()
         val groupToSizeMap = mutableMapOf<Int, Int>()
 
         // First pass: Assign group numbers and calculate group sizes.
         for (ticket in assignList) {
-            if (ticket.group == "SELF") {
-                continue
-            }
 
             val bookerEmail = ticket.bookerEmail ?: continue
             val groupNumber = emailToGroupMap[bookerEmail] ?: run {
@@ -796,25 +832,34 @@ class EventView : Fragment() {
 
             val groupSize = groupToSizeMap[groupNumber] ?: 0
             groupToSizeMap[groupNumber] = groupSize + 1
+
+            Log.i("tickets", "First Pass")
         }
 
         // Second pass: Assign group sizes to tickets now that groups are made.
         for (ticket in assignList) {
-            if (ticket.group == "SELF") {
+            if (ticket.group == "") {
                 ticket.groupSize = 1
                 continue
             }
 
-            val groupNumber = ticket.group.toIntOrNull() ?: continue
-            ticket.groupSize = groupToSizeMap[groupNumber] ?: 1
+            val groupNumber = ticket.group?.toIntOrNull() ?: continue
+            val groupSize = groupToSizeMap[groupNumber] ?: 1
+            ticket.groupSize = groupSize
+            if (groupSize == 1) { // If the group size is 1, set the group as ""
+                ticket.group = ""
+            }
+            Log.i("tickets", "Second Pass")
         }
 
         // Create a map with group identifier as key and group size as value.
         val groupSizeMap = mutableMapOf<String, Int>()
         for (ticket in assignList) {
-            if (ticket.group != "SELF" && ticket.group != "") {
-                groupSizeMap[ticket.group] = ticket.groupSize
+            val group = ticket.group
+            if (group != null && group != "SELF" && group != "") {
+                groupSizeMap[group] = ticket.groupSize
             }
+            Log.i("tickets", "Third pass. Done ticket: ${ticket.ticketId}")
         }
 
         // Sort the groups by size in descending order.
@@ -829,11 +874,37 @@ class EventView : Fragment() {
         }
 
         // Update the ticket groups with the new identifiers.
+        val handler = Handler(Looper.getMainLooper())
+        var delayMillis = 0L
+
         for (ticket in assignList) {
-            if (ticket.group != "SELF" && ticket.group != "") {
+            if (ticket.group != "SELF" && ticket.group != "" && ticket.group != null) {
                 ticket.group = reassignedGroupMap[ticket.group] ?: ticket.group
             }
-            DBF.updateData(ticket)
+                DBF.updateData(ticket)
+        }
+
+        Log.i("tickets", "Ending initialization")
+        assignSorting = 3
+        sortAssignByGroup()
+    }
+
+    private fun checkForDoubles() {
+        for (i in allTickets.indices) {
+            for (j in i + 1 until allTickets.size) {
+                val firstTicket = allTickets[i]
+                val secondTicket = allTickets[j]
+
+                if ((firstTicket.firstName == secondTicket.firstName &&
+                            firstTicket.lastName == secondTicket.lastName &&
+                            firstTicket.bookerPhone == secondTicket.bookerPhone) ||
+                    (firstTicket.firstName == secondTicket.firstName &&
+                            firstTicket.lastName == secondTicket.lastName &&
+                            firstTicket.bookerEmail == secondTicket.bookerEmail)
+                ) {
+                    secondTicket.double = true
+                }
+            }
         }
     }
 
@@ -845,7 +916,9 @@ class EventView : Fragment() {
         // Calculate the size for each group
         tickets.forEach { ticket ->
             val group = ticket.group
-            groupSizeMap[group] = groupSizeMap.getOrDefault(group, 0) + 1
+            if (group != null && group != "SELF" && group != "") {
+                groupSizeMap[group] = groupSizeMap.getOrDefault(group, 0) + 1
+            }
         }
 
         // Assign the calculated size to each ticket's groupSize property
@@ -874,21 +947,16 @@ class EventView : Fragment() {
             val groupName = editText.text.toString().lowercase()
 
             // Check if the input groupName is a valid group number
-            if (groupName.toIntOrNull() != null) {
                 ticket.group = groupName
                 updateTicketGroups(allTickets)
                 updateTicketLists()
                 alertDialog.dismiss()
-            } else {
-                Toast.makeText(context, "Must be a valid number", Toast.LENGTH_SHORT).show()
-            }
         }
         dialogView.findViewById<Button>(R.id.groupPopup_cancelButton).setOnClickListener {
             Toast.makeText(context, "Cancelled", Toast.LENGTH_SHORT).show()
             alertDialog.dismiss()
         }
     }
-
 
     fun setGroupColor(group: String, setBlue: Boolean, setDatabase: Boolean) {
         for (ticket in allTickets) {
@@ -1009,8 +1077,8 @@ class EventView : Fragment() {
         val groupList = mutableListOf<String>()
         for (ticket in assignList) {
             // Only take groups larger than 1
-            if (ticket.group != "" && !groupList.contains(ticket.group)) {
-                groupList.add(ticket.group)
+            if (ticket.group != "" &&  ticket.group != null && !groupList.contains(ticket.group)) {
+                groupList.add(ticket.group!!)
             }
         }
 
@@ -1028,7 +1096,7 @@ class EventView : Fragment() {
         sortAssignByAge()
 
         for (ticket in assignList) {
-            if (ticket.group == "") {
+            if (ticket.group == "" || ticket.group == null) {
                 if (bluePowerLevel > redPowerLevel) {
                     ticket.teamColor = "Red"
                 } else {
@@ -1408,7 +1476,6 @@ class EventView : Fragment() {
         }
         dialogView.findViewById<Button>(R.id.sw_saveButton).setOnClickListener {
             Toast.makeText(context, "Saved", Toast.LENGTH_SHORT).show()
-            // TODO: update event with winners
             event.clickWinner = if (clickWinModified) if (clickWinRed) "Red" else "Blue" else ""
             event.gameWinner = if (gameWinModified) if (gameWinRed) "Red" else "Blue" else ""
             DBF.updateData(event)
@@ -1419,17 +1486,20 @@ class EventView : Fragment() {
 
 
     fun autoSetRoleAmounts() {
+        if (!autoRoleAmounts) return
+
         val redTeamSize = redTeam.size
         val blueTeamSize = blueTeam.size
 
         // Find the smaller team size
         val smallerTeamSize = min(redTeamSize, blueTeamSize)
+        val max = 3
 
         // Update role amounts based on the smaller team size, and role prioritization
-        healerAmount = min(smallerTeamSize / 4, 4)
-        mageAmount = min((smallerTeamSize + 2) / 4, 4)
-        rogueAmount = min((smallerTeamSize + 3) / 4, 4)
-        knightAmount = min((smallerTeamSize + 1) / 4, 4)
+        healerAmount = min(smallerTeamSize / max, max)
+        mageAmount = min((smallerTeamSize + 2) / max, max)
+        rogueAmount = min((smallerTeamSize + 3) / max, max)
+        knightAmount = min((smallerTeamSize + 1) / max, max)
 
         // Set the TextView values
         binding.healerAmountValue.setText(healerAmount.toString())
@@ -1509,6 +1579,7 @@ class EventView : Fragment() {
     }
 
     private fun sortAssignByName() {
+        Log.i("tickets", "Sorting by name")
         assignList.sortBy { it.fullName }
     }
 
@@ -1520,6 +1591,7 @@ class EventView : Fragment() {
         if (assignList.isEmpty()) {
             return
         }
+        Log.i("tickets", "Sorting by group")
         // Sort the list by group and full name
         assignList = assignList.sortedWith(
             compareBy(
@@ -1542,8 +1614,8 @@ class EventView : Fragment() {
         checkInList.sortBy { it.age }
     }
 
-    private fun sortCheckInByNote() {
-        checkInList.sortBy { it.note }
+    private fun sortCheckInByGroup() {
+        checkInList.sortBy { it.group }
     }
 
     private fun sortCheckInByColor() {
@@ -2015,14 +2087,14 @@ class EventView : Fragment() {
         updateEventStatus()
     }
 
-    fun updateEventStatus() {
+    private fun updateEventStatus() {
         if (allTickets.size < 1) return
 
         var ticketTeamDivision = false
         var ticketCheckIn = false
 
         for (ticket in allTickets) {
-            if (ticket.teamColor != null) {
+            if (ticket.teamColor != "") {
                 ticketTeamDivision = true
             }
 
@@ -2040,8 +2112,14 @@ class EventView : Fragment() {
             ticketTeamDivision -> "Lagindelning"
             else -> "Ej påbörjat"
         }
-        eventDatabase.update(event) //TODO: remove Local
+//        eventDatabase.update(event) //TODO: remove Local
         DBF.updateData(event)
         Log.i("status", "Event Status: ${event.status}")
+    }
+
+    private fun updatePlayerFromTicket(player: Player, ticket: Ticket) {
+        player.firstName = ticket.firstName
+        player.lastName = ticket.lastName
+        player.age = ticket.age
     }
 }

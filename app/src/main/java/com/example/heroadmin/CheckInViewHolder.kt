@@ -5,12 +5,14 @@ import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import org.w3c.dom.Text
 
 class CheckInViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     var nameText: TextView = itemView.findViewById(R.id.checkin_nameText)
     var ageText: TextView = itemView.findViewById(R.id.checkin_ageText)
     var note: TextView = itemView.findViewById(R.id.checkin_noteText)
     var groupName: Button = itemView.findViewById(R.id.checkin_groupButton)
+    var playerId: TextView = itemView.findViewById(R.id.checkin_playerIdText)
 
     var infoButton: Button = itemView.findViewById(R.id.checkin_infoButton)
     var teamButton: Button = itemView.findViewById(R.id.checkin_teamButton)
@@ -22,11 +24,11 @@ class CheckInViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     var itemInfoHeaders : LinearLayout = itemView.findViewById(R.id.checkIn_itemInfoHeaders)
     var itemInfoTexts : LinearLayout = itemView.findViewById(R.id.checkIn_itemInfoTexts)
     var buttonPanel : LinearLayout = itemView.findViewById(R.id.checkin_buttonPanel)
+    var playerIdLayout : LinearLayout = itemView.findViewById(R.id.checkIn_playerIdLayout)
 
     var contactName: TextView = itemView.findViewById(R.id.checkin_ContactName)
     var contactPhone: TextView = itemView.findViewById(R.id.checkin_ContactPhone)
     var bookerEmail: TextView = itemView.findViewById(R.id.checkin_BookerEmail)
-    var bookerName: TextView = itemView.findViewById(R.id.checkin_BookerName)
 
     var groupButton: Button = itemView.findViewById(R.id.checkin_groupButton)
 }
