@@ -1,26 +1,65 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/primary_green"
-    android:padding="10dp">
+    android:background="@color/background_green_light"
+    android:padding="10dp"
+    android:orientation="vertical">
 
-    <!-- 1. Event Name & Info -->
+    <!-- 1. Navigation buttons -->
     <LinearLayout
         android:id="@+id/layout1"
         android:layout_width="match_parent"
         android:layout_height="0dp"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:layout_weight="0.7"
+        android:padding="10dp">
+
+        <Button
+            android:id="@+id/eventAdminToEventListButton"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:backgroundTint="@color/button_background"
+            android:text="BAKÅT"
+            android:textColor="@color/button_text_dark"
+            app:strokeColor="#000000"
+            app:strokeWidth="2dp"
+            android:layout_marginRight="5dp"/>
+
+        <Space
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="2" />
+
+        <Button
+            android:id="@+id/eventAdminToEventViewButton"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:backgroundTint="@color/buttonGreen"
+            android:text="SPELA"
+            android:textColor="@color/text_white"
+            app:strokeColor="#000000"
+            app:strokeWidth="2dp"
+            android:layout_marginLeft="5dp"/>
+    </LinearLayout>
+
+    <!-- 2. Event Name & Info -->
+    <LinearLayout
+        android:id="@+id/layout2"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
         android:orientation="vertical"
         android:weightSum="3"
-        app:layout_constraintBottom_toTopOf="@+id/layout2"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_weight="2">
+        android:layout_weight="2">
 
         <TextView
             android:id="@+id/eventAdminEventNameText"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:layout_weight="1"
@@ -28,7 +67,8 @@
             android:textColor="#000000"
             android:textSize="32sp"
             android:textStyle="bold"
-            android:gravity="center"/>
+            android:gravity="center"
+            android:background="@color/background_green_medium"/>
 
 
         <LinearLayout
@@ -110,17 +150,15 @@
             </LinearLayout>
         </LinearLayout>
     </LinearLayout>
-    <!-- 2. Exp Values -->
+    <!-- 3. Exp Values -->
     <LinearLayout
-        android:id="@+id/layout2"
+        android:id="@+id/layout3"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:gravity="center"
         android:orientation="vertical"
-        android:background="@color/background_green_light"
-        app:layout_constraintBottom_toTopOf="@+id/layout3"
-        app:layout_constraintTop_toBottomOf="@+id/layout1"
-        app:layout_constraintVertical_weight="2"
+        android:background="@color/background_green_medium"
+        android:layout_weight="2"
         android:padding="10dp"
         android:layout_margin="10dp">
 
@@ -317,16 +355,14 @@
             app:strokeColor="#000000"
             app:strokeWidth="2dp" />
     </LinearLayout>
-    <!-- 3. Win buttons -->
+    <!-- 4. Win buttons -->
     <LinearLayout
-        android:id="@+id/layout3"
+        android:id="@+id/layout4"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:gravity="center"
         android:orientation="horizontal"
-        app:layout_constraintBottom_toTopOf="@+id/layout4"
-        app:layout_constraintTop_toBottomOf="@+id/layout2"
-        app:layout_constraintVertical_weight="2"
+        android:layout_weight="2"
         android:padding="10dp">
 
         <LinearLayout
@@ -427,18 +463,16 @@
         </LinearLayout>
     </LinearLayout>
 
-    <!-- 4. Game Masters -->
+    <!-- 5. Game Masters -->
     <LinearLayout
-        android:id="@+id/layout4"
+        android:id="@+id/layout5"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:background="@color/background_green_light"
         android:gravity="center"
         android:orientation="vertical"
         android:visibility="gone"
-        app:layout_constraintBottom_toTopOf="@+id/layout5"
-        app:layout_constraintTop_toBottomOf="@+id/layout3"
-        app:layout_constraintVertical_weight="1"
+        android:layout_weight="1"
         tools:layout_editor_absoluteX="10dp">
 
         <LinearLayout
@@ -493,16 +527,14 @@
 
     </LinearLayout>
 
-    <!-- 5. Report text -->
+    <!-- 6. Report text -->
     <LinearLayout
-        android:id="@+id/layout5"
+        android:id="@+id/layout6"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:gravity="center"
         android:orientation="vertical"
-        app:layout_constraintBottom_toTopOf="@+id/layout6"
-        app:layout_constraintTop_toBottomOf="@+id/layout4"
-        app:layout_constraintVertical_weight="2"
+        android:layout_weight="2"
         android:padding="10dp">
 
         <TextView
@@ -527,40 +559,5 @@
             android:textColor="#000000"
             android:textColorHint="#808080" />
     </LinearLayout>
-    <!-- 6. Navigation buttons -->
-    <LinearLayout
-        android:id="@+id/layout6"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:gravity="center"
-        android:orientation="horizontal"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/layout5"
-        app:layout_constraintVertical_weight="1"
-        android:padding="10dp">
 
-        <Button
-            android:id="@+id/eventAdminToEventListButton"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:backgroundTint="@color/button_background"
-            android:text="BAKÅT"
-            android:textColor="@color/button_text_dark"
-            app:strokeColor="#000000"
-            app:strokeWidth="2dp"
-            android:layout_marginRight="5dp"/>
-
-        <Button
-            android:id="@+id/eventAdminToEventViewButton"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:backgroundTint="@color/buttonGreen"
-            android:text="SPELA"
-            android:textColor="@color/text_white"
-            app:strokeColor="#000000"
-            app:strokeWidth="2dp"
-            android:layout_marginLeft="5dp"/>
-    </LinearLayout>
-</androidx.constraintlayout.widget.ConstraintLayout>
+</LinearLayout>

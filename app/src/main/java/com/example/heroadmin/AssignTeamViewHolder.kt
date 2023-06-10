@@ -12,7 +12,6 @@ class AssignTeamViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView){
     var nameText: TextView = itemView.findViewById(R.id.assignTeam_nameText)
     var ageText: TextView = itemView.findViewById(R.id.assignTeam_ageText)
     var checkIdButton : Button = itemView.findViewById(R.id.assignTeam_checkIdButton)
-    var playerIdText: TextView = itemView.findViewById(R.id.assignTeam_playerId)
     var infoButton: Button = itemView.findViewById(R.id.assignTeam_infoButton)
     var blueButton: Button = itemView.findViewById(R.id.assignTeam_blueTeamButton)
     var redButton: Button = itemView.findViewById(R.id.assignTeam_redTeamButton)

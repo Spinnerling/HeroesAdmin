@@ -142,6 +142,7 @@ class EventAdminFrag : Fragment() {
             }
 
             DBF.updateData(event)
+//            DBF.updateEventStatus(event)
         }
     }
 
@@ -164,7 +165,7 @@ class EventAdminFrag : Fragment() {
         binding.eventAdminEditValues.text = "Spara"
         binding.eventAdminEditValues.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.buttonGreen))
         binding.eventAdminEditValues.setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
-        binding.layout2.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.white))
+        binding.layout3.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.white))
     }
 
     private fun saveExpValues() {
@@ -186,7 +187,7 @@ class EventAdminFrag : Fragment() {
         binding.eventAdminEditValues.text = "Ändra"
         binding.eventAdminEditValues.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.white))
         binding.eventAdminEditValues.setTextColor(ContextCompat.getColor(requireContext(), R.color.primary_green))
-        binding.layout2.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.background_green_light))
+        binding.layout3.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.background_green_medium))
 
         event.apply {
             expAttendanceValue = binding.eventAdminEditAttendance.text.toString().toIntOrNull() ?: 0
@@ -248,6 +249,8 @@ class EventAdminFrag : Fragment() {
             elevation = if (currGameWinner == "Blue") 10f else 0f
             alpha = if (currGameWinner == "Blue") 1f else 0.7f
         }
+
+//        DBF.updateEventStatus(event)
     }
 
     private fun dismissKeyboard() {

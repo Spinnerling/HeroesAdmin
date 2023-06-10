@@ -10,7 +10,7 @@ data class Event(
     var title: String,
     var startTime: String,
     var endTime: String,
-    var venue: String,
+    var venue: String? = "",
     var reportText: String? = null,
     var description: String = "",
     var clickWinner: String = "",
@@ -35,7 +35,6 @@ data class Event(
 
     val ticketAmount: Int
         get() = ticketIDs.size
-    var playerMax = 99
 
     init {
         if (gameWinner == null) gameWinner = ""

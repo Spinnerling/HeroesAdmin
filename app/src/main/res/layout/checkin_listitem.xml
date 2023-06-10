@@ -134,15 +134,6 @@
             android:textStyle="bold" />
 
         <TextView
-            android:id="@+id/checkin_BookingNameHeader"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginRight="5dp"
-            android:layout_weight="1"
-            android:text="Booker Name"
-            android:textStyle="bold" />
-
-        <TextView
             android:id="@+id/checkin_BookerEmailHeader"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -178,15 +169,6 @@
             android:layout_marginRight="5dp"
             android:layout_weight="1"
             android:text="070 123 45 67"
-            android:textColor="#000000" />
-
-        <TextView
-            android:id="@+id/checkin_BookerName"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginRight="5dp"
-            android:layout_weight="1"
-            android:text="Nameson Booker"
             android:textColor="#000000" />
 
         <TextView

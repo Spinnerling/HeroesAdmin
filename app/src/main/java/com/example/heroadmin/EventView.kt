@@ -4,8 +4,6 @@ import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.Context
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -21,13 +19,10 @@ import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.heroadmin.databinding.FragmentEventViewBinding
-import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.decodeFromString
 import org.json.JSONObject
@@ -36,7 +31,6 @@ import kotlinx.serialization.json.Json
 import org.json.JSONArray
 import java.util.UUID
 import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine as suspendCoroutine1
 
 class EventView : Fragment() {
     private lateinit var currActivity: MainActivity
@@ -87,6 +81,8 @@ class EventView : Fragment() {
     private var redTiniesAmount = 0
     private var blueTiniesAmount = 0
     private var autoRoleAmounts = true
+    private val json = Json { ignoreUnknownKeys = true; coerceInputValues = true }
+    public var allTicketsMatched = false
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -211,12 +207,14 @@ class EventView : Fragment() {
         }
 
         binding.spendExpButton.setOnClickListener {
-            findNavController().navigate(
-                EventViewDirections.actionEventViewToLevelUpFragment(
-                    selectedTicket.playerId ?: "",
-                    event.eventId
+            if (selectedTicket.playerId != null && selectedTicket.playerId != "") {
+                findNavController().navigate(
+                    EventViewDirections.actionEventViewToLevelUpFragment(
+                        selectedTicket.playerId!!,
+                        event.eventId
+                    )
                 )
-            )
+            }
         }
 
         binding.blueWinsPlus.setOnClickListener {
@@ -257,34 +255,12 @@ class EventView : Fragment() {
             }
         }
 
-        binding.devButton.setOnClickListener {
-            var team = "Blue"
-            for (ticket in allTickets) {
-                ticket.checkedIn = 1
-                if (team == "Blue") {
-                    ticket.teamColor = "Blue"
-                    team = "Red"
-                } else {
-                    ticket.teamColor = "Red"
-                    team = "Blue"
-                }
-                ticketDatabase.update(ticket)
-                DBF.updateData(ticket)
-            }
-            updateTicketLists()
-            autoSetRoleAmounts()
-        }
-
         binding.assignTeamOrgByNameButton.setOnClickListener {
             assignSorting = 0
             updateTicketLists()
         }
         binding.assignTeamOrgByAgeButton.setOnClickListener {
             assignSorting = 1
-            updateTicketLists()
-        }
-        binding.assignTeamOrgByUserIDButton.setOnClickListener {
-            assignSorting = 2
             updateTicketLists()
         }
         binding.assignTeamOrgByGroupButton.setOnClickListener {
@@ -325,12 +301,6 @@ class EventView : Fragment() {
         binding.teamRoleButton2.setOnClickListener {
             teamSorting = 2
             updateTicketLists()
-        }
-        binding.awardExpButton.setOnClickListener {
-            openAwardExp()
-        }
-        binding.deCheckin.setOnClickListener {
-            ResetTicket()
         }
         binding.setWinnerButton.setOnClickListener {
             openWinnerPopup()
@@ -380,8 +350,9 @@ class EventView : Fragment() {
         Log.i("start", "Calling API for event: $currEventId")
         DBF.apiCallGet(
             "https://www.talltales.nu/API/api/get-event.php?eventID=$currEventId",
-            ::refreshEvent
-        ) {}
+            ::refreshEvent,
+            {}, 3
+        )
     }
 
     fun getEventLocal() {
@@ -411,192 +382,105 @@ class EventView : Fragment() {
         val json = Json { ignoreUnknownKeys = true; coerceInputValues = true }
         Log.d("start", "JSON input for Event: ${response.toString()}")
         val eventData = response.getJSONObject("data")
+
         event = json.decodeFromString<Event>(eventData.toString())
-//        val jsonArray = eventData.getJSONArray("TicketIDs")
-//        val list = MutableList(jsonArray.length()) {
-//            jsonArray.getString(it)
-//        }
         Log.i("start", "Refreshing event...")
+
         // Set variables
         binding.blueWinsValue.text = event.blueGameWins.toString()
         binding.redWinsValue.text = event.redGameWins.toString()
         binding.roundText.text = event.round.toString()
 
         checkGameEnded()
-//
-//        event.ticketIDs.clear() // Clear the existing ticket IDs
-//        event.ticketIDs.addAll(list)
 
-        fetchEventTickets(event.eventId)
+        fetchEventTickets()
     }
 
-    private fun fetchEventTickets(eventId: String) {
+    private fun fetchEventTickets() {
         CoroutineScope(Dispatchers.IO).launch {
-            val tickets =
-                getTickets(event.ticketIDs ?: emptyList())  // Fetch the full Ticket objects
+            Log.i("playerLink", "Starting fetchEventTickets")
+            try {
+                val tickets = getTickets(event.eventId) // Fetch the Ticket data
+                Log.i("playerLink", "Got Tickets")
 
-            // Call automaticPlayerLink for each ticket
-            val updatedTickets = tickets.filterNotNull().map { ticket ->
-                async {
-                    automaticPlayerLink(ticket)
+                // Switch to the Main dispatcher for UI updates
+                withContext(Dispatchers.Main) {
+
+
+                    // Process tickets without playerId or suggestions
+                    processTickets(tickets)
+                    Log.i(
+                        "playerLink",
+                        "Linking done. allTickets size: ${allTickets.size}"
+                    )  // Log the size of 'allTickets'
+                    checkForDoubles()
+                    updateTicketLists()
+                    initializeTicketGroups()
+                    loadingDialogue.dismiss()
+                    binding.refreshButton.isEnabled = true
                 }
-            }.awaitAll()
-
-            // Update the shared 'allTickets' list
-            allTickets.clear()
-            allTickets.addAll(updatedTickets)
-
-            // Switch to the Main dispatcher for UI updates
-            withContext(Dispatchers.Main) {
-                Log.i(
-                    "tickets",
-                    "Initializing. allTickets size: ${allTickets.size}"
-                )  // Log the size of 'allTickets'
-                checkForDoubles()
-                updateTicketLists()
-                initializeTicketGroups()
-                loadingDialogue.dismiss()
-                binding.refreshButton.isEnabled = true
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
         }
     }
 
-
-    // Function to get full Ticket objects based on a list of ticket IDs
-    private suspend fun getTickets(ticketIds: List<String>): List<Ticket?> {
-        return coroutineScope {
-            ticketIds.map { ticketId ->
-                async {
-                    // Use the existing getTicket function to fetch each Ticket
-                    // Wrapping in a runCatching block to handle exceptions and avoid failing the whole job
-                    runCatching {
-                        getTicket(ticketId)
-                    }.getOrNull()  // getOrNull will return null if an exception was thrown
-                }
-            }.awaitAll()  // awaitAll waits for all async jobs to complete
-        }
-    }
-
-
-    private suspend fun getTicket(ticketId: String): Ticket? {
-        // suspendCoroutine will suspend the execution until resume is called
-        return suspendCoroutine1 { continuation ->
-            // Find ticket in database by ticketId, return an array of its contents
-            DBF.apiCallGet(
-                "https://www.talltales.nu/API/api/get-ticket.php?ticketId=$ticketId",
+    // Function to get full Ticket objects based on an event ID
+    private suspend fun getTickets(eventId: String, retryCount: Int = 3): List<Ticket> {
+        return suspendCancellableCoroutine { continuation ->
+            DBF.apiCallGetArray(
+                "https://www.talltales.nu/API/api/get-tickets8.php?eventId=$eventId",
                 { response ->
-                    val ticket = parseTicket(response)
-                    continuation.resume(ticket)  // resume the suspended coroutine
-                    Log.i("tickets", "Got Ticket: $ticketId with team: ${ticket.teamColor}")
+                    try {
+                        val tickets =
+                            json.decodeFromString<List<Ticket>>(response.toString())
+                        continuation.resume(tickets)
+                    } catch (e: Exception) {
+                        Log.e("playerLink", "Error in decoding or resuming the continuation: ", e)
+                        continuation.resume(emptyList())
+                    }
                 },
                 {
                     // Handle error case here
-                    continuation.resume(null)  // resume the suspended coroutine
-                    Log.i("tickets", "Failed to get Ticket: $ticketId")
-                }
+                    continuation.resume(emptyList()) // Resume the suspended coroutine with an empty list
+                    Log.i("playerLink", "Failed to get Tickets for Event: $eventId")
+                },
+                retryCount
             )
+            Log.i("playerLink", "API Called")
         }
     }
 
 
-    private fun getTicketIdsLocal(event: Event) {
-        event.ticketIDs.let { allTicketIds ->
-
-            allTickets = mutableListOf()
-
-            CoroutineScope(Dispatchers.IO).launch {
-                Log.d("check", "All ticket IDs: $allTicketIds")
-
-                val ticketJobs = allTicketIds.map { ticketId ->
-                    async {
-                        val result = CompletableDeferred<Ticket?>()
-                        getTicketLocal(ticketId) { ticket ->
-                            result.complete(ticket)
-                        }
-                        result.await()
-                    }
+    private fun processTickets(tickets: List<Ticket>) {
+        Log.i("processTickets", "Processing Tickets: ${tickets.size} tickets")
+        for (ticket in tickets) {
+            if (ticket.playerId != null && ticket.playerId != ""){
+                Log.i("processTickets", "${ticket.firstName} has player")
                 }
-
-                val fetchedTickets = ticketJobs.awaitAll().filterNotNull()
-                Log.d("check", "Fetched tickets: ${fetchedTickets.size}")
-
-                allTickets.clear()
-                allTickets.addAll(fetchedTickets)
-
-                // Automatically link Tickets to Players
-                val automaticPlayerLinkJobs = allTickets.map { ticket ->
-                    async { automaticPlayerLink(ticket) }
-                }
-
-                val linkedTickets = automaticPlayerLinkJobs.awaitAll()
-                allTickets.clear()
-                allTickets.addAll(linkedTickets)
-                withContext(Dispatchers.Main) {
-                    updateTicketLists()
-                    initializeTicketGroups()
-                    updateTicketLists()
-                    binding.refreshButton.isEnabled = true
-                    Log.d("check", "Dismissing loading dialogue...")
-                    loadingDialogue.dismiss()
-                }
+            else if (ticket.suggestions.isNullOrEmpty()) {
+                // Creates new player
+                createNewPlayer(ticket)
+                Log.i("processTickets", "Created new player for ${ticket.firstName}")
             }
-        } ?: run {
-            allTickets = mutableListOf()
-        }
-    }
-
-    fun getTicketLocal(ticketId: String, callback: (Ticket?) -> Unit) {
-        CoroutineScope(Dispatchers.IO).launch {
-            Log.d("check", "Getting ticket with ID: $ticketId") // Add this log statement
-            val ticket = ticketDatabase.getByPropertyValue({ it.ticketId }, ticketId)
-
-            withContext(Dispatchers.Main) {
-                callback(ticket)
+            else {
+                Log.i("processTickets", "${ticket.firstName} has suggestions")
             }
         }
+
+        // Update the shared 'allTickets' list
+        allTickets.clear()
+        allTickets.addAll(tickets)
     }
 
-    private suspend fun automaticPlayerLink(ticket: Ticket): Ticket {
-        Log.i("playerLink", "Linking ticket to Player: ${ticket.firstName}")
-        return if (ticket.playerId == "" || ticket.playerId == null) {
 
-            when (val result = DBF.matchTicketToPlayer(ticket)) {
-                is DatabaseFunctions.MatchResult.DefiniteMatch -> {
-                    val updatedTicket = ticket.copy(playerId = result.playerId)
-                    ticketDatabase.update(updatedTicket)
-                    Log.i(
-                        "playerLink",
-                        "{${ticket.fullName} found a definite match. Setting playerID:${result.playerId}"
-                    )
-                    updatedTicket
-                }
-
-//                is DatabaseFunctions.MatchResult.Suggestions -> {
-//                    val updatedTicket = ticket.copy(suggestions = result.suggestions)
-//                    ticketDatabase.update(updatedTicket)
-//                    val amount = result.suggestions.size
-//                    Log.i("playerLink", "{${ticket.fullName} found {$amount} suggestions")
-//                    updatedTicket
-//                }
-
-//                is DatabaseFunctions.MatchResult.NoMatch -> {
-//                    val newPlayer: Player = createNewPlayer(ticket)
-//                    playerDatabase.insert(newPlayer)
-//                    val updatedTicket = ticket.copy(playerId = newPlayer.playerId)
-//                    ticketDatabase.update(updatedTicket)
-//                    DBF.updateData(ticket)
-//                    updatedTicket
-//                }
-
-                else -> {
-                    Log.i("playerLink", "{${ticket.fullName} gets something else")
-                    ticket
-                }
-            }
-        } else {
-            // Ticket has playerID
-            Log.i("playerLink", "{${ticket.fullName} has playerID: ${ticket.playerId}")
-            ticket
+    fun logLargeString(tag: String, content: String) {
+        val maxLogSize = 1000
+        for (i in 0..content.length / maxLogSize) {
+            val start = i * maxLogSize
+            var end = (i + 1) * maxLogSize
+            end = if (end > content.length) content.length else end
+            Log.i(tag, content.substring(start, end))
         }
     }
 
@@ -633,7 +517,7 @@ class EventView : Fragment() {
         // Fetch the players and create an instance of PlayerListItemAdapter
         val playerListItems = ticket.suggestions?.map { player ->
             PlayerListItem(
-                playerId = player.playerId,
+                playerID = player.playerID,
                 firstName = player.firstName,
                 lastName = player.lastName,
                 age = player.age,
@@ -696,13 +580,10 @@ class EventView : Fragment() {
 
         // Set click listeners for the buttons
         newPlayerButton.setOnClickListener {
-            val newPlayer: Player = createNewPlayer(ticket)
-            playerDatabase.insert(newPlayer)
-            val updatedTicket = ticket.copy(playerId = newPlayer.playerId)
-            ticketDatabase.update(updatedTicket)
+            createNewPlayer(ticket)
+            ticketDatabase.update(ticket)
             DBF.updateData(ticket)
-            Log.i("check", "{${ticket.fullName} found nothing. Should create player")
-            Toast.makeText(context, "New player created", Toast.LENGTH_SHORT).show()
+            updateTicketLists()
             alertDialog.dismiss()
         }
 
@@ -711,7 +592,7 @@ class EventView : Fragment() {
             val currentSelectedItem = selectedItem
             if (currentSelectedItem != null) {
                 // Update the playerId of the ticket
-                ticket.playerId = currentSelectedItem.playerId
+                ticket.playerId = currentSelectedItem.playerID
 
                 // Save the updated ticket
                 DBF.updateData(ticket)
@@ -724,17 +605,6 @@ class EventView : Fragment() {
                 // Show a message that no player is selected, or handle the case where a new player should be created
             }
         }
-    }
-
-    private fun parseTicket(response: JSONObject): Ticket {
-        // Extract data from the JSONObject
-        val ticketJson = response.getJSONObject("data")
-
-        // Create a Json instance with ignoreUnknownKeys = true
-        val json = Json { ignoreUnknownKeys = true; coerceInputValues = true }
-
-        // Deserialize the JSONObject into a Ticket object using the created Json instance
-        return json.decodeFromString(ticketJson.toString()) // Line 695
     }
 
     private fun deselectPlayer() {
@@ -764,7 +634,7 @@ class EventView : Fragment() {
             if (ticket.double) continue
 
             when {
-                ticket.teamColor == "None" || ticket.teamColor == "" -> {
+                ticket.teamColor == "None" || ticket.teamColor == "" || ticket.teamColor == null -> {
                     assignList.add(ticket)
                     Log.i("tickets", "Updating assignList")
                 }
@@ -783,6 +653,18 @@ class EventView : Fragment() {
             }
         }
 
+        // Check if autoAssign button should be visible
+        val allTicketsHavePlayerId = assignList.all { it.playerId != null && it.playerId != "" }
+
+        binding.assignTeamAutoAssignButton.visibility = if (allTicketsHavePlayerId) {
+            allTicketsMatched = true
+            View.VISIBLE
+        } else {
+            allTicketsMatched = false
+            View.GONE
+        }
+
+        // Sort
         when (assignSorting) {
             0 -> sortAssignByName()
             1 -> sortAssignByAge()
@@ -810,7 +692,7 @@ class EventView : Fragment() {
     }
 
     private fun initializeTicketGroups() {
-        Log.i("tickets", "Starting initialization")
+        Log.i("initializeTicketGroups", "Starting initialization. Ticket amount: ${assignList.size}")
         val emailToGroupMap = mutableMapOf<String, Int>()
         val usedGroupNumbers = mutableSetOf<Int>()
         val groupToSizeMap = mutableMapOf<Int, Int>()
@@ -833,7 +715,7 @@ class EventView : Fragment() {
             val groupSize = groupToSizeMap[groupNumber] ?: 0
             groupToSizeMap[groupNumber] = groupSize + 1
 
-            Log.i("tickets", "First Pass")
+            Log.i("initializeTicketGroups", "First Pass")
         }
 
         // Second pass: Assign group sizes to tickets now that groups are made.
@@ -849,7 +731,7 @@ class EventView : Fragment() {
             if (groupSize == 1) { // If the group size is 1, set the group as ""
                 ticket.group = ""
             }
-            Log.i("tickets", "Second Pass")
+            Log.i("initializeTicketGroups", "Second Pass")
         }
 
         // Create a map with group identifier as key and group size as value.
@@ -859,7 +741,7 @@ class EventView : Fragment() {
             if (group != null && group != "SELF" && group != "") {
                 groupSizeMap[group] = ticket.groupSize
             }
-            Log.i("tickets", "Third pass. Done ticket: ${ticket.ticketId}")
+            Log.i("initializeTicketGroups", "Third pass. Done ticket: ${ticket.ticketId}")
         }
 
         // Sort the groups by size in descending order.
@@ -874,17 +756,15 @@ class EventView : Fragment() {
         }
 
         // Update the ticket groups with the new identifiers.
-        val handler = Handler(Looper.getMainLooper())
-        var delayMillis = 0L
-
         for (ticket in assignList) {
             if (ticket.group != "SELF" && ticket.group != "" && ticket.group != null) {
                 ticket.group = reassignedGroupMap[ticket.group] ?: ticket.group
             }
-                DBF.updateData(ticket)
         }
 
-        Log.i("tickets", "Ending initialization")
+//        DBF.updateTicketArray(assignList)
+
+        Log.i("initializeTicketGroups", "Ending initialization")
         assignSorting = 3
         sortAssignByGroup()
     }
@@ -909,7 +789,7 @@ class EventView : Fragment() {
     }
 
 
-    fun updateTicketGroups(tickets: List<Ticket>) {
+    private fun updateTicketGroups(tickets:  MutableList<Ticket>) {
         // Create a map to store group - size mapping
         val groupSizeMap = mutableMapOf<String, Int>()
 
@@ -924,8 +804,8 @@ class EventView : Fragment() {
         // Assign the calculated size to each ticket's groupSize property
         tickets.forEach { ticket ->
             ticket.groupSize = groupSizeMap.getOrDefault(ticket.group, 1)
-            DBF.updateData(ticket)
         }
+        DBF.updateTicketArray(tickets)
     }
 
     fun setGroupName(ticket: Ticket) {
@@ -947,10 +827,10 @@ class EventView : Fragment() {
             val groupName = editText.text.toString().lowercase()
 
             // Check if the input groupName is a valid group number
-                ticket.group = groupName
-                updateTicketGroups(allTickets)
-                updateTicketLists()
-                alertDialog.dismiss()
+            ticket.group = groupName
+            updateTicketGroups(allTickets)
+            updateTicketLists()
+            alertDialog.dismiss()
         }
         dialogView.findViewById<Button>(R.id.groupPopup_cancelButton).setOnClickListener {
             Toast.makeText(context, "Cancelled", Toast.LENGTH_SHORT).show()
@@ -970,7 +850,6 @@ class EventView : Fragment() {
 
                 if (setDatabase) {
                     // Update database
-                    DBF.updateData(ticket)
                     ticketDatabase.update(ticket)
                 }
 
@@ -980,6 +859,12 @@ class EventView : Fragment() {
                 }
             }
         }
+
+        if (setDatabase) {
+            // Update database
+            DBF.updateTicketArray(allTickets)
+        }
+
         updateTeamPower()
         updateEventStatus()
     }
@@ -987,7 +872,7 @@ class EventView : Fragment() {
     private fun createNewPlayer(ticket: Ticket): Player {
         val newPlayerId = UUID.randomUUID().toString()
 
-        return Player(
+        val newPlayer = Player(
             playerId = newPlayerId,
             firstName = ticket.firstName ?: "",
             lastName = ticket.lastName ?: "",
@@ -1016,6 +901,11 @@ class EventView : Fragment() {
             bookerPhones = mutableListOf(ticket.bookerPhone!!),
             bookerAddresses = mutableListOf(ticket.bookerAddress!!),
         )
+        ticket.playerId = newPlayerId
+        playerDatabase.insert(newPlayer)
+        val playerString = DBF.createJsonString(newPlayer)
+        DBF.apiCallPost("https://www.talltales.nu/API/api/create-player.php", {}, {}, playerString)
+        return newPlayer
     }
 
     private fun autoAssignLoop() {
@@ -1077,7 +967,7 @@ class EventView : Fragment() {
         val groupList = mutableListOf<String>()
         for (ticket in assignList) {
             // Only take groups larger than 1
-            if (ticket.group != "" &&  ticket.group != null && !groupList.contains(ticket.group)) {
+            if (ticket.group != "" && ticket.group != null && !groupList.contains(ticket.group)) {
                 groupList.add(ticket.group!!)
             }
         }
@@ -1104,8 +994,8 @@ class EventView : Fragment() {
                 }
             }
             updateTeamPower()
-            DBF.updateData(ticket)
         }
+        DBF.updateTicketArray(assignList)
     }
 
     private fun updateTeamPower() {
@@ -1240,7 +1130,7 @@ class EventView : Fragment() {
                 binding.playerNameText.setBackgroundResource(R.color.teamRedColor)
             }
 
-            //binding.playerExpText.text = "${selectedPlayer.totalExp} EXP kvar"
+//            binding.playerExpText.text = "${selectedPlayer.totalExp} EXP kvar"
             val roleInText = DBF.getRoleByNumber(selectedTicket.currentRole ?: 0)
             binding.ticketRoleText.text = roleInText
 
@@ -1372,7 +1262,7 @@ class EventView : Fragment() {
             player.warriorKnight = false
         }
         ticket.checkedIn = 0
-        ticket.teamColor = ""
+        ticket.teamColor = null
         DBF.updateData(ticket)
         updateTicketLists()
     }
@@ -1689,7 +1579,6 @@ class EventView : Fragment() {
                 ticket.lastRole = role
                 roleAmounts[role - 1]--
             }
-            DBF.updateData(ticket)
         }
 
         val remainingTickets = team.filter { it.currentRole == 7 }
@@ -1722,7 +1611,6 @@ class EventView : Fragment() {
                 ticket.lastRole = roleIndex + 1
                 roleAmounts[roleIndex]--
                 roleAssignmentTracker[roleIndex].add(ticket)
-                DBF.updateData(ticket)
             }
         }
 
@@ -1746,7 +1634,6 @@ class EventView : Fragment() {
                 ticket.currentRole = role
                 ticket.lastRole = role
                 assignedRoles.add(role)
-                DBF.updateData(ticket)
             }
         }
 
@@ -1754,7 +1641,7 @@ class EventView : Fragment() {
         if (rolesDistributed != totalAmount) {
             return false
         }
-
+        DBF.updateTicketArray(allTickets)
         teamSorting = 2
         updateTicketLists()
         bottomPanel.visibility = View.VISIBLE
@@ -1783,8 +1670,8 @@ class EventView : Fragment() {
             if (ticket.currentRole == ticket.guaranteedRole) {
                 ticket.guaranteedRole = 0
             }
-            DBF.updateData(ticket)
         }
+        DBF.updateTicketArray(team)
     }
 
     private fun updateRound(increase: Boolean) {

@@ -10,13 +10,13 @@ data class Ticket(
     var firstName: String = "",
     var lastName: String = "",
     val age: Int = 0,
-    val bookerName: String = "",
-    var bookerPhone: String = "",
-    val bookerAddress: String = "",
-    val bookerPostort: String = "",
-    val bookerEmail: String = "",
-    var note: String = "",
-    var teamColor: String = "",
+    val bookerName: String? = "",
+    var bookerPhone: String? = "",
+    val bookerAddress: String? = "",
+    val bookerPostort: String? = "",
+    val bookerEmail: String? = "",
+    var note: String? = "",
+    var teamColor: String? = null,
     var checkedIn: Int = 0,
     var recruits: Int = 0,
     var expPersonal: Int = 0,
@@ -33,7 +33,8 @@ data class Ticket(
     @SerialName("playerID") var playerId: String? = null,
     val eventId: String = "",
     var suggestions: List<PlayerListItem>? = null,
-    var group : String? = null
+    var group : String? = null,
+    var noteHandled : Boolean = false
 ) {
     val fullName: String
         get() = "${firstName ?: ""} ${lastName ?: ""}"
@@ -41,7 +42,6 @@ data class Ticket(
     var roundsSpecial = 0
     val powerLevel: Int
         get() = checkPowerLevel()
-    var noteHandled = false
     var groupSize = 1
     var double = false
 

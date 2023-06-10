@@ -33,28 +33,41 @@ class AssignTeamRecyclerAdapter (private val ticketArray: MutableList<Ticket>, p
         holder.note.text = ticket.note
         holder.playerId.text = ticket.playerId ?: "Player ID not found"
 
-        if (ticket.group != "SELF" && ticket.group != ""){
+        if (ticket.group != "SELF" && ticket.group != "" && ticket.group != null){
             holder.groupName.text = "Group: ${ticket.group}"
         }
         else {
             holder.groupName.text = "Ungrouped"
         }
 
-        if (holder.note.text != "" && !ticket.noteHandled) {
+        if (holder.note.text != "" && holder.note.text != null  && !ticket.noteHandled) {
             holder.notePanel.visibility = View.VISIBLE
         }
 
-        if (ticket.playerId == "" || ticket.playerId == null){
-            holder.checkIdButton.visibility = View.VISIBLE
-            holder.playerIdText.visibility = View.GONE
+        // Set team color buttons on/off
+        if (eventView.allTicketsMatched) {
+            // Alla tickets har match, inkl denna
+            holder.blueButton.visibility = View.VISIBLE
+            holder.redButton.visibility = View.VISIBLE
+            holder.checkIdButton.visibility = View.GONE
         }
         else {
-            holder.checkIdButton.visibility = View.GONE
-            holder.playerIdText.visibility = View.VISIBLE
-            holder.playerIdText.text = "Found"
+            if (ticket.playerId == "" || ticket.playerId == null){
+                // Denna har inte matchat
+                holder.blueButton.visibility = View.GONE
+                holder.redButton.visibility = View.GONE
+                holder.checkIdButton.visibility = View.VISIBLE
+            }
+            else {
+                // Denna har matchat, men inte andra
+                holder.checkIdButton.visibility = View.GONE
+                holder.blueButton.visibility = View.INVISIBLE
+                holder.redButton.visibility = View.INVISIBLE
+            }
         }
 
-        if (ticket.note == ""){
+        // Note visibility
+        if (ticket.note == "" || ticket.note == null){
             holder.hideNoteButton.visibility = View.INVISIBLE
             holder.editNoteButton.text = "Add Note"
         } else {

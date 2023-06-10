@@ -47,7 +47,7 @@ class CheckInRecyclerAdapter(private var ticketArray: MutableList<Ticket>, priva
             holder.groupName.text = "Ungrouped"
         }
 
-        if (ticket.note == ""){
+        if (ticket.note == "" || ticket.note == null){
             holder.hideNoteButton.visibility = View.INVISIBLE
             holder.editNoteButton.text = "Add Note"
         }

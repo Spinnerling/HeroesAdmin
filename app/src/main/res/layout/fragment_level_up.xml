@@ -90,7 +90,8 @@
             android:layout_weight="2"
             android:background="@color/background_green_light"
             android:gravity="center"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:visibility="gone">
 
             <LinearLayout
                 android:layout_width="0dp"
@@ -246,11 +247,12 @@
 
                 <ImageButton
                     android:id="@+id/level_1_button"
-                    android:layout_width="110dp"
+                    android:layout_width="215dp"
                     android:layout_height="110dp"
-                    android:backgroundTint="#FFFFFF"
+                    android:scaleType="fitXY"
+                    android:backgroundTint="#000000"
                     android:contentDescription="button"
-                    android:src="@mipmap/ic_tiger_foreground"
+                    android:src="@drawable/h1"
                     tools:ignore="SpeakableTextPresentCheck" />
 
                 <TextView
@@ -268,11 +270,12 @@
 
                 <ImageButton
                     android:id="@+id/level_2_button"
-                    android:layout_width="110dp"
+                    android:layout_width="215dp"
                     android:layout_height="110dp"
-                    android:backgroundTint="#FFFFFF"
+                    android:scaleType="fitXY"
+                    android:backgroundTint="#000000"
                     android:contentDescription="button"
-                    android:src="@mipmap/ic_tiger_foreground"
+                    android:src="@drawable/h2"
                     tools:ignore="SpeakableTextPresentCheck" />
 
                 <TextView
@@ -290,11 +293,12 @@
 
                 <ImageButton
                     android:id="@+id/level_3_button"
-                    android:layout_width="110dp"
+                    android:layout_width="215dp"
                     android:layout_height="110dp"
-                    android:backgroundTint="#FFFFFF"
+                    android:scaleType="fitXY"
+                    android:backgroundTint="#000000"
                     android:contentDescription="button"
-                    android:src="@mipmap/ic_tiger_foreground"
+                    android:src="@drawable/h3"
                     tools:ignore="SpeakableTextPresentCheck" />
 
                 <TextView
@@ -326,11 +330,12 @@
 
                         <ImageButton
                             android:id="@+id/ultimate_A_button"
-                            android:layout_width="110dp"
-                            android:layout_height="110dp"
-                            android:backgroundTint="#FFFFFF"
+                            android:layout_width="128dp"
+                            android:layout_height="190dp"
+                            android:scaleType="fitXY"
+                            android:backgroundTint="#000000"
                             android:contentDescription="button"
-                            android:src="@mipmap/ic_tiger_foreground"
+                            android:src="@drawable/h4a"
                             tools:ignore="SpeakableTextPresentCheck" />
 
                         <TextView
@@ -356,11 +361,12 @@
 
                         <ImageButton
                             android:id="@+id/ultimate_B_button"
-                            android:layout_width="110dp"
-                            android:layout_height="110dp"
-                            android:backgroundTint="#FFFFFF"
+                            android:layout_width="128dp"
+                            android:layout_height="190dp"
+                            android:scaleType="fitXY"
+                            android:backgroundTint="#000000"
                             android:contentDescription="button"
-                            android:src="@mipmap/ic_tiger_foreground"
+                            android:src="@drawable/h4b"
                             tools:ignore="SpeakableTextPresentCheck" />
 
                         <TextView
