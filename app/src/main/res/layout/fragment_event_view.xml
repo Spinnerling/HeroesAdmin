@@ -67,8 +67,8 @@
                     android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:text="#"
-                    android:textColor="#000000"
                     android:textAlignment="center"
+                    android:textColor="#000000"
                     android:textSize="24dp" />
             </LinearLayout>
 
@@ -1153,7 +1153,6 @@
                     android:id="@+id/playerOnOffSwitch"
                     android:layout_width="0dp"
                     android:layout_height="48dp"
-                    android:layout_marginRight="10dp"
                     android:layout_weight="1"
                     android:background="@color/background_green_extralight"
                     android:checked="true"
@@ -1163,20 +1162,10 @@
                     android:textAppearance="@style/TextAppearance.AppCompat.Display2"
                     android:textSize="16sp" />
 
-                <Button
-                    android:id="@+id/pickPlayerLeftButton"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:backgroundTint="#FFFFFF"
-                    android:gravity="center"
-                    android:textColor="#000000"
-                    app:icon="@drawable/ic_arrow_left"
-                    app:iconGravity="textStart"
-                    app:iconSize="40dp"
-                    app:iconTint="#000000"
-                    app:strokeColor="#000000"
-                    app:strokeWidth="2dp" />
+                <Space
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1" />
 
                 <TextView
                     android:id="@+id/playerNameText"
@@ -1184,29 +1173,19 @@
                     android:layout_height="match_parent"
                     android:layout_marginLeft="10dp"
                     android:layout_marginRight="10dp"
-                    android:layout_weight="2.5"
-                    android:background="#FFA0A0"
+                    android:layout_weight="2.5
+"
+                    android:background="@color/background_green_extralight"
                     android:gravity="center"
                     android:text="Peter Losonci"
                     android:textAlignment="center"
                     android:textSize="20sp"
                     android:textStyle="bold" />
 
-                <Button
-                    android:id="@+id/pickPlayerRightButton"
-                    android:layout_width="0dp"
+                <Space
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginRight="10dp"
-                    android:layout_weight="1"
-                    android:backgroundTint="#FFFFFF"
-                    android:gravity="center"
-                    android:textColor="#000000"
-                    app:icon="@drawable/ic_arrow_right"
-                    app:iconGravity="textStart"
-                    app:iconSize="40dp"
-                    app:iconTint="#000000"
-                    app:strokeColor="#000000"
-                    app:strokeWidth="2dp" />
+                    android:layout_weight="1" />
 
                 <Button
                     android:id="@+id/playerCloseButton"
@@ -1321,39 +1300,45 @@
                     android:gravity="center"
                     android:orientation="vertical">
 
+                    <Button
+                        android:id="@+id/recruits_button"
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="1"
+                        android:backgroundTint="#FFFFFF"
+                        android:text="Recruits"
+                        android:textColor="#000000"
+                        app:strokeColor="#000000"
+                        app:strokeWidth="2dp" />
+
                     <TextView
                         android:id="@+id/playerExpText"
                         android:layout_width="match_parent"
                         android:layout_height="0dp"
                         android:layout_weight="1"
                         android:gravity="center"
-                        android:text="30 exp remaining"
+                        android:text="No Player Matched"
                         android:textAlignment="center"
                         android:textSize="16sp"
                         android:textStyle="bold" />
 
-                    <LinearLayout
+
+                    <Button
+                        android:id="@+id/level_up_button"
                         android:layout_width="match_parent"
                         android:layout_height="0dp"
                         android:layout_weight="1"
-                        android:orientation="horizontal">
+                        android:backgroundTint="#FFFFFF"
+                        android:text="Level Up"
+                        android:textColor="#000000"
+                        app:strokeColor="#000000"
+                        app:strokeWidth="2dp" />
 
-                        <Button
-                            android:id="@+id/spendExpButton"
-                            android:layout_width="0dp"
-                            android:layout_height="match_parent"
-                            android:layout_weight="1"
-                            android:backgroundTint="#FFFFFF"
-                            android:text="Level Up"
-                            android:textColor="#000000"
-                            app:strokeColor="#000000"
-                            app:strokeWidth="2dp" />
-
-                    </LinearLayout>
 
                 </LinearLayout>
             </LinearLayout>
 
         </LinearLayout>
 
-</LinearLayout></layout>
+    </LinearLayout>
+</layout>

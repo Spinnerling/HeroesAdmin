@@ -201,7 +201,7 @@
     </LinearLayout>
 
     <LinearLayout
-        android:id="@+id/assignTeam_playerIdLayout"
+        android:id="@+id/assignTeam_idTitlesLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/background_green_medium"
@@ -214,7 +214,35 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="5dp"
             android:layout_weight="1"
-            android:text="PlayerID:"
+            android:text="TicketID"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="5dp"
+            android:layout_weight="1"
+            android:text="PlayerId"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/assignTeam_idValuesLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/background_green_medium"
+        android:orientation="horizontal"
+        android:padding="5dp"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/assignTeam_ticketIdText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="5dp"
+            android:layout_weight="8"
+            android:text="none"
             android:textStyle="bold" />
 
         <TextView
@@ -227,6 +255,7 @@
             android:textStyle="bold" />
 
     </LinearLayout>
+
     <LinearLayout
         android:id="@+id/assignTeam_itemButtons"
         android:layout_width="match_parent"

@@ -31,7 +31,8 @@ class AssignTeamRecyclerAdapter (private val ticketArray: MutableList<Ticket>, p
         holder.contactName.text = ticket.bookerName
         holder.contactPhone.text = ticket.bookerPhone
         holder.note.text = ticket.note
-        holder.playerId.text = ticket.playerId ?: "Player ID not found"
+        holder.ticketIdText.text = ticket.ticketId
+        holder.playerIdText.text = ticket.playerId ?: "Player ID not found"
 
         if (ticket.group != "SELF" && ticket.group != "" && ticket.group != null){
             holder.groupName.text = "Group: ${ticket.group}"
@@ -85,13 +86,15 @@ class AssignTeamRecyclerAdapter (private val ticketArray: MutableList<Ticket>, p
                 holder.itemInfoHeaders.visibility = View.GONE
                 holder.itemInfoTexts.visibility = View.GONE
                 holder.itemButtons.visibility = View.GONE
-                holder.playerIdLayout.visibility = View.GONE
+                holder.idTitlesLayout.visibility = View.GONE
+                holder.idValuesLayout.visibility = View.GONE
             }
             else {
                 holder.itemInfoHeaders.visibility = View.VISIBLE
                 holder.itemInfoTexts.visibility = View.VISIBLE
                 holder.itemButtons.visibility = View.VISIBLE
-                holder.playerIdLayout.visibility = View.VISIBLE
+                holder.idTitlesLayout.visibility = View.VISIBLE
+                holder.idValuesLayout.visibility = View.VISIBLE
             }
         }
 

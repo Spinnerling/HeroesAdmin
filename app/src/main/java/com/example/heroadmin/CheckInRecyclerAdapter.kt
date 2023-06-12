@@ -34,7 +34,8 @@ class CheckInRecyclerAdapter(private var ticketArray: MutableList<Ticket>, priva
         holder.contactName.text = ticket.bookerName
         holder.contactPhone.text = ticket.bookerPhone
         holder.bookerEmail.text = ticket.bookerEmail
-        holder.playerId.text = ticket.playerId
+        holder.ticketIdText.text = ticket.ticketId
+        holder.playerIdText.text = ticket.playerId ?: "Player ID not found"
 
         if (holder.note.text != "" && !ticket.noteHandled) {
             holder.notePanel.visibility = View.VISIBLE
@@ -57,13 +58,15 @@ class CheckInRecyclerAdapter(private var ticketArray: MutableList<Ticket>, priva
                 holder.itemInfoHeaders.visibility = View.GONE
                 holder.itemInfoTexts.visibility = View.GONE
                 holder.buttonPanel.visibility = View.GONE
-                holder.playerIdLayout.visibility = View.GONE
+                holder.idTitlesLayout.visibility = View.GONE
+                holder.idValuesLayout.visibility = View.GONE
             }
             else {
                 holder.itemInfoHeaders.visibility = View.VISIBLE
                 holder.itemInfoTexts.visibility = View.VISIBLE
                 holder.buttonPanel.visibility = View.VISIBLE
-                holder.playerIdLayout.visibility = View.VISIBLE
+                holder.idTitlesLayout.visibility = View.VISIBLE
+                holder.idValuesLayout.visibility = View.VISIBLE
             }
         }
 

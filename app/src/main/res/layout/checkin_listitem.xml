@@ -183,7 +183,7 @@
     </LinearLayout>
 
     <LinearLayout
-        android:id="@+id/checkIn_playerIdLayout"
+        android:id="@+id/checkIn_idTitlesLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/background_green_medium"
@@ -196,8 +196,32 @@
             android:layout_height="wrap_content"
             android:layout_marginRight="5dp"
             android:layout_weight="1"
-            android:text="Player ID:"
+            android:text="TicketId"
             android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="PlayerId"
+            android:textStyle="bold" />
+
+    </LinearLayout><LinearLayout
+        android:id="@+id/checkIn_idValuesLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/background_green_medium"
+        android:orientation="horizontal"
+        android:padding="5dp"
+        android:visibility="gone">
+
+    <TextView
+        android:id="@+id/checkin_ticketIdText"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="8"
+        android:text="none"
+        android:textStyle="bold" />
 
         <TextView
             android:id="@+id/checkin_playerIdText"

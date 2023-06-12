@@ -3,6 +3,8 @@ package com.example.heroadmin
 import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.Context
+import android.content.res.ColorStateList
+import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -14,6 +16,7 @@ import androidx.core.content.ContextCompat
 import kotlin.math.min
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -96,7 +99,6 @@ class EventView : Fragment() {
         currEventId = args.passedEventId
         currActivity = (activity as MainActivity)
         event = currActivity.event
-        loadTestData()
 
         return binding.root
     }
@@ -115,7 +117,7 @@ class EventView : Fragment() {
 
 
         binding.scrollingPanel.setOnTouchListener { _, _ ->
-            layoutFunction()
+            pressLayoutFunction()
             Log.i("check", "pressing scrollingPanel")
             // Keep
             true
@@ -206,7 +208,7 @@ class EventView : Fragment() {
             switchTeam()
         }
 
-        binding.spendExpButton.setOnClickListener {
+        binding.levelUpButton.setOnClickListener {
             if (selectedTicket.playerId != null && selectedTicket.playerId != "") {
                 findNavController().navigate(
                     EventViewDirections.actionEventViewToLevelUpFragment(
@@ -244,6 +246,10 @@ class EventView : Fragment() {
 
         binding.ticketInfoButton.setOnClickListener {
             openTicketInfo()
+        }
+
+        binding.recruitsButton.setOnClickListener {
+            checkInTicket(selectedTicket)
         }
 
         binding.rollRoundButton2.setOnClickListener {
@@ -454,19 +460,21 @@ class EventView : Fragment() {
 
     private fun processTickets(tickets: List<Ticket>) {
         Log.i("processTickets", "Processing Tickets: ${tickets.size} tickets")
+        // TODO: Add tickets with a playerId to a list
         for (ticket in tickets) {
-            if (ticket.playerId != null && ticket.playerId != ""){
+            if (ticket.playerId != null && ticket.playerId != "") {
                 Log.i("processTickets", "${ticket.firstName} has player")
-                }
-            else if (ticket.suggestions.isNullOrEmpty()) {
+            } else if (ticket.suggestions.isNullOrEmpty()) {
                 // Creates new player
                 createNewPlayer(ticket)
                 Log.i("processTickets", "Created new player for ${ticket.firstName}")
-            }
-            else {
+            } else {
                 Log.i("processTickets", "${ticket.firstName} has suggestions")
             }
         }
+
+        // TODO: Send ApiCall list of playerIDs to get the players
+        // TODO: put players in playerDatabase
 
         // Update the shared 'allTickets' list
         allTickets.clear()
@@ -597,6 +605,21 @@ class EventView : Fragment() {
                 // Save the updated ticket
                 DBF.updateData(ticket)
                 ticketDatabase.update(ticket)
+                lifecycleScope.launch {
+                    try {
+                        DBF = DatabaseFunctions(v.context)
+                        val player = DBF.getPlayer(ticket.playerId!!)
+                        if (player != null) {
+                            player.updateUsedExp()
+                            playerDatabase.insert(player)
+                        }
+                    } catch (e: Exception) {
+                        if (ticket.playerId != null && ticket.playerId != "")
+                            Log.i("getPlayer", "Could not get player from database")
+                        else
+                            Log.i("getPlayer", "Could not find playerId")
+                    }
+                }
                 updateTicketLists()
 
                 // Close the alertDialog
@@ -689,10 +712,14 @@ class EventView : Fragment() {
         setTeamAdapters()
         checkListVisibilities()
         updateTeamPower()
+        autoSetRoleAmounts()
     }
 
     private fun initializeTicketGroups() {
-        Log.i("initializeTicketGroups", "Starting initialization. Ticket amount: ${assignList.size}")
+        Log.i(
+            "initializeTicketGroups",
+            "Starting initialization. Ticket amount: ${assignList.size}"
+        )
         val emailToGroupMap = mutableMapOf<String, Int>()
         val usedGroupNumbers = mutableSetOf<Int>()
         val groupToSizeMap = mutableMapOf<Int, Int>()
@@ -789,7 +816,7 @@ class EventView : Fragment() {
     }
 
 
-    private fun updateTicketGroups(tickets:  MutableList<Ticket>) {
+    private fun updateTicketGroups(tickets: MutableList<Ticket>) {
         // Create a map to store group - size mapping
         val groupSizeMap = mutableMapOf<String, Int>()
 
@@ -1011,7 +1038,7 @@ class EventView : Fragment() {
         for (ticket in allTickets) {
             if (ticket.teamColor == "Red" && ticket.benched == 0) {
                 redPowerLevel += ticket.powerLevel
-                if (ticket.age!! > 12) {
+                if (ticket.age > 12) {
                     redTeenAmount++
                 } else if (ticket.age < 8) {
                     redTiniesAmount++
@@ -1020,7 +1047,7 @@ class EventView : Fragment() {
 
             } else if (ticket.teamColor == "Blue" && ticket.benched == 0) {
                 bluePowerLevel += ticket.powerLevel
-                if (ticket.age!! > 12) {
+                if (ticket.age > 12) {
                     blueTeenAmount++
                 } else if (ticket.age < 8) {
                     blueTiniesAmount++
@@ -1125,12 +1152,19 @@ class EventView : Fragment() {
             binding.playerNameText.text = selectedTicket.fullName
 
             if (selectedTicket.teamColor == "Blue") {
-                binding.playerNameText.setBackgroundResource(R.color.teamBlueColor)
+                context?.resources?.let { binding.switchTeamButton.setBackgroundColor(it.getColor(R.color.teamBlueColor)) }
             } else {
-                binding.playerNameText.setBackgroundResource(R.color.teamRedColor)
+                context?.resources?.let { binding.switchTeamButton.setBackgroundColor(it.getColor(R.color.teamRedColor)) }
             }
 
-//            binding.playerExpText.text = "${selectedPlayer.totalExp} EXP kvar"
+            if (selectedTicket.playerId == null || selectedTicket.playerId == "") {
+                binding.levelUpButton.visibility = View.GONE
+                binding.playerExpText.visibility = View.VISIBLE
+            } else {
+                binding.levelUpButton.visibility = View.VISIBLE
+                binding.playerExpText.visibility = View.GONE
+            }
+
             val roleInText = DBF.getRoleByNumber(selectedTicket.currentRole ?: 0)
             binding.ticketRoleText.text = roleInText
 
@@ -1153,10 +1187,33 @@ class EventView : Fragment() {
         val alertDialog = builder.show()
         val name: TextView = dialogView.findViewById(R.id.checkInPopupNameText)
         name.text = ticket.fullName
+
+        val acceptButton = dialogView.findViewById<Button>(R.id.checkinAcceptButton)
+
         if (ticket.teamColor == "Blue") {
             name.setBackgroundResource(R.color.teamBlueColor)
         } else {
             name.setBackgroundResource(R.color.teamRedColor)
+        }
+
+        //Set Klippkort visibility
+        val klippkortCheckBox: CheckBox = dialogView.findViewById(R.id.checkInKlippkortCheck)
+        if (ticket.klippkort == 1 && ticket.checkedIn == 0) {
+            klippkortCheckBox.visibility = View.VISIBLE
+            dialogView.findViewById<TextView>(R.id.checkInKlippkortTitle).visibility = View.VISIBLE
+            acceptButton.isEnabled = false
+        }
+        else {
+            klippkortCheckBox.visibility = View.GONE
+            dialogView.findViewById<TextView>(R.id.checkInKlippkortTitle).visibility = View.GONE
+            acceptButton.isEnabled = true
+        }
+
+        klippkortCheckBox.buttonTintList = ColorStateList.valueOf(Color.BLACK)
+
+        klippkortCheckBox.setOnClickListener {
+            if (klippkortCheckBox.visibility == View.VISIBLE) acceptButton.isEnabled = klippkortCheckBox.isChecked
+
         }
 
         dialogView.findViewById<Button>(R.id.checkinAcceptButton).setOnClickListener {
@@ -1191,8 +1248,10 @@ class EventView : Fragment() {
         name.text = ticket.fullName
         val userAge: TextView = dialogView.findViewById(R.id.ti_playerAge)
         userAge.text = ticket.age.toString()
-        val userId: TextView = dialogView.findViewById(R.id.ti_playerUserId)
-        userId.text = ticket.playerId
+        val ticketId: TextView = dialogView.findViewById(R.id.ti_ticketId)
+        ticketId.text = ticket.ticketId
+        val playerId: TextView = dialogView.findViewById(R.id.ti_playerId)
+        playerId.text = ticket.playerId ?: "No playerId found"
         val ticketNote: TextView = dialogView.findViewById(R.id.ti_Note)
         ticketNote.text = ticket.note
         val bookerPhone: TextView = dialogView.findViewById(R.id.ti_booker_phone)
@@ -1532,8 +1591,6 @@ class EventView : Fragment() {
         val redTeamSuccess = pickTeamRoles(redTeam)
 
         if (blueTeamSuccess && redTeamSuccess) {
-            assignRoles(blueTeam)
-            assignRoles(redTeam)
             updateTicketStats(blueTeam)
             updateTicketStats(redTeam)
             updateRound(true)
@@ -1565,18 +1622,19 @@ class EventView : Fragment() {
             binding.specialBAmountValue.text.toString().toInt()
         )
 
-        team.forEach { it.currentRole = 7 }
+        team.forEach {
+            it.lastRole = it.currentRole
+            it.currentRole = 7 }
         blueBench.forEach { it.currentRole = 7 }
         redBench.forEach { it.currentRole = 7 }
 
         val totalAmount = roleAmounts.sum()
 
-        val guaranteedTickets = team.filter { it.guaranteedRole!! in 1..6 }
+        val guaranteedTickets = team.filter { it.guaranteedRole in 1..4 }
         for (ticket in guaranteedTickets) {
-            val role = ticket.guaranteedRole!!
+            val role = ticket.guaranteedRole
             if (roleAmounts[role - 1] > 0) {
                 ticket.currentRole = role
-                ticket.lastRole = role
                 roleAmounts[role - 1]--
             }
         }
@@ -1590,6 +1648,8 @@ class EventView : Fragment() {
         for (ticket in prioritizedTickets) {
             var roleIndex = 0
             var minRounds = Int.MAX_VALUE
+            var fallbackRoleIndex = 0
+            var fallbackMinRounds = Int.MAX_VALUE
 
             for (i in roleAmounts.indices) {
                 val roundsInRole = when (i) {
@@ -1597,18 +1657,34 @@ class EventView : Fragment() {
                     1 -> ticket.roundsRogue
                     2 -> ticket.roundsMage
                     3 -> ticket.roundsKnight
-                    else -> ticket.roundsSpecialRole
+                    else -> 0 // Special A and Special B does not matter
                 }
 
-                if (roleAmounts[i] > 0 && roundsInRole != null && roundsInRole < minRounds) {
-                    minRounds = roundsInRole
-                    roleIndex = i
+                val otherRounds = event.round - ticket.roundsSpecialRole
+
+                // Check if role has been played less than other roles
+                if (roleAmounts[i] > 0) {
+                    // If it's the minimum found so far, update fallbackRoleIndex and fallbackMinRounds
+                    if (roundsInRole < fallbackMinRounds) {
+                        fallbackMinRounds = roundsInRole
+                        fallbackRoleIndex = i
+                    }
+                    // If it's less than other roles, update roleIndex and minRounds
+                    if (roundsInRole < minRounds && roundsInRole*roleAmounts.size < otherRounds) {
+                        minRounds = roundsInRole
+                        roleIndex = i
+                    }
                 }
             }
 
-            if (minRounds != Int.MAX_VALUE) {
+            // If no role found, use the fallback role
+            if (minRounds == Int.MAX_VALUE) {
+                roleIndex = fallbackRoleIndex
+                minRounds = fallbackMinRounds
+            }
+
+            if (minRounds != Int.MAX_VALUE && roleAmounts[roleIndex] > 0) { // Ensure role limit is not exceeded
                 ticket.currentRole = roleIndex + 1
-                ticket.lastRole = roleIndex + 1
                 roleAmounts[roleIndex]--
                 roleAssignmentTracker[roleIndex].add(ticket)
             }
@@ -1622,23 +1698,21 @@ class EventView : Fragment() {
         }
 
         remainingRoles.shuffle()
-
         val assignedRoles = mutableSetOf<Int>() // Keep track of already assigned roles
 
         for (ticket in remainingTickets) {
-            val availableRoles =
-                remainingRoles.filter { it !in assignedRoles && it != ticket.lastRole }
+            val availableRoles = remainingRoles.filter { it !in assignedRoles && it != ticket.lastRole }
             if (availableRoles.isNotEmpty()) {
                 val randomIndex = (0 until availableRoles.size).random()
                 val role = availableRoles[randomIndex]
                 ticket.currentRole = role
-                ticket.lastRole = role
                 assignedRoles.add(role)
             }
         }
 
         val rolesDistributed = team.count { it.currentRole != 7 }
         if (rolesDistributed != totalAmount) {
+            Log.e("pickTeamRoles", "Not all roles could be distributed!")
             return false
         }
         DBF.updateTicketArray(allTickets)
@@ -1649,22 +1723,16 @@ class EventView : Fragment() {
         return true
     }
 
-    private fun assignRoles(team: MutableList<Ticket>) {
-        for (ticket in team) {
-            when (ticket.currentRole) {
-                1 -> ticket.roundsHealer = ticket.roundsHealer!! + 1
-                2 -> ticket.roundsRogue = ticket.roundsRogue!! + 1
-                3 -> ticket.roundsMage = ticket.roundsMage!! + 1
-                4 -> ticket.roundsKnight = ticket.roundsKnight!! + 1
-                5, 6 -> ticket.roundsSpecial++
-            }
-        }
-    }
-
     private fun updateTicketStats(team: MutableList<Ticket>) {
         for (ticket in team) {
             if (ticket.currentRole != 7) {
-                ticket.roundsSpecialRole = ticket.roundsSpecialRole!! + 1
+                ticket.roundsSpecialRole = ticket.roundsSpecialRole + 1
+                when (ticket.currentRole) {
+                    1 -> ticket.roundsHealer = ticket.roundsHealer + 1
+                    2 -> ticket.roundsRogue = ticket.roundsRogue + 1
+                    3 -> ticket.roundsMage = ticket.roundsMage + 1
+                    4 -> ticket.roundsKnight = ticket.roundsKnight + 1
+                }
             }
 
             if (ticket.currentRole == ticket.guaranteedRole) {
@@ -1675,223 +1743,9 @@ class EventView : Fragment() {
     }
 
     private fun updateRound(increase: Boolean) {
-        if (increase) event.round = event.round!! + 1 else event.round = event.round!! - 1
+        if (increase) event.round = event.round + 1 else event.round = event.round - 1
         binding.roundText.text = event.round.toString()
         DBF.updateData(event)
-    }
-
-    fun loadTestData() {
-        // Generate sample players
-        val tickets = listOf(
-            Ticket(
-                "T1", "Marcus", "Bildtgård", 15, "Jane Doe", "555-123-4567",
-                "123 Main St", "Springfield", "john@example.com", "", "", 0, 0, 100, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0, ""
-            ),
-            Ticket(
-                "T2", "Annelie", "Öhman", 12, "John Doe", "555-987-6543",
-                "456 Elm St", "Springfield", "john@example.com", "", "", 0, 0, 100, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0, ""
-            ),
-            Ticket(
-                "T3", "Peter", "Losonci", 13, "Bob Smith", "555-456-7890",
-                "789 Oak St", "Springfield", "alice@example.com", "", "", 0, 0, 100, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0, ""
-            ),
-            Ticket(
-                "T4", "Mattias", "Evaldsson Fritz", 12, "Alice Brown", "555-321-0987",
-                "321 Birch St", "Springfield", "alice@example.com", "", "", 0, 0, 100, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0, ""
-            ),
-            Ticket(
-                "T5", "Vandela", "Aghed", 11, "Diana Johnson", "555-654-3210",
-                "654 Pine St", "Springfield", "alice@example.com", "", "", 0, 0, 100, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0, ""
-            ),
-            Ticket(
-                "T6", "Emilia", "Hagman", 10, "Charlie Miller", "555-852-1470",
-                "852 Maple St", "Springfield", "diana@example.com", "", "", 0, 0, 100, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0, ""
-            ),
-            Ticket(
-                "T7", "Renée", "Olsson", 9, "David Taylor", "555-555-5555",
-                "10 Oak St", "Springfield", "eva@example.com", "", "", 0, 0, 100, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0, ""
-            ),
-            Ticket(
-                "T0", "Enoo", "Rasmussen", 8, "Emma Wilson", "555-789-4561",
-                "741 Vine St", "Springfield", "edward@example.com", "", "", 0, 0, 100, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0, ""
-            ),
-            Ticket(
-                "T8", "Elin", "Torndal", 7, "Frank Adams", "555-123-7890",
-                "369 Oak St", "Springfield", "edward@example.com", "", "", 0, 0, 100, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0, ""
-            ),
-            Ticket(
-                "T9", "Julia", "Löf", 6, "George Garcia", "555-456-1234",
-                "852 Chestnut St", "Springfield", "george@example.com", "", "", 0, 0, 100, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0, ""
-            ),
-            Ticket(
-                "T10", "Anna", "Wuolo", 5, "Henry Scott", "555-789-0123",
-                "753 Main St", "Springfield", "hannah@example.com", "", "", 0, 0, 100, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0, ""
-            ),
-            Ticket(
-                "T11", "Fredrik", "Åslund", 15, "Jane Doe", "555-123-4567",
-                "123 Main St", "Springfield", "john@example.com", "", "", 0, 0, 100, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0, ""
-            ),
-            Ticket(
-                "T12", "Karolina", "Nilsson", 14, "John Doe", "555-987-6543",
-                "456 Elm St", "Springfield", "john@example.com", "", "", 0, 0, 100, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0, ""
-            ),
-            Ticket(
-                "T13", "Olof", "Berg", 13, "Bob Smith", "555-456-7890",
-                "789 Oak St", "Springfield", "alice@example.com", "", "", 0, 0, 100, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0, ""
-            ),
-            Ticket(
-                "T14", "Filip", "Lindahl", 12, "Alice Brown", "555-321-0987",
-                "321 Birch St", "Springfield", "alice@example.com", "", "", 0, 0, 100, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0, ""
-            ),
-            Ticket(
-                "T15",
-                "Hanna",
-                "Nevo",
-                11,
-                "Diana Johnson",
-                "555-654-3210",
-                "654 Pine St",
-                "Springfield",
-                "alice@example.com",
-                "Hon är allergisk mot citrusfrukter",
-                "",
-                0,
-                0,
-                100,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                ""
-            ),
-            Ticket(
-                "T16", "Cecilia", "Lindh", 10, "Charlie Miller", "555-852-1470",
-                "852 Maple St", "Springfield", "diana@example.com", "", "", 0, 0, 100, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0, ""
-            ),
-            Ticket(
-                "T17",
-                "Ulrike",
-                "Dawod",
-                9,
-                "David Taylor",
-                "555-555-5555",
-                "10 Oak St",
-                "Springfield",
-                "eva@example.com",
-                "Han är kompis med Frank Adams och vill vara på samma lag som honom",
-                "",
-                0,
-                0,
-                100,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                ""
-            ),
-            Ticket(
-                "T18", "Isabelle", "Utbult", 8, "Emma Wilson", "555-789-4561",
-                "741 Vine St", "Springfield", "edward@example.com", "", "", 0, 0, 100, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0, ""
-            ),
-            Ticket(
-                "T31", "Adam", "Asp", 8, "Emma Wilson", "555-789-4561",
-                "741 Vine St", "Springfield", "edward@example.com", "", "", 0, 0, 100, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0, ""
-            )
-        )
-
-        // Insert sample tickets into the ticketDatabase
-        tickets.forEach { ticketDatabase.insert(it) }
-
-
-        val players = listOf(
-            Player(
-                playerId = "ABC123",
-                firstName = "Fredrik",
-                lastName = "Åslund",
-                age = 15,
-                exp2021 = 205,
-                exp2022 = 1000,
-                exp2023 = 1000,
-                healerLevel = 1,
-                healerUltimateA = false,
-                healerUltimateB = false,
-                rogueLevel = 1,
-                rogueUltimateA = false,
-                rogueUltimateB = false,
-                mageLevel = 1,
-                mageUltimateA = false,
-                mageUltimateB = false,
-                knightLevel = 1,
-                knightUltimateA = false,
-                knightUltimateB = false,
-                warriorHealer = false,
-                warriorRogue = false,
-                warriorMage = false,
-                warriorKnight = false,
-                bookerNames = mutableListOf("susanne", "thorvald"),
-                bookerEmails = mutableListOf("susanne@email.com", "thorvald@email.com"),
-                bookerPhones = mutableListOf("0918239013", "128309312"),
-                bookerAddresses = mutableListOf("nyckeldalen 3", "spårvagnen 4")
-            ),
-            Player(
-                playerId = "ABC124",
-                firstName = "Jane",
-                lastName = "Doe",
-                age = 15,
-                exp2021 = 205,
-                exp2022 = 1000,
-                exp2023 = 5,
-                healerLevel = 1,
-                healerUltimateA = true,
-                rogueLevel = 1,
-                rogueUltimateA = true,
-                mageLevel = 1,
-                mageUltimateA = true,
-                knightLevel = 1,
-                knightUltimateA = true,
-                warriorHealer = false,
-                warriorRogue = false,
-                warriorMage = false,
-                warriorKnight = false,
-                bookerNames = mutableListOf("susanne"),
-                bookerEmails = mutableListOf("susanne@email.com"),
-                bookerPhones = mutableListOf("0918239013"),
-                bookerAddresses = mutableListOf("nyckeldalen 3")
-            )
-        )
-
-        // Insert sample player into the playerDatabase
-        players.forEach { playerDatabase.insert(it) }
     }
 
     private fun dismissKeyboard() {
@@ -1941,30 +1795,15 @@ class EventView : Fragment() {
         autoSetRoleAmounts()
     }
 
-    fun layoutFunction() {
+    fun pressLayoutFunction() {
         dismissKeyboard()
         deselectPlayer()
-    }
-
-    fun addOneTicket() {
-        ticketDatabase.insert(
-            Ticket(
-                "T30", "New", "Man", 16, "william Scott", "555-789-0123",
-                "753 Main St", "Springfield", "william@example.com", "", "", 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0, event.eventId
-            )
-        )
-        event.ticketIDs.add("T30")
-        Log.i("check", "additional ticket added")
-
-        // Update the event in the local database
-        eventDatabase.update(event)
     }
 
     private fun checkGameEnded() {
         Log.i("eventWin", "Event's winners: ${event.gameWinner}, ${event.clickWinner}")
         // Check if game is already over, and remove New Round Button
-        if (event.clickWinner != "" && event.clickWinner != null || event.gameWinner != "" && event.gameWinner != null) {
+        if (event.clickWinner != "" || event.gameWinner != "") {
             binding.newRoundButton.visibility = View.GONE
             binding.gameEndText.visibility = View.VISIBLE
         } else {
@@ -1994,12 +1833,11 @@ class EventView : Fragment() {
 
         event.status = when {
             event.clickWinner != "" || event.gameWinner != "" -> "Avslutat"
-            event.round != null && event.round!! > 0 -> "Spel påbörjat"
+            event.round > 0 -> "Spel påbörjat"
             ticketCheckIn -> "Checkar in"
             ticketTeamDivision -> "Lagindelning"
             else -> "Ej påbörjat"
         }
-//        eventDatabase.update(event) //TODO: remove Local
         DBF.updateData(event)
         Log.i("status", "Event Status: ${event.status}")
     }

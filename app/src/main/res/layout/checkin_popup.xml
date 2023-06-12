@@ -21,7 +21,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
-        android:layout_marginBottom="5dp"
+        android:layout_marginBottom="10dp"
         android:text="ticket name"
         android:textAlignment="center"
         android:textSize="26sp" />
@@ -33,6 +33,7 @@
         android:layout_marginBottom="8dp"
         android:background="@color/background_green_medium"
         android:text="Recruits"
+        android:textSize="18dp"
         android:textAlignment="center"
         android:textColor="#FFFFFF" />
 
@@ -43,7 +44,30 @@
         android:hint="Amount"
         android:inputType="number"
         android:textAlignment="center"
-        android:textSize="24sp" />
+        android:textSize="24sp"/>
+
+    <TextView
+        android:id="@+id/checkInKlippkortTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/background_green_medium"
+        android:text="Betalat med Klippkort"
+        android:textAlignment="center"
+        android:textColor="#FFFFFF"
+        android:textSize="18dp"
+        android:visibility="gone"
+        android:layout_marginTop="10dp"/>
+
+    <CheckBox
+        android:id="@+id/checkInKlippkortCheck"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Klippt klippkort"
+        android:background="@color/background_green_light"
+        android:textSize="16dp"
+        android:textStyle="bold"
+        android:visibility="gone"
+        />
 
     <LinearLayout
         android:layout_width="wrap_content"
@@ -75,5 +99,6 @@
             android:backgroundTint="@color/buttonGreen"
             android:text="Accept" />
     </LinearLayout>
+
 
 </LinearLayout>

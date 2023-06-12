@@ -5,7 +5,6 @@ import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import org.w3c.dom.Text
 
 class AssignTeamViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView){
     // Find all the views of the list item
@@ -23,12 +22,14 @@ class AssignTeamViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView){
     var itemInfoHeaders : LinearLayout = itemView.findViewById(R.id.assignTeam_itemInfoHeaders)
     var itemInfoTexts : LinearLayout = itemView.findViewById(R.id.assignTeam_itemInfoTexts)
     var itemButtons : LinearLayout = itemView.findViewById(R.id.assignTeam_itemButtons)
-    var playerIdLayout : LinearLayout = itemView.findViewById(R.id.assignTeam_playerIdLayout)
+    var idTitlesLayout : LinearLayout = itemView.findViewById(R.id.assignTeam_idTitlesLayout)
+    var idValuesLayout : LinearLayout = itemView.findViewById(R.id.assignTeam_idValuesLayout)
 
     var contactName: TextView = itemView.findViewById(R.id.assignTeam_ContactName)
     var contactPhone: TextView = itemView.findViewById(R.id.assignTeam_ContactPhone)
     var bookerEmailText: TextView = itemView.findViewById(R.id.assignTeam_bookingEmail)
     var note: TextView = itemView.findViewById(R.id.assignTeam_Note)
-    var playerId: TextView = itemView.findViewById(R.id.assignTeam_playerIdText)
+    var ticketIdText: TextView = itemView.findViewById(R.id.assignTeam_ticketIdText)
+    var playerIdText: TextView = itemView.findViewById(R.id.assignTeam_playerIdText)
 
 }

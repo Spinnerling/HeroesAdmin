@@ -106,6 +106,7 @@ class EventAdminFrag : Fragment() {
         binding.eventAdminEventVenue.text = event.venue
         binding.eventAdminEventDate.text = event.actualDate
         binding.eventAdminEventTime.text = event.actualStartTime
+        binding.eventAdminEventId.text = event.eventId
         binding.eventAdminReportText.setText(event.reportText ?: "")
 
         binding.eventAdminAttendanceValue.text = event.expAttendanceValue?.toString() ?: "20"
@@ -195,7 +196,9 @@ class EventAdminFrag : Fragment() {
             expClickWinValue = binding.eventAdminEditWin1.text.toString().toIntOrNull() ?: 0
             expGameWinValue = binding.eventAdminEditWin2.text.toString().toIntOrNull() ?: 0
             expTeamChangeValue = binding.eventAdminEditTeamChange.text.toString().toIntOrNull() ?: 0
+
         }
+        saveInfo()
         dismissKeyboard()
         loadEventData()
     }

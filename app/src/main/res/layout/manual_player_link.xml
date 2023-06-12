@@ -3,37 +3,40 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="wrap_content"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
     android:background="@color/background_green_light"
     android:gravity="center|top"
     android:orientation="vertical">
 
     <TextView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
         android:background="@color/background_green_medium"
         android:padding="5dp"
         android:text="Find Player"
         android:textAlignment="center"
         android:textColor="#FFFFFF"
         android:textSize="24sp"
-        tools:ignore="TextContrastCheck" />
+        tools:ignore="TextContrastCheck"
+        android:layout_weight="1"/>
 
     <TextView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="clip_horizontal|center_horizontal"
+        android:layout_height="0dp"
+        android:gravity="center"
         android:text="Ticket"
-        android:textSize="24dp" />
+        android:textSize="24dp"
+        android:layout_weight="1"/>
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
         android:layout_margin="10dp"
         android:background="@color/white"
         android:gravity="center"
         android:orientation="vertical"
-        android:padding="5dp">
+        android:padding="5dp"
+        android:layout_weight="2">
 
 
         <LinearLayout
@@ -93,7 +96,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Booker Phone"
+                android:text="Phone"
                 android:textColor="#000000"
                 android:textSize="16sp"
                 android:textStyle="bold" />
@@ -102,7 +105,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Booker Email"
+                android:text="Email"
                 android:textColor="#000000"
                 android:textSize="16sp"
                 android:textStyle="bold" />
@@ -111,7 +114,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Booker Address"
+                android:text="Address"
                 android:textColor="#000000"
                 android:textSize="16sp"
                 android:textStyle="bold" />
@@ -166,36 +169,40 @@
 
     <TextView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="clip_horizontal|center_horizontal"
+        android:layout_height="0dp"
+        android:gravity="center"
         android:text="Matches"
-        android:textSize="24dp" />
+        android:textSize="24dp"
+        android:layout_weight="1"/>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/mpl_recyclerView"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
+        android:layout_weight="4"
         android:layout_margin="10dp" />
 
     <TextView
         android:id="@+id/mpl_noEntriesText"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
         android:layout_marginTop="20dp"
         android:layout_marginBottom="20dp"
         android:text="No matching players found"
         android:textAlignment="center"
         android:textSize="18sp"
-        android:visibility="gone" />
+        android:visibility="gone"
+        android:layout_weight="1"/>
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
         android:orientation="horizontal"
         android:gravity="center"
         android:paddingLeft="10dp"
         android:paddingRight="10dp"
-        android:layout_marginBottom="10dp">
+        android:layout_marginBottom="10dp"
+        android:layout_weight="1">
 
         <Button
             android:id="@+id/mpl_cancelButton"

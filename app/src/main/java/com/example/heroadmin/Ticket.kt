@@ -34,12 +34,12 @@ data class Ticket(
     val eventId: String = "",
     var suggestions: List<PlayerListItem>? = null,
     var group : String? = null,
-    var noteHandled : Boolean = false
+    var noteHandled : Boolean = false,
+    var klippkort : Int = 0
 ) {
     val fullName: String
         get() = "${firstName ?: ""} ${lastName ?: ""}"
     var selected = false
-    var roundsSpecial = 0
     val powerLevel: Int
         get() = checkPowerLevel()
     var groupSize = 1
