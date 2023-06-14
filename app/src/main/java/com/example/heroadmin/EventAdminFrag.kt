@@ -102,6 +102,7 @@ class EventAdminFrag : Fragment() {
     }
 
     private fun loadEventData() {
+        updateVenue()
         binding.eventAdminEventNameText.text = event.title
         binding.eventAdminEventVenue.text = event.venue
         binding.eventAdminEventDate.text = event.actualDate
@@ -127,6 +128,18 @@ class EventAdminFrag : Fragment() {
         currClickWinner = event.clickWinner.toString()
         currGameWinner = event.gameWinner.toString()
         updateWinnerButtonColors()
+    }
+
+    private fun updateVenue() {
+        when (event.venue) {
+            "917" -> event.venue = "Visby"
+            "10691" -> event.venue = "Stockholm"
+            "23307" -> event.venue = "Göteborg"
+            "24643" -> event.venue = "Göteborg"
+            "23314" -> event.venue = "Örebro"
+            "23312" -> event.venue = "Malmö"
+            "23310" -> event.venue = "Uppsala"
+        }
     }
 
     private fun saveInfo() {

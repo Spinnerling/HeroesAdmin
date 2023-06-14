@@ -170,7 +170,7 @@ class DatabaseFunctions(val context: Context) {
     }
 
     fun apiCallPut(url: String, jsonString: String, callback: VolleyCallback) {
-        Log.i("apiCallPut", "Skickar PUT: $jsonString")
+        Log.i("apiCallPut", "Skickar PUT: $jsonString till $url")
 
         val putRequest: StringRequest = object : StringRequest(
             Method.PUT, url,
@@ -435,7 +435,7 @@ class DatabaseFunctions(val context: Context) {
         Log.i("apiCallPut", "data: $data")
         val jsonString = createJsonString(data)
         Log.i("apiCallPut", "Updating Ticket Array: $jsonString")
-        val url = "https://www.talltales.nu/API/api/update-tickets3.php"
+        val url = "https://www.talltales.nu/API/api/update-tickets.php"
         apiCallPut(url, jsonString, object : VolleyCallback {
             override fun onSuccess(result: String?) {
                 Log.i("apiCallPut", "Request completed: $result")

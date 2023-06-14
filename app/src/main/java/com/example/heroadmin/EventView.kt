@@ -8,6 +8,7 @@ import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
@@ -114,7 +115,6 @@ class EventView : Fragment() {
 
         loadingPopup()
         getEvent()
-
 
         binding.scrollingPanel.setOnTouchListener { _, _ ->
             pressLayoutFunction()
@@ -253,12 +253,56 @@ class EventView : Fragment() {
         }
 
         binding.rollRoundButton2.setOnClickListener {
-            randomizeRoles()
-            dismissKeyboard()
-            deselectPlayer()
-            if (healerAmount + rogueAmount + knightAmount + mageAmount + specialAAmount + specialBAmount > blueTeam.size || healerAmount + rogueAmount + knightAmount + mageAmount + specialAAmount + specialBAmount > redTeam.size) {
+            val h = binding.healerAmountValue.text.toString().toInt()
+            val r = binding.rogueAmountValue.text.toString().toInt()
+            val m = binding.mageAmountValue.text.toString().toInt()
+            val k = binding.knightAmountValue.text.toString().toInt()
+            val a = binding.specialAAmountValue.text.toString().toInt()
+            val b = binding.specialBAmountValue.text.toString().toInt()
+            if ((h + r + m + k + a + b) > blueTeam.size || (h + r + m + k + a + b) > redTeam.size) {
                 callNotification("There are more roles than players!\nEdit your role amounts.")
             }
+            else {
+                randomizeRoles()
+                dismissKeyboard()
+                deselectPlayer()
+            }
+        }
+
+        val roleAmounts = mutableListOf(binding.healerAmountValue, binding.rogueAmountValue, binding.mageAmountValue, binding.knightAmountValue, binding.specialAAmountValue, binding.specialBAmountValue)
+
+        for (role in roleAmounts) {
+            role.setOnTouchListener { view, event ->
+                if (event.action == MotionEvent.ACTION_UP) {
+
+                    autoRoleAmounts = false
+                    binding.autoSetSwitch.isChecked = false
+                }
+                false // Return 'false' to allow the touch event to be passed to the underlying view
+            }
+            role.setOnClickListener {
+                    autoRoleAmounts = false
+                    binding.autoSetSwitch.isChecked = false
+            }
+        }
+
+        binding.healerButton.setOnClickListener {
+            selectedTicket.guaranteedRole = 1
+        }
+        binding.rogueButton.setOnClickListener {
+            selectedTicket.guaranteedRole = 2
+        }
+        binding.mageButton.setOnClickListener {
+            selectedTicket.guaranteedRole = 3
+        }
+        binding.knightButton.setOnClickListener {
+            selectedTicket.guaranteedRole = 4
+        }
+        binding.specialAButton.setOnClickListener {
+            selectedTicket.guaranteedRole = 5
+        }
+        binding.specialBButton.setOnClickListener {
+            selectedTicket.guaranteedRole = 6
         }
 
         binding.assignTeamOrgByNameButton.setOnClickListener {
@@ -318,7 +362,8 @@ class EventView : Fragment() {
         }
         binding.emptyButton.setOnClickListener {
             //Future shenanigans, save for later
-            callNotification("This button does nothing.\nI promise.")
+//            callNotification("This button does nothing.\nI promise.")
+            resetTickets()
         }
         binding.assignTeamAutoAssignButton.setOnClickListener {
             autoAssignLoop()
@@ -435,7 +480,7 @@ class EventView : Fragment() {
     private suspend fun getTickets(eventId: String, retryCount: Int = 3): List<Ticket> {
         return suspendCancellableCoroutine { continuation ->
             DBF.apiCallGetArray(
-                "https://www.talltales.nu/API/api/get-tickets8.php?eventId=$eventId",
+                "https://www.talltales.nu/API/api/get-tickets.php?eventId=$eventId",
                 { response ->
                     try {
                         val tickets =
@@ -1146,6 +1191,11 @@ class EventView : Fragment() {
 
         if (bottomPanelNewRound.visibility == View.VISIBLE) {
             playerRoleButtonPanel.visibility = View.VISIBLE
+            if (selectedTicket.teamColor == "Blue") {
+                context?.resources?.let { binding.switchTeamButton2.setBackgroundColor(it.getColor(R.color.teamBlueColor)) }
+            } else {
+                context?.resources?.let { binding.switchTeamButton2.setBackgroundColor(it.getColor(R.color.teamRedColor)) }
+            }
         } else {
             binding.bottomPanel.visibility = View.GONE
             binding.bottomPanelPlayer.visibility = View.VISIBLE
@@ -1444,11 +1494,10 @@ class EventView : Fragment() {
         val smallerTeamSize = min(redTeamSize, blueTeamSize)
         val max = 3
 
-        // Update role amounts based on the smaller team size, and role prioritization
-        healerAmount = min(smallerTeamSize / max, max)
-        mageAmount = min((smallerTeamSize + 2) / max, max)
-        rogueAmount = min((smallerTeamSize + 3) / max, max)
-        knightAmount = min((smallerTeamSize + 1) / max, max)
+        val healerAmount = min(smallerTeamSize / 4, max)
+        val mageAmount = min((smallerTeamSize / 4) + (if (smallerTeamSize % 4 > 1) 1 else 0), max)
+        val rogueAmount = min((smallerTeamSize / 4) + (if (smallerTeamSize % 4 > 0) 1 else 0), max)
+        val knightAmount = min((smallerTeamSize / 4) + (if (smallerTeamSize % 4 > 2) 1 else 0), max)
 
         // Set the TextView values
         binding.healerAmountValue.setText(healerAmount.toString())
@@ -1613,7 +1662,9 @@ class EventView : Fragment() {
     }
 
     private fun pickTeamRoles(team: MutableList<Ticket>): Boolean {
-        val roleAmounts = arrayOf(
+        // Step 1: Preprocessing and Initialization
+        // Fetch the total number of each role from the user interface
+        val originalRoleAmounts = arrayOf(
             binding.healerAmountValue.text.toString().toInt(),
             binding.rogueAmountValue.text.toString().toInt(),
             binding.mageAmountValue.text.toString().toInt(),
@@ -1622,99 +1673,118 @@ class EventView : Fragment() {
             binding.specialBAmountValue.text.toString().toInt()
         )
 
+        // Get the original total amount of roles
+        val originalTotalAmount = originalRoleAmounts.sum()
+
+        // Reset roles for all players in the team
         team.forEach {
             it.lastRole = it.currentRole
-            it.currentRole = 7 }
-        blueBench.forEach { it.currentRole = 7 }
-        redBench.forEach { it.currentRole = 7 }
-
-        val totalAmount = roleAmounts.sum()
-
-        val guaranteedTickets = team.filter { it.guaranteedRole in 1..4 }
-        for (ticket in guaranteedTickets) {
-            val role = ticket.guaranteedRole
-            if (roleAmounts[role - 1] > 0) {
-                ticket.currentRole = role
-                roleAmounts[role - 1]--
-            }
+            it.currentRole = 7 // Default role (Warrior)
         }
 
-        val remainingTickets = team.filter { it.currentRole == 7 }
-        val prioritizedTickets = remainingTickets.sortedBy { it.roundsSpecialRole }
-            .take(totalAmount - guaranteedTickets.size)
+        // Assign guaranteed roles
+        val guaranteedTickets = team.filter { it.guaranteedRole in 1..6 }
+        for (ticket in guaranteedTickets) {
+            val role = ticket.guaranteedRole
+            // If there are available roles of the guaranteed type, assign it to the ticket
+            if (originalRoleAmounts[role - 1] > 0) {
+                ticket.currentRole = role
+                originalRoleAmounts[role - 1]--
+            }
+            else Log.e("pickTeamRoles", "Could not assign guaranteed role to ${ticket.firstName}")
+        }
+//        Log.i("pickTeamRoles", "guaranteedTickets size: ${guaranteedTickets.size}")
 
-        val roleAssignmentTracker = MutableList(roleAmounts.size) { mutableListOf<Ticket>() }
+        // Step 2: Prioritize Players
+        // Filter and sort the remaining players without assigned roles based on their roundsSpecialRole property
+        val remainingTickets = team.filter { it.currentRole == 7 }.sortedBy { it.roundsSpecialRole }
+//        Log.i("pickTeamRoles", "remainingTickets size: ${remainingTickets.size}")
 
-        for (ticket in prioritizedTickets) {
-            var roleIndex = 0
-            var minRounds = Int.MAX_VALUE
-            var fallbackRoleIndex = 0
-            var fallbackMinRounds = Int.MAX_VALUE
+        // Step 3: Create Lottery Hats
+        val originalLotteryHats = MutableList(originalRoleAmounts.size) { mutableListOf<Ticket>() }
 
-            for (i in roleAmounts.indices) {
+        for (ticket in remainingTickets) {
+            for (i in originalRoleAmounts.indices) {
                 val roundsInRole = when (i) {
                     0 -> ticket.roundsHealer
                     1 -> ticket.roundsRogue
                     2 -> ticket.roundsMage
                     3 -> ticket.roundsKnight
-                    else -> 0 // Special A and Special B does not matter
+                    else -> 0 // Special A and Special B do not matter
                 }
 
-                val otherRounds = event.round - ticket.roundsSpecialRole
+                // Check how many rounds the ticket is allowed to play this role
+                val roundsList = listOf(
+                    ticket.roundsHealer,
+                    ticket.roundsRogue,
+                    ticket.roundsMage,
+                    ticket.roundsKnight
+                )
 
-                // Check if role has been played less than other roles
-                if (roleAmounts[i] > 0) {
-                    // If it's the minimum found so far, update fallbackRoleIndex and fallbackMinRounds
-                    if (roundsInRole < fallbackMinRounds) {
-                        fallbackMinRounds = roundsInRole
-                        fallbackRoleIndex = i
-                    }
-                    // If it's less than other roles, update roleIndex and minRounds
-                    if (roundsInRole < minRounds && roundsInRole*roleAmounts.size < otherRounds) {
-                        minRounds = roundsInRole
-                        roleIndex = i
-                    }
+                var maxRounds = roundsList.maxOrNull() ?: 0
+
+                if (roundsList.all { it == maxRounds }) {
+                    maxRounds++
+                }
+
+                // Add ticket to the lotteryHat if they have played fewer than maxRounds in the role
+                if (roundsInRole < maxRounds) {
+                    originalLotteryHats[i].add(ticket)
                 }
             }
+        }
 
-            // If no role found, use the fallback role
-            if (minRounds == Int.MAX_VALUE) {
-                roleIndex = fallbackRoleIndex
-                minRounds = fallbackMinRounds
+        // Step 4: Assign Roles
+        val assignmentAttempts = 20
+        for (attempt in 1..assignmentAttempts) {
+            // Reset all roles and role amounts before each attempt
+            remainingTickets.forEach {
+                it.currentRole = 7 // Default role (Warrior)
             }
+            val roleAmounts = originalRoleAmounts.clone()
+            val temporaryLotteryHats = originalLotteryHats.map { it.toMutableList() }
 
-            if (minRounds != Int.MAX_VALUE && roleAmounts[roleIndex] > 0) { // Ensure role limit is not exceeded
-                ticket.currentRole = roleIndex + 1
-                roleAmounts[roleIndex]--
-                roleAssignmentTracker[roleIndex].add(ticket)
+            var allRolesAssignedSuccessfully = true
+            // Assign roles to players based on the lotteryHats
+            for (i in roleAmounts.indices) {
+                val lotteryHat = temporaryLotteryHats[i]
+//                Log.i("pickTeamRoles", "Starting role assignment for LotteryHat $i. Size: ${lotteryHat.size}, Role Amount: ${roleAmounts[i]}")
+                while (roleAmounts[i] > 0) {
+                    if (lotteryHat.isEmpty()){
+//                        Log.e("pickTeamRoles", "LotteryHat $i is empty")
+                        allRolesAssignedSuccessfully = false
+                        break // Changed from continue to break
+                    }
+                    val randomIndex = (0 until lotteryHat.size).random()
+                    val ticket = lotteryHat.removeAt(randomIndex)
+                    ticket.currentRole = i + 1
+                    roleAmounts[i]--
+//                    Log.i("pickTeamRoles", "Assigning role ${i+1} to ${ticket.firstName}. Ticket removed from LotteryHat $i.")
+//                    Log.i("pickTeamRoles", "Role ${i+1} assigned. Remaining Role Amount: ${roleAmounts[i]}")
+                    // Remove this ticket from all other lotteryHats to prevent duplicate assignments
+                    temporaryLotteryHats.forEach { it.remove(ticket) }
+                }
+                if (!allRolesAssignedSuccessfully) break
+            }
+            if (allRolesAssignedSuccessfully) {
+//                Log.i("pickTeamRoles", "Roles assigned successfully on attempt $attempt")
+                break
+            } else if (attempt == assignmentAttempts) {
+                Log.e("pickTeamRoles", "Roles could not be assigned successfully after $attempt attempts")
             }
         }
 
-        val remainingRoles = mutableListOf<Int>()
-        for (i in roleAmounts.indices) {
-            for (j in 0 until roleAmounts[i]) {
-                remainingRoles.add(i + 1)
-            }
-        }
-
-        remainingRoles.shuffle()
-        val assignedRoles = mutableSetOf<Int>() // Keep track of already assigned roles
-
-        for (ticket in remainingTickets) {
-            val availableRoles = remainingRoles.filter { it !in assignedRoles && it != ticket.lastRole }
-            if (availableRoles.isNotEmpty()) {
-                val randomIndex = (0 until availableRoles.size).random()
-                val role = availableRoles[randomIndex]
-                ticket.currentRole = role
-                assignedRoles.add(role)
-            }
-        }
-
+        // Step 5: Check Role Assignment
+        // Check if all roles have been successfully assigned
         val rolesDistributed = team.count { it.currentRole != 7 }
-        if (rolesDistributed != totalAmount) {
-            Log.e("pickTeamRoles", "Not all roles could be distributed!")
+        if (rolesDistributed != originalTotalAmount) {
+            // If not all roles were distributed, return false and handle the error
+            Log.e("pickTeamRoles", "Not all roles could be distributed! originalTotalAmount: $originalTotalAmount rolesDistributed: $rolesDistributed")
             return false
         }
+        val t = allTickets[0]
+        Log.i("pickTeamRoles", "${t.firstName} ${t.roundsHealer} ${t.roundsRogue} ${t.roundsMage} ${t.roundsKnight} ${t.roundsWarrior}")
+        // Update the database, sort the tickets, update the UI, and return true
         DBF.updateTicketArray(allTickets)
         teamSorting = 2
         updateTicketLists()
@@ -1734,6 +1804,7 @@ class EventView : Fragment() {
                     4 -> ticket.roundsKnight = ticket.roundsKnight + 1
                 }
             }
+            else ticket.roundsWarrior = ticket.roundsWarrior + 1
 
             if (ticket.currentRole == ticket.guaranteedRole) {
                 ticket.guaranteedRole = 0
@@ -1846,5 +1917,20 @@ class EventView : Fragment() {
         player.firstName = ticket.firstName
         player.lastName = ticket.lastName
         player.age = ticket.age
+    }
+
+    private fun resetTickets() {
+        for (ticket in allTickets) {
+            ticket.roundsHealer = 0
+            ticket.roundsRogue = 0
+            ticket.roundsMage = 0
+            ticket.roundsKnight = 0
+            ticket.roundsWarrior = 0
+            ticket.roundsSpecialRole = 0
+            ticket.currentRole = 0
+            ticket.lastRole = 0
+            event.round = 0
+        }
+        updateTicketLists()
     }
 }
