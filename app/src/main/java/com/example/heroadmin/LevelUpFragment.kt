@@ -149,7 +149,10 @@ class LevelUpFragment : Fragment() {
         binding.levelUpExpRemText.text = player.remExp.toString()
         DBF.updateData(player)
         Log.i("test", "Updated exp text. Rem exp: " + player.remExp)
-        Log.i("Level", "Levels:\nHealer: ${player.healerLevel}, ${player.healerUltimateA}, ${player.healerUltimateB}\n")
+        Log.i(
+            "Level",
+            "Levels:\nHealer: ${player.healerLevel}, ${player.healerUltimateA}, ${player.healerUltimateB}\n"
+        )
     }
 
     private fun buttonClick(buttonIndex: Int) {
@@ -169,6 +172,7 @@ class LevelUpFragment : Fragment() {
                     player.setClassLevel(currSection, buttonIndex + 1)
                 }
             }
+
             3 -> {
                 if (!player.getUltimateA(currSection) && player.remExp >= expCost) {
                     player.setClassLevel(currSection, 4)
@@ -181,6 +185,7 @@ class LevelUpFragment : Fragment() {
                     if (!player.getUltimateB(currSection)) player.setClassLevel(currSection, 3)
                 }
             }
+
             4 -> {
                 if (!player.getUltimateB(currSection) && player.remExp >= expCost) {
                     player.setClassLevel(currSection, 4)
@@ -215,7 +220,8 @@ class LevelUpFragment : Fragment() {
 
         if (isOwned) {
             // Setting a border
-            button.background = context?.let { ContextCompat.getDrawable(it, R.drawable.button_border) }
+            button.background =
+                context?.let { ContextCompat.getDrawable(it, R.drawable.button_border) }
 
             // Clearing color filter to show the original image color
             button.clearColorFilter()
@@ -296,11 +302,11 @@ class LevelUpFragment : Fragment() {
             )
 
             4 -> arrayOf(
-                R.drawable.w1,
-                R.drawable.w2,
-                R.drawable.w3,
-                R.drawable.w4,
-                R.drawable.w5 // Add a placeholder image resource here
+                R.drawable.ws,
+                R.drawable.wh,
+                R.drawable.wr,
+                R.drawable.wm,
+                R.drawable.wk
             )
 
             else -> arrayOf()
@@ -312,11 +318,7 @@ class LevelUpFragment : Fragment() {
             }
         } else if (currSection == 4) {
             for (i in warriorButtonList.indices) {
-                if (i < imageResources.size) {
-                    warriorButtonList[i].setImageResource(imageResources[i])
-                } else {
-                    warriorButtonList[i].setImageResource(R.mipmap.ic_tiger)
-                }
+                warriorButtonList[i].setImageResource(imageResources[i])
             }
         }
     }
@@ -330,15 +332,19 @@ class LevelUpFragment : Fragment() {
                 player.warriorMage = false
                 player.warriorKnight = false
             }
+
             1 -> { // warriorHealer
                 player.warriorHealer = !player.warriorHealer && player.remExp >= expCost
             }
+
             2 -> { // warriorRogue
                 player.warriorRogue = !player.warriorRogue && player.remExp >= expCost
             }
+
             3 -> { // warriorMage
                 player.warriorMage = !player.warriorMage && player.remExp >= expCost
             }
+
             4 -> { // warriorKnight
                 player.warriorKnight = !player.warriorKnight && player.remExp >= expCost
             }
@@ -366,7 +372,8 @@ class LevelUpFragment : Fragment() {
 
         if (isOwned) {
             // Setting a border
-            button.background = context?.let { ContextCompat.getDrawable(it, R.drawable.button_border) }
+            button.background =
+                context?.let { ContextCompat.getDrawable(it, R.drawable.button_border) }
 
             // Clearing color filter to show the original image color
             button.clearColorFilter()
@@ -396,7 +403,7 @@ class LevelUpFragment : Fragment() {
         }
     }
 
-    fun lostConnection(){
+    fun lostConnection() {
         findNavController().navigate(
             LevelUpFragmentDirections.actionLevelUpFragmentToEventView(
                 currEventId
