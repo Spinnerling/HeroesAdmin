@@ -49,6 +49,8 @@ class LevelUpFragment : Fragment() {
     ): View {
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_level_up, container, false)
         v = binding.root
+        DBF = DatabaseFunctions(v.context)
+        DBF.setLevelUpView(this)
         args = LevelUpFragmentArgs.fromBundle(requireArguments())
         currPlayerId = args.passedPlayerId
         currEventId = args.passedEventId
@@ -121,7 +123,6 @@ class LevelUpFragment : Fragment() {
     private fun updatePlayer() {
         lifecycleScope.launch {
             try {
-                DBF = DatabaseFunctions(v.context)
                 player = DBF.getPlayer(currPlayerId)!!
                 player.updateUsedExp()
                 binding.levelUpPlayerNameText.text = player.fullName
@@ -135,7 +136,6 @@ class LevelUpFragment : Fragment() {
 
     private fun updatePlayerLocal() {
         Log.i("player", "updating player locally: $currPlayerId")
-        DBF = DatabaseFunctions(v.context)
         player = DBF.getPlayerLocal(currPlayerId)!!
         player.updateUsedExp()
         binding.levelUpPlayerNameText.text = player.fullName
@@ -396,5 +396,12 @@ class LevelUpFragment : Fragment() {
         }
     }
 
+    fun lostConnection(){
+        findNavController().navigate(
+            LevelUpFragmentDirections.actionLevelUpFragmentToEventView(
+                currEventId
+            )
+        )
+    }
 
 }

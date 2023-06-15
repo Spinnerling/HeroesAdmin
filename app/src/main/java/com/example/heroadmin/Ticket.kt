@@ -35,7 +35,8 @@ data class Ticket(
     var suggestions: List<PlayerListItem>? = null,
     var group : String? = null,
     var noteHandled : Boolean = false,
-    var klippkort : Int = 0
+    var klippkort : Int = 0,
+    var switchedTeams : Int = 0
 ) {
     val fullName: String
         get() = "${firstName ?: ""} ${lastName ?: ""}"

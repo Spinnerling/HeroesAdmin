@@ -29,7 +29,7 @@ class EventAdminFrag : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         binding = FragmentEventAdminBinding.inflate(inflater, container, false)
         v = inflater.inflate(R.layout.fragment_event_admin, container, false)
         args = EventAdminFragArgs.fromBundle(requireArguments())

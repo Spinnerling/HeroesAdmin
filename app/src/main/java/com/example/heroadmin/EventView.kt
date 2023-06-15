@@ -5,6 +5,8 @@ import android.app.AlertDialog
 import android.content.Context
 import android.content.res.ColorStateList
 import android.graphics.Color
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -32,7 +34,6 @@ import kotlinx.serialization.decodeFromString
 import org.json.JSONObject
 import kotlin.math.abs
 import kotlinx.serialization.json.Json
-import org.json.JSONArray
 import java.util.UUID
 import kotlin.coroutines.resume
 
@@ -47,7 +48,7 @@ class EventView : Fragment() {
     val ticketDatabase = LocalDatabaseSingleton.ticketDatabase
     val playerDatabase = LocalDatabaseSingleton.playerDatabase
     val eventDatabase = LocalDatabaseSingleton.eventDatabase
-    private var allTickets: MutableList<Ticket> = mutableListOf()
+    var allTickets: MutableList<Ticket> = mutableListOf()
     private var redTeam: MutableList<Ticket> = mutableListOf()
     private var blueTeam: MutableList<Ticket> = mutableListOf()
     private var redBench: MutableList<Ticket> = mutableListOf()
@@ -87,6 +88,7 @@ class EventView : Fragment() {
     private var autoRoleAmounts = true
     private val json = Json { ignoreUnknownKeys = true; coerceInputValues = true }
     public var allTicketsMatched = false
+    var devMode: Boolean = false
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -96,9 +98,11 @@ class EventView : Fragment() {
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_event_view, container, false)
         v = inflater.inflate(R.layout.fragment_event_view, container, false)
         DBF = DatabaseFunctions(v.context)
+        DBF.setEventView(this)
         args = EventViewArgs.fromBundle(requireArguments())
         currEventId = args.passedEventId
         currActivity = (activity as MainActivity)
+        DBF.currActivity = currActivity
         event = currActivity.event
 
         return binding.root
@@ -107,6 +111,8 @@ class EventView : Fragment() {
     @SuppressLint("SetTextI18n")
     override fun onResume() {
         super.onResume()
+        devMode = currActivity.devMode
+
         // Find elements
         bottomPanel = binding.bottomPanel
         bottomPanelNewRound = binding.bottomPanelNewRound
@@ -115,6 +121,7 @@ class EventView : Fragment() {
 
         loadingPopup()
         getEvent()
+        checkConnection()
 
         binding.scrollingPanel.setOnTouchListener { _, _ ->
             pressLayoutFunction()
@@ -223,24 +230,28 @@ class EventView : Fragment() {
             event.blueGameWins = event.blueGameWins + 1
             binding.blueWinsValue.text = event.blueGameWins.toString()
             DBF.updateData(event)
+            eventDatabase.update(event)
         }
         binding.blueWinsMinus.setOnClickListener {
             if (event.blueGameWins > 0) {
                 event.blueGameWins = event.blueGameWins - 1
                 binding.blueWinsValue.text = event.blueGameWins.toString()
                 DBF.updateData(event)
+                eventDatabase.update(event)
             }
         }
         binding.redWinsPlus.setOnClickListener {
             event.redGameWins = event.redGameWins + 1
             binding.redWinsValue.text = event.redGameWins.toString()
             DBF.updateData(event)
+            eventDatabase.update(event)
         }
         binding.redWinsMinus.setOnClickListener {
             if (event.redGameWins > 0) {
                 event.redGameWins = event.redGameWins - 1
                 binding.redWinsValue.text = event.redGameWins.toString()
                 DBF.updateData(event)
+                eventDatabase.update(event)
             }
         }
 
@@ -261,15 +272,21 @@ class EventView : Fragment() {
             val b = binding.specialBAmountValue.text.toString().toInt()
             if ((h + r + m + k + a + b) > blueTeam.size || (h + r + m + k + a + b) > redTeam.size) {
                 callNotification("There are more roles than players!\nEdit your role amounts.")
-            }
-            else {
+            } else {
                 randomizeRoles()
                 dismissKeyboard()
                 deselectPlayer()
             }
         }
 
-        val roleAmounts = mutableListOf(binding.healerAmountValue, binding.rogueAmountValue, binding.mageAmountValue, binding.knightAmountValue, binding.specialAAmountValue, binding.specialBAmountValue)
+        val roleAmounts = mutableListOf(
+            binding.healerAmountValue,
+            binding.rogueAmountValue,
+            binding.mageAmountValue,
+            binding.knightAmountValue,
+            binding.specialAAmountValue,
+            binding.specialBAmountValue
+        )
 
         for (role in roleAmounts) {
             role.setOnTouchListener { view, event ->
@@ -281,8 +298,8 @@ class EventView : Fragment() {
                 false // Return 'false' to allow the touch event to be passed to the underlying view
             }
             role.setOnClickListener {
-                    autoRoleAmounts = false
-                    binding.autoSetSwitch.isChecked = false
+                autoRoleAmounts = false
+                binding.autoSetSwitch.isChecked = false
             }
         }
 
@@ -362,8 +379,8 @@ class EventView : Fragment() {
         }
         binding.emptyButton.setOnClickListener {
             //Future shenanigans, save for later
-//            callNotification("This button does nothing.\nI promise.")
-            resetTickets()
+            callNotification("This button does nothing.\nI promise.")
+//            resetTickets()
         }
         binding.assignTeamAutoAssignButton.setOnClickListener {
             autoAssignLoop()
@@ -385,6 +402,105 @@ class EventView : Fragment() {
                 autoSetRoleAmounts()
             }
         }
+
+        if (devMode) {
+            binding.devModeLayout.visibility = View.VISIBLE
+        } else {
+            binding.devModeLayout.visibility = View.GONE
+        }
+
+        binding.fullReset.setOnClickListener {
+            event.round = 0
+            event.clickWinner = ""
+            event.gameWinner = ""
+            event.blueGameWins = 0
+            event.redGameWins = 0
+            checkGameEnded()
+            allTickets.forEach {
+                it.teamColor = ""
+                it.checkedIn = 0
+                it.roundsHealer = 0
+                it.roundsRogue = 0
+                it.roundsMage = 0
+                it.roundsKnight = 0
+                it.roundsWarrior = 0
+                it.roundsSpecialRole = 0
+                it.guaranteedRole = 0
+                it.benched = 0
+                it.recruits = 0
+                it.expPersonal = 0
+                it.currentRole = 0
+                it.lastRole = 0
+            }
+            binding.blueWinsValue.text = event.blueGameWins.toString()
+            binding.redWinsValue.text = event.redGameWins.toString()
+            binding.roundText.text = event.round.toString()
+            initializeTicketGroups()
+            updateTicketLists()
+            DBF.updateTicketArray(allTickets)
+        }
+        binding.resetToCheckin.setOnClickListener {
+            event.round = 0
+            event.clickWinner = ""
+            event.gameWinner = ""
+            event.blueGameWins = 0
+            event.redGameWins = 0
+            checkGameEnded()
+            allTickets.forEach {
+                it.checkedIn = 0
+                it.roundsHealer = 0
+                it.roundsRogue = 0
+                it.roundsMage = 0
+                it.roundsKnight = 0
+                it.roundsWarrior = 0
+                it.roundsSpecialRole = 0
+                it.guaranteedRole = 0
+                it.benched = 0
+                it.recruits = 0
+                it.expPersonal = 0
+                it.currentRole = 0
+                it.lastRole = 0
+            }
+            binding.blueWinsValue.text = event.blueGameWins.toString()
+            binding.redWinsValue.text = event.redGameWins.toString()
+            binding.roundText.text = event.round.toString()
+            initializeTicketGroups()
+            updateTicketLists()
+            DBF.updateTicketArray(allTickets)
+        }
+        binding.resetRoles.setOnClickListener {
+            event.round = 0
+            event.clickWinner = ""
+            event.gameWinner = ""
+            event.blueGameWins = 0
+            event.redGameWins = 0
+            checkGameEnded()
+            allTickets.forEach {
+                it.roundsHealer = 0
+                it.roundsRogue = 0
+                it.roundsMage = 0
+                it.roundsKnight = 0
+                it.roundsWarrior = 0
+                it.roundsSpecialRole = 0
+                it.guaranteedRole = 0
+                it.benched = 0
+                it.currentRole = 0
+                it.lastRole = 0
+            }
+            binding.blueWinsValue.text = event.blueGameWins.toString()
+            binding.redWinsValue.text = event.redGameWins.toString()
+            binding.roundText.text = event.round.toString()
+            updateTicketLists()
+            DBF.updateTicketArray(allTickets)
+        }
+
+        binding.checkinAll.setOnClickListener {
+            autoAssignTeams()
+            allTickets.forEach {
+                it.checkedIn = 1
+            }
+            updateTicketLists()
+        }
     }
 
     private fun loadingPopup() {
@@ -398,35 +514,15 @@ class EventView : Fragment() {
     }
 
     private fun getEvent() {
-        Log.i("start", "Calling API for event: $currEventId")
+        Log.i("gettingEvent", "Calling API for event: $currEventId")
         DBF.apiCallGet(
             "https://www.talltales.nu/API/api/get-event.php?eventID=$currEventId",
             ::refreshEvent,
-            {}, 3
+            {
+                Log.i("gettingEvent", "Could not get event")
+                refreshEventLocal()
+            }, 3
         )
-    }
-
-    fun getEventLocal() {
-        Log.d("check", "getEventLocal started")
-        CoroutineScope(Dispatchers.IO).launch {
-            val eventId = event.eventId
-            val fetchedEvent = eventDatabase.getByPropertyValue({ it.eventId }, eventId)
-
-            withContext(Dispatchers.Main) {
-                fetchedEvent?.let {
-                    Log.d("check", "Event fetched from local database") // Add this log statement
-                    val json = Json { encodeDefaults = true }
-                    val jsonEvent = JSONObject(json.encodeToString(Event.serializer(), it))
-                    val response = JSONObject().apply {
-                        put("data", JSONArray().apply { put(jsonEvent) })
-                    }
-                    refreshEvent(response)
-                } ?: run {
-                    Log.e("check", "Event not found in the local database")
-                    // Handle the case when the event is not found in the local database
-                }
-            }
-        }
     }
 
     private fun refreshEvent(response: JSONObject) {
@@ -445,6 +541,20 @@ class EventView : Fragment() {
         checkGameEnded()
 
         fetchEventTickets()
+    }
+
+    private fun refreshEventLocal() {
+        Log.i("start", "Refreshing event locally...")
+        event = currActivity.event
+
+        // Set variables
+        binding.blueWinsValue.text = event.blueGameWins.toString()
+        binding.redWinsValue.text = event.redGameWins.toString()
+        binding.roundText.text = event.round.toString()
+
+        checkGameEnded()
+
+        fetchEventTicketsLocal()
     }
 
     private fun fetchEventTickets() {
@@ -474,6 +584,48 @@ class EventView : Fragment() {
                 e.printStackTrace()
             }
         }
+    }
+
+    private fun fetchEventTicketsLocal() {
+        Log.i("playerLink", "Starting fetchEventTickets")
+//        val tickets = mutableListOf<Ticket>()
+        ticketDatabase.logAllIds("playerLink")
+        val tickets = ticketDatabase.getByIds(event.ticketIDs)
+//        for (ticketId in event.ticketIDs) {
+//            Log.d("playerLink", "Getting ticket with ID: $ticketId")
+//            if (ticket != null) {
+//                tickets.add(ticket)
+//                Log.i("playerLink", "Added ticket")
+//            } else {
+//                Log.i("playerLink", "Ticket is very null")
+//            }
+//        }
+        for (ticket in tickets) {
+            if (ticket != null) {
+                Log.i("playerLink", "Added ticket")
+            } else {
+                Log.i("playerLink", "Ticket is very null")
+            }
+        }
+        // Check if all were found
+        if (tickets.size == event.ticketIDs.size) {
+            Log.i("playerLink", "Got all tickets!")
+        } else {
+            Log.i(
+                "playerLink",
+                "Did not get all tickets: Event's ticketIds: ${event.ticketIDs.size}, Returned tickets: ${tickets.size}"
+            )
+        }
+
+        // Process tickets without playerId or suggestions
+        processTickets(tickets as List<Ticket>)
+
+        checkForDoubles()
+        updateTicketLists()
+        initializeTicketGroups()
+        loadingDialogue.dismiss()
+        binding.refreshButton.isEnabled = true
+
     }
 
     // Function to get full Ticket objects based on an event ID
@@ -516,6 +668,7 @@ class EventView : Fragment() {
             } else {
                 Log.i("processTickets", "${ticket.firstName} has suggestions")
             }
+            ticketDatabase.insert(ticket)
         }
 
         // TODO: Send ApiCall list of playerIDs to get the players
@@ -635,7 +788,7 @@ class EventView : Fragment() {
         newPlayerButton.setOnClickListener {
             createNewPlayer(ticket)
             ticketDatabase.update(ticket)
-            DBF.updateData(ticket)
+            DBF.updateTicketArray(allTickets)
             updateTicketLists()
             alertDialog.dismiss()
         }
@@ -648,7 +801,7 @@ class EventView : Fragment() {
                 ticket.playerId = currentSelectedItem.playerID
 
                 // Save the updated ticket
-                DBF.updateData(ticket)
+                DBF.updateTicketArray(allTickets)
                 ticketDatabase.update(ticket)
                 lifecycleScope.launch {
                     try {
@@ -752,6 +905,7 @@ class EventView : Fragment() {
             2 -> sortTeamsByRole()
         }
 
+        checkConnection()
         setAssignTeamAdapter()
         setCheckInAdapter()
         setTeamAdapters()
@@ -834,7 +988,7 @@ class EventView : Fragment() {
             }
         }
 
-//        DBF.updateTicketArray(assignList)
+//        DBF.updateTicketArray(allTickets)
 
         Log.i("initializeTicketGroups", "Ending initialization")
         assignSorting = 3
@@ -877,7 +1031,7 @@ class EventView : Fragment() {
         tickets.forEach { ticket ->
             ticket.groupSize = groupSizeMap.getOrDefault(ticket.group, 1)
         }
-        DBF.updateTicketArray(tickets)
+        DBF.updateTicketArray(allTickets)
     }
 
     fun setGroupName(ticket: Ticket) {
@@ -1067,7 +1221,7 @@ class EventView : Fragment() {
             }
             updateTeamPower()
         }
-        DBF.updateTicketArray(assignList)
+        DBF.updateTicketArray(allTickets)
     }
 
     private fun updateTeamPower() {
@@ -1210,7 +1364,8 @@ class EventView : Fragment() {
             if (selectedTicket.playerId == null || selectedTicket.playerId == "") {
                 binding.levelUpButton.visibility = View.GONE
                 binding.playerExpText.visibility = View.VISIBLE
-            } else {
+                binding.playerExpText.text = "No playerId found"
+            } else if (!currActivity.connectionProblems){
                 binding.levelUpButton.visibility = View.VISIBLE
                 binding.playerExpText.visibility = View.GONE
             }
@@ -1252,8 +1407,7 @@ class EventView : Fragment() {
             klippkortCheckBox.visibility = View.VISIBLE
             dialogView.findViewById<TextView>(R.id.checkInKlippkortTitle).visibility = View.VISIBLE
             acceptButton.isEnabled = false
-        }
-        else {
+        } else {
             klippkortCheckBox.visibility = View.GONE
             dialogView.findViewById<TextView>(R.id.checkInKlippkortTitle).visibility = View.GONE
             acceptButton.isEnabled = true
@@ -1262,7 +1416,8 @@ class EventView : Fragment() {
         klippkortCheckBox.buttonTintList = ColorStateList.valueOf(Color.BLACK)
 
         klippkortCheckBox.setOnClickListener {
-            if (klippkortCheckBox.visibility == View.VISIBLE) acceptButton.isEnabled = klippkortCheckBox.isChecked
+            if (klippkortCheckBox.visibility == View.VISIBLE) acceptButton.isEnabled =
+                klippkortCheckBox.isChecked
 
         }
 
@@ -1273,7 +1428,7 @@ class EventView : Fragment() {
             autoSetRoleAmounts()
 
             // Update database
-            DBF.updateData(ticket)
+            DBF.updateTicketArray(allTickets)
             ticketDatabase.update(ticket)
             updateEventStatus()
 
@@ -1336,7 +1491,7 @@ class EventView : Fragment() {
                 ticket.expPersonal = ticket.expPersonal?.plus(number.toInt())
 
                 // Update database
-                DBF.updateData(selectedTicket)
+                DBF.updateTicketArray(allTickets)
                 ticketDatabase.update(selectedTicket)
 
                 alertDialog.dismiss()
@@ -1372,7 +1527,7 @@ class EventView : Fragment() {
         }
         ticket.checkedIn = 0
         ticket.teamColor = null
-        DBF.updateData(ticket)
+        DBF.updateTicketArray(allTickets)
         updateTicketLists()
     }
 
@@ -1478,6 +1633,7 @@ class EventView : Fragment() {
             event.clickWinner = if (clickWinModified) if (clickWinRed) "Red" else "Blue" else ""
             event.gameWinner = if (gameWinModified) if (gameWinRed) "Red" else "Blue" else ""
             DBF.updateData(event)
+            eventDatabase.update(event)
             alertDialog.dismiss()
             checkGameEnded()
         }
@@ -1532,7 +1688,7 @@ class EventView : Fragment() {
         autoSetRoleAmounts()
 
         // Update database
-        DBF.updateData(selectedTicket)
+        DBF.updateTicketArray(allTickets)
         ticketDatabase.update(selectedTicket)
     }
 
@@ -1559,7 +1715,7 @@ class EventView : Fragment() {
             updateTicketLists()
 
             // Update database
-            DBF.updateData(ticket)
+            DBF.updateTicketArray(allTickets)
             ticketDatabase.update(ticket)
 
             alertDialog.dismiss()
@@ -1644,6 +1800,7 @@ class EventView : Fragment() {
             updateTicketStats(redTeam)
             updateRound(true)
             updateEventStatus()
+            DBF.updateTicketArray(allTickets)
         } else if (!blueTeamSuccess && !redTeamSuccess) {
             Toast.makeText(
                 context,
@@ -1690,8 +1847,7 @@ class EventView : Fragment() {
             if (originalRoleAmounts[role - 1] > 0) {
                 ticket.currentRole = role
                 originalRoleAmounts[role - 1]--
-            }
-            else Log.e("pickTeamRoles", "Could not assign guaranteed role to ${ticket.firstName}")
+            } else Log.e("pickTeamRoles", "Could not assign guaranteed role to ${ticket.firstName}")
         }
 //        Log.i("pickTeamRoles", "guaranteedTickets size: ${guaranteedTickets.size}")
 
@@ -1750,7 +1906,7 @@ class EventView : Fragment() {
                 val lotteryHat = temporaryLotteryHats[i]
 //                Log.i("pickTeamRoles", "Starting role assignment for LotteryHat $i. Size: ${lotteryHat.size}, Role Amount: ${roleAmounts[i]}")
                 while (roleAmounts[i] > 0) {
-                    if (lotteryHat.isEmpty()){
+                    if (lotteryHat.isEmpty()) {
 //                        Log.e("pickTeamRoles", "LotteryHat $i is empty")
                         allRolesAssignedSuccessfully = false
                         break // Changed from continue to break
@@ -1770,7 +1926,10 @@ class EventView : Fragment() {
 //                Log.i("pickTeamRoles", "Roles assigned successfully on attempt $attempt")
                 break
             } else if (attempt == assignmentAttempts) {
-                Log.e("pickTeamRoles", "Roles could not be assigned successfully after $attempt attempts")
+                Log.e(
+                    "pickTeamRoles",
+                    "Roles could not be assigned successfully after $attempt attempts"
+                )
             }
         }
 
@@ -1779,11 +1938,17 @@ class EventView : Fragment() {
         val rolesDistributed = team.count { it.currentRole != 7 }
         if (rolesDistributed != originalTotalAmount) {
             // If not all roles were distributed, return false and handle the error
-            Log.e("pickTeamRoles", "Not all roles could be distributed! originalTotalAmount: $originalTotalAmount rolesDistributed: $rolesDistributed")
+            Log.e(
+                "pickTeamRoles",
+                "Not all roles could be distributed! originalTotalAmount: $originalTotalAmount rolesDistributed: $rolesDistributed"
+            )
             return false
         }
         val t = allTickets[0]
-        Log.i("pickTeamRoles", "${t.firstName} ${t.roundsHealer} ${t.roundsRogue} ${t.roundsMage} ${t.roundsKnight} ${t.roundsWarrior}")
+        Log.i(
+            "pickTeamRoles",
+            "${t.firstName} ${t.roundsHealer} ${t.roundsRogue} ${t.roundsMage} ${t.roundsKnight} ${t.roundsWarrior}"
+        )
         // Update the database, sort the tickets, update the UI, and return true
         DBF.updateTicketArray(allTickets)
         teamSorting = 2
@@ -1803,20 +1968,19 @@ class EventView : Fragment() {
                     3 -> ticket.roundsMage = ticket.roundsMage + 1
                     4 -> ticket.roundsKnight = ticket.roundsKnight + 1
                 }
-            }
-            else ticket.roundsWarrior = ticket.roundsWarrior + 1
+            } else ticket.roundsWarrior = ticket.roundsWarrior + 1
 
             if (ticket.currentRole == ticket.guaranteedRole) {
                 ticket.guaranteedRole = 0
             }
         }
-        DBF.updateTicketArray(team)
     }
 
     private fun updateRound(increase: Boolean) {
         if (increase) event.round = event.round + 1 else event.round = event.round - 1
         binding.roundText.text = event.round.toString()
         DBF.updateData(event)
+        eventDatabase.update(event)
     }
 
     private fun dismissKeyboard() {
@@ -1861,7 +2025,7 @@ class EventView : Fragment() {
             selectedTicket.benched = 0
         }
 
-        DBF.updateData(selectedTicket)
+        DBF.updateTicketArray(allTickets)
         updateTicketLists()
         autoSetRoleAmounts()
     }
@@ -1910,6 +2074,7 @@ class EventView : Fragment() {
             else -> "Ej påbörjat"
         }
         DBF.updateData(event)
+        eventDatabase.update(event)
         Log.i("status", "Event Status: ${event.status}")
     }
 
@@ -1919,18 +2084,32 @@ class EventView : Fragment() {
         player.age = ticket.age
     }
 
-    private fun resetTickets() {
-        for (ticket in allTickets) {
-            ticket.roundsHealer = 0
-            ticket.roundsRogue = 0
-            ticket.roundsMage = 0
-            ticket.roundsKnight = 0
-            ticket.roundsWarrior = 0
-            ticket.roundsSpecialRole = 0
-            ticket.currentRole = 0
-            ticket.lastRole = 0
-            event.round = 0
+    fun checkConnection(){
+        if (currActivity.connectionProblems || !isInternetAvailable()) {
+            binding.evNoConnection.visibility = View.VISIBLE
+            binding.levelUpButton.visibility = View.GONE
+            binding.playerExpText.text = "Connection Problems\nCan't level up"
+            binding.playerExpText.visibility = View.VISIBLE
         }
-        updateTicketLists()
+        else {
+            binding.evNoConnection.visibility = View.GONE
+            binding.levelUpButton.visibility = View.VISIBLE
+            binding.playerExpText.visibility = View.GONE
+        }
+    }
+
+    private fun isInternetAvailable(): Boolean {
+        val connectivityManager = context?.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val network = connectivityManager.activeNetwork ?: return false
+        val actNw = connectivityManager.getNetworkCapabilities(network) ?: return false
+        return when {
+            actNw.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> true
+            actNw.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> true
+            //for other device how are able to connect with Ethernet
+            actNw.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> true
+            //for check internet over Bluetooth
+            actNw.hasTransport(NetworkCapabilities.TRANSPORT_BLUETOOTH) -> true
+            else -> false
+        }
     }
 }

@@ -2,10 +2,10 @@ package com.example.heroadmin
 
 import android.util.Log
 import kotlinx.serialization.KSerializer
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import java.util.Locale
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -16,7 +16,21 @@ class LocalDatabase<T, ID>(
     private val database = mutableMapOf<ID, T>()
 
     fun getById(id: ID): T? {
-        return database[id]
+        val item = database[id]
+        if (item == null) {
+            Log.i("LocalDatabase", "Item with ID $id not found.")
+        }
+        return item
+    }
+
+    fun getByIds(ids: Iterable<ID>): List<T?> {
+        return ids.map { id ->
+            val item = database[id]
+            if (item == null) {
+                Log.i("LocalDatabase", "Item with ID $id not found.")
+            }
+            item
+        }
     }
 
     fun getAll(): MutableList<T> {
@@ -40,6 +54,12 @@ class LocalDatabase<T, ID>(
         } else {
             insert(item)
             Log.i("check", "Item with ID $id does not exist in database. Inserting instead.")
+        }
+    }
+
+    fun updateList(items: Iterable<T>) {
+        for (item in items) {
+            update(item)
         }
     }
 
@@ -72,5 +92,12 @@ class LocalDatabase<T, ID>(
 
     fun getHighestId(): String? {
         return database.keys.maxOfOrNull { it.toString() }
+    }
+
+    fun logAllIds(tag : String) {
+        Log.i(tag, "Logging all ids in local database...")
+        for (id in database.keys) {
+            Log.i(tag, "Item ID: $id")
+        }
     }
 }

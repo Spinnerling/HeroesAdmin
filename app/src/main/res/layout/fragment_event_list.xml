@@ -15,6 +15,13 @@
         android:padding="20dp"
         tools:context=".MainActivity">
 
+        <Switch
+            android:id="@+id/devModeSwitch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Dev Mode"
+            android:layout_gravity="right"/>
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -48,12 +55,14 @@
             android:layout_height="wrap_content"
             android:text="Refresh" />
 
+
         <LinearLayout
             android:id="@+id/relativeLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
             android:orientation="horizontal"
+            android:visibility="gone"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"

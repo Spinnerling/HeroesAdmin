@@ -32,23 +32,23 @@ class TeamRecyclerAdapter(
         holder.nameText.text = name
         val role = ticket.currentRole
         val roleInText = DBF.getRoleByNumber(role ?: 0)
-        val player: Player? = ticket.playerId?.let { playerDatabase.getById(it) }
-
-        if (player != null) {
-            val level = when (roleInText) {
-                "Helare" -> player.healerLevel
-                "Odåga" -> player.rogueLevel
-                "Magiker" -> player.mageLevel
-                "Riddare" -> player.knightLevel
-                else -> 0
-            }
-            var levelText = "level $level"
-            if (level == 0) levelText = ""
-
-            holder.roleText.text = "$roleInText $levelText"
-        } else {
+//        val player: Player? = ticket.playerId?.let { playerDatabase.getById(it) }
+//
+//        if (player != null) {
+//            val level = when (roleInText) {
+//                "Helare" -> player.healerLevel
+//                "Odåga" -> player.rogueLevel
+//                "Magiker" -> player.mageLevel
+//                "Riddare" -> player.knightLevel
+//                else -> 0
+//            }
+//            var levelText = "level $level"
+//            if (level == 0) levelText = ""
+//
+//            holder.roleText.text = "$roleInText $levelText"
+//        } else {
             holder.roleText.text = roleInText
-        }
+//        }
 
 
 

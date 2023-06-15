@@ -4,9 +4,7 @@ import android.content.Context
 import android.os.Handler
 import android.util.Log
 import com.android.volley.DefaultRetryPolicy
-import com.android.volley.Request
 import com.android.volley.Response
-import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
 import kotlinx.serialization.json.Json
@@ -16,6 +14,7 @@ import kotlinx.serialization.encodeToString
 import com.android.volley.NoConnectionError
 import com.android.volley.VolleyLog
 import com.example.heroadmin.LocalDatabaseSingleton.playerDatabase
+import com.example.heroadmin.LocalDatabaseSingleton.ticketDatabase
 import kotlinx.serialization.json.jsonObject
 import java.util.Locale
 import kotlin.coroutines.resume
@@ -26,12 +25,21 @@ import java.io.UnsupportedEncodingException
 
 
 class DatabaseFunctions(val context: Context) {
-    private lateinit var currActivity: MainActivity
+    var currActivity: MainActivity? = null
     lateinit var currEvent: Event
     lateinit var currTicket: Ticket
-    lateinit var allTickets: MutableList<Ticket>
     val json = Json { ignoreUnknownKeys = true; coerceInputValues = true }
     private val mySingleton = MySingleton.getInstance(context)
+    private var eventView : EventView? = null
+    private var levelUpView : LevelUpFragment? = null
+
+    fun setEventView(view : EventView){
+        eventView = view
+    }
+
+    fun setLevelUpView(view : LevelUpFragment){
+        levelUpView = view
+    }
 
     fun apiCallGet(
         url: String,
@@ -45,6 +53,7 @@ class DatabaseFunctions(val context: Context) {
             { response ->
                 Log.d("apiCallGet", "Får ner GET response: $response")
                 responseFunction(JSONObject(response))
+                foundConnection()
             },
             { error ->
                 if (retryCount > 0) {
@@ -54,6 +63,7 @@ class DatabaseFunctions(val context: Context) {
                     }, 3000) // retry after 3 seconds
                 } else {
                     errorFunction()
+                    lostConnection()
                     Log.i("apiCallGet", "Error! Failed call to api: $url. Error: $error")
                 }
             }
@@ -86,6 +96,7 @@ class DatabaseFunctions(val context: Context) {
                 } catch (e: Exception) {
                     Log.e("apiCallGet", "Error in responseFunction: ", e)
                 }
+                foundConnection()
             },
             { error ->
                 if (retryCount > 0) {
@@ -100,6 +111,7 @@ class DatabaseFunctions(val context: Context) {
                         Log.e("apiCallGet", "Error in errorFunction: ", e)
                     }
                     Log.i("apiCallGet", "Error! Failed call to api: $url. Error: $error")
+                    lostConnection()
                 }
             }
         ) {
@@ -126,17 +138,19 @@ class DatabaseFunctions(val context: Context) {
                 // Handle the response from the server
                 Log.i("apiCallPost", "Post success! $response")
                 responseFunction(JSONObject(response))
+                foundConnection()
             },
             Response.ErrorListener { error ->
                 // Handle error cases
                 if (error is NoConnectionError) {
                     // Handle no connection error
                     Log.i("apiCallPost", "Post error: No internet connection")
-                    connectionLost()
+                    lostConnection()
                 } else {
                     // Handle other error types
                     Log.i("apiCallPost", "Post error: $error")
                     errorFunction()
+                    lostConnection()
                 }
             }
         ) {
@@ -178,9 +192,11 @@ class DatabaseFunctions(val context: Context) {
                 // response
                 Log.i("apiCallPut", "Received response: $response")
                 callback.onSuccess(response)
+                foundConnection()
             },
             Response.ErrorListener { error ->
                 Log.e("apiCallPut", "Error in request: ${error.message}", error)
+                lostConnection()
             }
         ) {
             override fun getBodyContentType(): String {
@@ -211,91 +227,9 @@ class DatabaseFunctions(val context: Context) {
         mySingleton.addToRequestQueue(putRequest)
     }
 
-//        fun apiCallPut(url: String, jsonString: String) {
-//        val mySingleton = MySingleton.getInstance(context)
-//        Log.i("apiCallPut", "Sending JSON string: $jsonString")
-//
-//        val putRequest: StringRequest = object : StringRequest(
-//            Method.PUT, url,
-//            Response.Listener { response ->
-//                // response
-//                Log.i("apiCallPut", "Response:  $response")
-//            },
-//            Response.ErrorListener { error ->
-//                // error
-//                Log.i("apiCallPut", "Error: $error")
-//
-//                if (error is NoConnectionError) {
-//                    // Handle no connection error
-//                    Log.i("apiCallPut", "No internet connection")
-//                    connectionLost()
-//                } else {
-//                    // Handle other error types
-//                }
-//            }
-//        ) {
-//            override fun getHeaders(): Map<String, String> {
-//                val headers: MutableMap<String, String> = HashMap()
-//                headers["Content-Type"] = "application/json"
-//                headers["Accept"] = "application/json"
-//                return headers
-//            }
-//
-//            override fun getBody(): ByteArray {
-//                Log.i("json", jsonString)
-//                return jsonString.toByteArray(charset("UTF-8"))
-//            }
-//        }
-//
-//        mySingleton.addToRequestQueue(putRequest)
-//    }
-
     interface VolleyCallback {
         fun onSuccess(result: String?)
         fun onError(error: String?)
-    }
-
-    fun connectionLost() {
-
-    }
-
-    fun getEventIds(context: Context?): List<String> {
-        // Find array of events in database
-
-        val url = "https://www.talltales.nu/API/api/read.php"
-        var list = mutableListOf<String>()
-        val jsonObjectRequest = JsonObjectRequest(
-            Request.Method.GET, url, null,
-            { response ->
-                list = getEventIdArray(response)
-            },
-            { error ->
-                Log.i("test", "Failed: ".format(error.toString()))
-            }
-        )
-
-        context.let {
-            if (it != null) {
-                MySingleton.getInstance(it).addToRequestQueue(jsonObjectRequest)
-            }
-        }
-        return list
-    }
-
-    private fun getEventIdArray(response: JSONObject?): MutableList<String> {
-        val eventIdArray = mutableListOf<String>()
-        val array: JSONArray = response!!.getJSONArray("data")
-        val length = array.length()
-        if (length > 0) {
-            var index = 0
-            while (index < length) {
-                val item = array.getJSONObject(index)
-                val id = item.getString("id")
-                eventIdArray.add(id)
-                index++
-            }
-        }
-        return eventIdArray
     }
 
     fun getEventArray(responseJson: JSONObject): MutableList<Event> {
@@ -408,6 +342,7 @@ class DatabaseFunctions(val context: Context) {
 
         // Update database
         updateData(ticket)
+        ticketDatabase.update(ticket)
     }
 
     inline fun <reified T> createJsonString(data: T): String {
@@ -415,7 +350,7 @@ class DatabaseFunctions(val context: Context) {
         return json.encodeToString(data)
     }
 
-    inline fun <reified T> updateData(data: T) {
+    inline fun <reified T : Any> updateData(data: T) {
         val className = T::class.java.simpleName.lowercase(Locale.ROOT)
 //  Log.i("apiCallPut","Updating $className data...")
         val jsonString = createJsonString(data)
@@ -431,9 +366,10 @@ class DatabaseFunctions(val context: Context) {
         })
     }
 
-    fun updateTicketArray(data: MutableList<Ticket>) {
-        Log.i("apiCallPut", "data: $data")
-        val jsonString = createJsonString(data)
+    fun updateTicketArray(tickets : MutableList<Ticket>) {
+        ticketDatabase.updateList(tickets)
+        Log.i("apiCallPut", "data: $tickets")
+        val jsonString = createJsonString(tickets)
         Log.i("apiCallPut", "Updating Ticket Array: $jsonString")
         val url = "https://www.talltales.nu/API/api/update-tickets.php"
         apiCallPut(url, jsonString, object : VolleyCallback {
@@ -443,8 +379,48 @@ class DatabaseFunctions(val context: Context) {
 
             override fun onError(error: String?) {
                 Log.i("apiCallPut", "Request error: $error")
+                eventView?.checkConnection()
             }
         })
+    }
+
+    fun lostConnection() {
+        Log.i("Connection", "Lost Connection!")
+        currActivity?.connectionProblems = true
+        if (eventView != null){
+            eventView?.checkConnection()
+        }
+        if (levelUpView != null){
+            levelUpView!!.lostConnection()
+        }
+    }
+
+    fun foundConnection() {
+        if (currActivity == null) {
+            Log.i("Connection", "Could not find currActivity")
+            return
+        }
+        if (!currActivity!!.connectionProblems) {
+            Log.i("Connection", "Had no connection problems to begin with")
+            return
+        }
+
+        Log.i("Connection", "Got Connection!")
+        var p = false
+        if (eventView != null){
+            eventView?.checkConnection()
+            p = true
+        }
+        if (levelUpView != null){
+            p = true
+        }
+        if (p){
+            var tickets = listOf<Ticket>()
+            currActivity!!.connectionProblems = false
+            updateData(currActivity!!.event)
+            tickets = ticketDatabase.getByIds(currActivity!!.event.ticketIDs) as List<Ticket>
+            updateTicketArray(tickets as MutableList<Ticket>)
+        }
     }
 
 //    fun updateEventStatus(currEvent: Event) {

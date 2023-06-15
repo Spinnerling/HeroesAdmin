@@ -26,6 +26,7 @@ import org.json.JSONArray
 
 class EventList : Fragment() {
     // Initialize the binding object
+    private lateinit var currActivity: MainActivity
     private lateinit var binding: FragmentEventListBinding
     private lateinit var v: View
     private lateinit var eventAdapter: EventRecyclerAdapterKt
@@ -51,7 +52,8 @@ class EventList : Fragment() {
         venues = resources.getStringArray(R.array.venues)
         val venuesArrayAdapter = ArrayAdapter(v.context, R.layout.dropdown_item, venues)
         dropdownMenu.setAdapter(venuesArrayAdapter)
-
+        currActivity = (activity as MainActivity)
+        Log.i("startup", "set CurrActivity")
         // Load the saved venue, if any
         loadVenue()
 
@@ -79,11 +81,16 @@ class EventList : Fragment() {
             loadEvents()
 //            loadEventsLocally()
         }
+        binding.devModeSwitch.setOnClickListener {
+            currActivity.devMode = binding.devModeSwitch.isChecked
+            Log.i("devMode", "Dev Mode ${currActivity.devMode}")
+        }
     }
 
     private fun loadEvents() {
         binding.eventStatusText.text = "Loading Events..."
         Log.i("checkList", "laddar events")
+        DBF.currActivity = currActivity
         DBF.apiCallGet(
             "https://www.talltales.nu/API/api/get-event.php",
             { eventsJson -> getEvents(eventsJson) },
