@@ -11,7 +11,7 @@ import androidx.recyclerview.widget.RecyclerView
 
 class PlayerListItemAdapter(
     private var playerList: MutableList<PlayerListItem>,
-    private val listener: OnItemClickListener
+    private val listener: OnItemTouchListener
 ) : RecyclerView.Adapter<PlayerListItemAdapter.PlayerListItemViewHolder>() {
 
     class PlayerListItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -26,8 +26,6 @@ class PlayerListItemAdapter(
     }
 
     var selectedPosition = -1
-    private var selectedItems = mutableSetOf<Int>()
-
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PlayerListItemViewHolder {
         val itemView = LayoutInflater.from(parent.context)
@@ -65,17 +63,15 @@ class PlayerListItemAdapter(
         // Add click listener for the "More" button
         holder.moreButton.setOnClickListener {
             currentItem.isExpanded = !currentItem.isExpanded
-            notifyDataSetChanged()
+            notifyItemChanged(position)
         }
 
         // Add click listener for the whole item
         holder.itemView.setOnTouchListener { view, motionEvent ->
-            if (motionEvent.action == MotionEvent.ACTION_DOWN) {
-                listener.onItemClick(position, this, playerList[position])
-                true
-            } else {
-                false
+            if (motionEvent.action == MotionEvent.ACTION_UP) {
+                listener.onTouch(view, motionEvent, position, playerList[position])
             }
+            true
         }
 
         // Change the background color or any other attribute to indicate the selected state
@@ -86,9 +82,10 @@ class PlayerListItemAdapter(
         }
     }
 
-    interface OnItemClickListener {
-        fun onItemClick(position: Int, adapter: PlayerListItemAdapter, playerListItem: PlayerListItem)
+    interface OnItemTouchListener {
+        fun onTouch(view: View, event: MotionEvent, position: Int, playerListItem: PlayerListItem)
     }
+
 
     // Get the selected item
     fun getSelectedItem(): PlayerListItem? {
@@ -102,10 +99,5 @@ class PlayerListItemAdapter(
             selectedPosition = position
         }
         notifyDataSetChanged()
-    }
-
-    // Custom method to get the number of selected items
-    fun getSelectedItemCount(): Int {
-        return selectedItems.size
     }
 }

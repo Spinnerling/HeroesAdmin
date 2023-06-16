@@ -408,8 +408,10 @@ class DatabaseFunctions(val context: Context) {
         Log.i("Connection", "Got Connection!")
         var p = false
         if (eventView != null){
-            eventView?.checkConnection()
-            p = true
+            if (eventView!!.allTickets.isNotEmpty()){
+                p = true
+            }
+            eventView!!.checkConnection()
         }
         if (levelUpView != null){
             p = true

@@ -1,4 +1,5 @@
 package com.example.heroadmin
+import android.util.Log
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -22,4 +23,12 @@ data class PlayerListItem (
     val bookerAddressesLong = bookerAddresses?.joinToString("\n")
     val hasMoreInfo = bookerNames?.size!! > 1 || bookerPhones?.size!! > 1 || bookerEmails?.size!! > 1 || bookerAddresses?.size!! > 1
     var isExpanded: Boolean = false
+    init {
+        if (hasMoreInfo) {
+            Log.i("playerListItem", "Has More Info")
+        }
+        else {
+            Log.i("playerListItem", "Names: ${bookerNames?.size} Phones: ${bookerPhones?.size} Emails: ${bookerEmails?.size} Addresses: ${bookerAddresses?.size} ")
+        }
+    }
 }

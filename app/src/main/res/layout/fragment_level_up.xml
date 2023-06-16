@@ -64,7 +64,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:gravity="center"
-                    android:text="325 EXP"
+                    android:text="X XP"
                     android:textAlignment="center"
                     android:textColor="#FFFFFF"
                     android:textSize="30sp" />

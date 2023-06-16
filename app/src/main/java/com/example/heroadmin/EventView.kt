@@ -16,7 +16,6 @@ import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.widget.*
 import androidx.core.content.ContextCompat
-import kotlin.math.min
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
@@ -27,15 +26,18 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.heroadmin.databinding.FragmentEventViewBinding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.decodeFromString
-import org.json.JSONObject
-import kotlin.math.abs
 import kotlinx.serialization.json.Json
+import org.json.JSONObject
 import java.util.UUID
 import kotlin.coroutines.resume
+import kotlin.math.abs
+import kotlin.math.min
 
 class EventView : Fragment() {
     private lateinit var currActivity: MainActivity
@@ -577,6 +579,7 @@ class EventView : Fragment() {
                     checkForDoubles()
                     updateTicketLists()
                     initializeTicketGroups()
+                    checkConnection()
                     loadingDialogue.dismiss()
                     binding.refreshButton.isEnabled = true
                 }
@@ -588,44 +591,19 @@ class EventView : Fragment() {
 
     private fun fetchEventTicketsLocal() {
         Log.i("playerLink", "Starting fetchEventTickets")
-//        val tickets = mutableListOf<Ticket>()
         ticketDatabase.logAllIds("playerLink")
-        val tickets = ticketDatabase.getByIds(event.ticketIDs)
-//        for (ticketId in event.ticketIDs) {
-//            Log.d("playerLink", "Getting ticket with ID: $ticketId")
-//            if (ticket != null) {
-//                tickets.add(ticket)
-//                Log.i("playerLink", "Added ticket")
-//            } else {
-//                Log.i("playerLink", "Ticket is very null")
-//            }
-//        }
-        for (ticket in tickets) {
-            if (ticket != null) {
-                Log.i("playerLink", "Added ticket")
-            } else {
-                Log.i("playerLink", "Ticket is very null")
-            }
-        }
-        // Check if all were found
-        if (tickets.size == event.ticketIDs.size) {
-            Log.i("playerLink", "Got all tickets!")
-        } else {
-            Log.i(
-                "playerLink",
-                "Did not get all tickets: Event's ticketIds: ${event.ticketIDs.size}, Returned tickets: ${tickets.size}"
-            )
+        val tickets = ticketDatabase.getByIds(event.ticketIDs).filterNotNull()
+        if (tickets.isNotEmpty()){
+            // Process tickets without playerId or suggestions
+            processTickets(tickets as List<Ticket>)
+
+            checkForDoubles()
+            updateTicketLists()
+            initializeTicketGroups()
         }
 
-        // Process tickets without playerId or suggestions
-        processTickets(tickets as List<Ticket>)
-
-        checkForDoubles()
-        updateTicketLists()
-        initializeTicketGroups()
         loadingDialogue.dismiss()
         binding.refreshButton.isEnabled = true
-
     }
 
     // Function to get full Ticket objects based on an event ID
@@ -735,25 +713,28 @@ class EventView : Fragment() {
         }?.toMutableList()
 
 // Declare selectedItem variable here
+        var adapter: PlayerListItemAdapter? = null
         var selectedItem: PlayerListItem? = null
 
-        val adapter = PlayerListItemAdapter(
-            playerListItems?.let { it } ?: mutableListOf(), // Use the null-safe operator here
-            object : PlayerListItemAdapter.OnItemClickListener {
-                override fun onItemClick(
+        adapter = PlayerListItemAdapter(
+            playerListItems ?: mutableListOf(), // Use the null-safe operator here
+            object : PlayerListItemAdapter.OnItemTouchListener {
+
+                override fun onTouch(
+                    view: View,
+                    event: MotionEvent,
                     position: Int,
-                    adapter: PlayerListItemAdapter,
                     playerListItem: PlayerListItem
                 ) {
-                    // ... onItemClick code ...
-                    adapter.toggleSelection(position)
-                    selectedItem = if (adapter.selectedPosition != -1) playerListItem else null
+                    // ... onTouch code ...
+                    adapter?.toggleSelection(position)
+                    selectedItem = if (adapter?.selectedPosition != -1) playerListItem else null
 
                     // Get the reference for the acceptButton
                     val acceptButton: Button = dialogView.findViewById(R.id.mpl_acceptButton)
 
                     // Change the color of the acceptButton based on the selected item count
-                    if (adapter.selectedPosition != -1) {
+                    if (adapter?.selectedPosition != -1) {
                         acceptButton.setBackgroundColor(
                             ContextCompat.getColor(
                                 context!!,
@@ -771,6 +752,11 @@ class EventView : Fragment() {
                 }
             }
         )
+
+        CoroutineScope(Job() + Dispatchers.Main).launch {
+            delay(2)
+            adapter.notifyDataSetChanged()
+        }
 
         recyclerView.adapter = adapter
         // Get the reference for the buttons
@@ -1465,10 +1451,21 @@ class EventView : Fragment() {
         bookerName.text = ticket.bookerName
         val bookerEmail: TextView = dialogView.findViewById(R.id.ti_bookerEmail)
         bookerEmail.text = ticket.bookerEmail
+        val rematchButton: Button = dialogView.findViewById<Button>(R.id.ti_rematchButton)
+
+        if (ticket.suggestions?.isEmpty() == false){
+            rematchButton.visibility = View.INVISIBLE
+        }
+        else {
+            rematchButton.visibility = View.VISIBLE
+        }
 
         // Close window
         dialogView.findViewById<Button>(R.id.ti_closeButton).setOnClickListener {
             playerInfoDialog.dismiss()
+        }
+        rematchButton.setOnClickListener {
+            manualPlayerLink(ticket)
         }
     }
 
