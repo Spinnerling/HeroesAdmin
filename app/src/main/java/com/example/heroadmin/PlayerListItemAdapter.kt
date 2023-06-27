@@ -76,7 +76,7 @@ class PlayerListItemAdapter(
 
         // Change the background color or any other attribute to indicate the selected state
         if (selectedPosition == position) {
-            holder.itemView.setBackgroundColor(Color.parseColor("#F0F0F0")) // Selected item background color
+            holder.itemView.setBackgroundColor(Color.parseColor("#daffc9")) // Selected item background color
         } else {
             holder.itemView.setBackgroundColor(Color.parseColor("#FFFFFF")) // Default background color
         }
@@ -85,7 +85,6 @@ class PlayerListItemAdapter(
     interface OnItemTouchListener {
         fun onTouch(view: View, event: MotionEvent, position: Int, playerListItem: PlayerListItem)
     }
-
 
     // Get the selected item
     fun getSelectedItem(): PlayerListItem? {

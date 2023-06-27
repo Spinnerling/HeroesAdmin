@@ -146,13 +146,13 @@
             </LinearLayout>
 
             <Button
-                android:id="@+id/emptyButton"
+                android:id="@+id/klippkortButton"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_marginRight="10dp"
                 android:layout_weight="1"
                 android:backgroundTint="#FFFFFF"
-                android:text=""
+                android:text="Klippkort"
                 android:textColor="#000000"
                 app:strokeColor="#000000"
                 app:strokeWidth="2dp" />
@@ -443,7 +443,7 @@
                                 app:strokeWidth="1dp" />
 
                             <Button
-                                android:id="@+id/button"
+                                android:id="@+id/assign_team_orgBy_match_button"
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="8"
@@ -453,7 +453,8 @@
                                 android:textColor="#000000"
                                 android:textSize="12sp"
                                 app:strokeColor="#000000"
-                                app:strokeWidth="1dp" />
+                                app:strokeWidth="1dp"
+                                android:text="Matchning"/>
                         </LinearLayout>
 
                         <androidx.recyclerview.widget.RecyclerView
@@ -528,7 +529,7 @@
                                 app:strokeWidth="1dp" />
 
                             <Button
-                                android:id="@+id/check_in_orgBy_note"
+                                android:id="@+id/check_in_orgBy_group"
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="5"
