@@ -391,6 +391,10 @@ class EventView : Fragment() {
 //            testFunction()
             openKlippkortsLink()
         }
+        binding.roll20.setOnClickListener {
+            testFunction()
+        }
+
         binding.assignTeamAutoAssignButton.setOnClickListener {
             autoAssignLoop()
         }
@@ -478,29 +482,7 @@ class EventView : Fragment() {
             DBF.updateTicketArray(allTickets)
         }
         binding.resetRoles.setOnClickListener {
-            event.round = 0
-            event.clickWinner = ""
-            event.gameWinner = ""
-            event.blueGameWins = 0
-            event.redGameWins = 0
-            checkGameEnded()
-            allTickets.forEach {
-                it.roundsHealer = 0
-                it.roundsRogue = 0
-                it.roundsMage = 0
-                it.roundsKnight = 0
-                it.roundsWarrior = 0
-                it.roundsSpecialRole = 0
-                it.guaranteedRole = 0
-                it.benched = 0
-                it.currentRole = 0
-                it.lastRole = 0
-            }
-            binding.blueWinsValue.text = event.blueGameWins.toString()
-            binding.redWinsValue.text = event.redGameWins.toString()
-            binding.roundText.text = event.round.toString()
-            updateTicketLists()
-            DBF.updateTicketArray(allTickets)
+            resetRoles()
         }
 
         binding.checkinAll.setOnClickListener {
@@ -1686,6 +1668,9 @@ class EventView : Fragment() {
         // Update locally
         if (selectedTicket.teamColor == "Red") selectedTicket.teamColor =
             "Blue" else selectedTicket.teamColor = "Red"
+        if (selectedTicket.checkedIn == 1) {
+            selectedTicket.switchedTeams += 1
+        }
         updateTicketLists()
         deselectPlayer()
         selectedTicketTVH.select()
@@ -1858,25 +1843,24 @@ class EventView : Fragment() {
                 guarantees++
             } else Log.e("pickTeamRoles", "Could not assign guaranteed role to ${ticket.firstName}")
         }
-//        Log.i("pickTeamRoles", "guaranteedTickets size: ${guaranteedTickets.size}")
 
         // Step 2: Prioritize Players
         // Sort and filter team down to a prioritized list
         val ticketAmount = originalTotalAmount - guarantees // Number of tickets to prioritize
-        val remainingTickets = team
+        val prioritizedTickets = team
             .filter { it.currentRole == 7 } // Remove ticket whose guarantees succeeded
             .sortedWith(compareBy<Ticket> { it.lastRole == 7 }.reversed() // Put all with lastRole warrior first
                 .thenBy { it.roundsSpecialRole }) // Sort both sides (lastRole warriors & specials) on rounds as special roles
             .take(ticketAmount) // Continue with only the prioritized amount of tickets
 
         // Log prioritized tickets' names
-        val remainingTicketNames = remainingTickets.joinToString(", ") { it.firstName }
+        val remainingTicketNames = prioritizedTickets.joinToString(", ") { it.firstName }
         Log.i("testRoles", "Prioritized tickets: $remainingTicketNames")
 
         // Step 3: Create Lottery Hats
         val originalLotteryHats = MutableList(originalRoleAmounts.size) { mutableListOf<Ticket>() }
 
-        for (ticket in remainingTickets) {
+        for (ticket in prioritizedTickets) {
             var hatAmounts = 0 // Store amount of hats ticket is put in
 
             for (i in originalRoleAmounts.indices) { // For each role
@@ -1909,7 +1893,17 @@ class EventView : Fragment() {
                 if (roundsInRole < maxRounds && ticket.lastRole != i + 1) {
                     originalLotteryHats[i].add(ticket) // Add ticket to hat
                     hatAmounts++ // Increment amount of hats ticket is in
+                    Log.i(
+                        "${ticket.firstName}",
+                        "${ticket.firstName} was entered to hat $i \nroundsInRole: $roundsInRole should be less than maxRounds: $maxRounds,  lastRole: ${ticket.lastRole}"
+                    )
+                } else {
+                    Log.i(
+                        "${ticket.firstName}",
+                        "${ticket.firstName} skipped hat $i \nroundsInRole: $roundsInRole should be less than maxRounds: $maxRounds,  lastRole: ${ticket.lastRole}"
+                    )
                 }
+
             }
 
             // Check if ticket was placed in 0 hats
@@ -1924,7 +1918,6 @@ class EventView : Fragment() {
             Log.e("pickTeamRoles", "At least one hat is empty.")
         } else {
             val roleSizes = originalLotteryHats.map { it.size }
-            Log.i("pickTeamRoles", "Original lottery hat sizes: $roleSizes")
         }
 
         // Step 4: Assign Roles
@@ -1933,54 +1926,35 @@ class EventView : Fragment() {
         for (attempt in 1..assignmentAttempts) {
 
             // Reset all roles and role amounts before each attempt
-            remainingTickets.forEach {
+            prioritizedTickets.forEach {
                 it.currentRole = 7 // Default role (Warrior)
             }
 
             val roleAmounts = originalRoleAmounts.clone()
             val temporaryLotteryHats = originalLotteryHats.map { it.toMutableList() }
 
-            // Log before each assignment attempt
-            Log.i("pickTeamRoles", "Attempt $attempt. Roles amounts: ${roleAmounts.joinToString()}")
-            Log.i(
-                "pickTeamRoles",
-                "Lottery hat sizes before assignment: ${
-                    temporaryLotteryHats.map { it.size }.joinToString()
-                }"
-            )
+            // Compute a map from tickets to counts
+            val hatCounts = mutableMapOf<Ticket, Int>()
+            for (ticket in prioritizedTickets) {
+                var count = 0
+                for (hat in temporaryLotteryHats) {
+                    if (ticket in hat) count++
+                }
+                hatCounts[ticket] = count
+            }
 
-            // Calculate the hat counts for each ticket
-            val hatCounts = remainingTickets.map { ticket -> ticket to temporaryLotteryHats.count { hat -> ticket in hat } }
-// Sort the tickets based on the hat counts in ascending order
-            val sortedTickets = hatCounts.sortedBy { (_, count) -> count }.map { (ticket, _) -> ticket }
+            // Sort the tickets based on the counts in ascending order
+            val sortedTickets = prioritizedTickets.sortedBy { hatCounts[it] }
 
             // Log the order of sortedTickets
-            val sortedTicketNames = sortedTickets.joinToString(", ") { it.firstName }
-            Log.i("pickTeamRoles", "Sorted tickets: $sortedTicketNames")
+            val sortedTicketNames =
+                sortedTickets.joinToString(", ") { it.firstName + " (hats: " + hatCounts[it] + ")" }
 
             // Assign roles to players based on the sorted tickets
-            for (idx in sortedTickets.indices) {
-                val minRoleTicket = sortedTickets[idx]
-//                Log.i("pickTeamRoles", "Starting role assignment for ticket ${minRoleTicket.firstName}")
-                // Log before assigning a role
-                val a = getPossibleRoles(minRoleTicket, temporaryLotteryHats, roleAmounts, originalRoleAmounts)
-                Log.i(
-                    "pickTeamRoles",
-                    "Ticket before assignment: ${minRoleTicket.firstName}. Possible roles: ${
-                        getPossibleRoles(
-                            minRoleTicket,
-                            temporaryLotteryHats,
-                            roleAmounts,
-                            originalRoleAmounts
-                        )
-                    }"
-                )
-                if (a.isEmpty()){
-                    Log.i(
-                        "pickTeamRoles",
-                        "${minRoleTicket.firstName} roles: ${minRoleTicket.roundsHealer}, ${minRoleTicket.roundsRogue}, ${minRoleTicket.roundsMage}, ${minRoleTicket.roundsKnight}, }"
-                    )
-                }
+            for (ticket in sortedTickets.indices) {
+                val minRoleTicket = sortedTickets[ticket]
+
+//                LogHatsForTicket(minRoleTicket, temporaryLotteryHats)
 
                 // Find the hat with the smallest size that the ticket is in
                 val minSizeHatIndex = temporaryLotteryHats.withIndex()
@@ -2002,14 +1976,6 @@ class EventView : Fragment() {
                     }
                 }
             }
-
-            Log.i("pickTeamRoles", "Roles amounts after assignment: ${roleAmounts.joinToString()}")
-            Log.i(
-                "pickTeamRoles",
-                "Lottery hat sizes after assignment: ${
-                    temporaryLotteryHats.map { it.size }.joinToString()
-                }"
-            )
 
             // Check if any roleAmounts are left
             if (roleAmounts.any { it > 0 }) {
@@ -2064,35 +2030,14 @@ class EventView : Fragment() {
         return true
     }
 
-    private fun getPossibleRoles(
-        ticket: Ticket,
-        lotteryHats: List<MutableList<Ticket>>,
-        roleAmounts: Array<Int>,
-        originalRoleAmounts: Array<Int>
-    ): List<Int> {
-        val roundsList = mutableListOf<Int>()
-        for (i in originalRoleAmounts.indices) {
-            roundsList.add(
-                when (i) {
-                    0 -> ticket.roundsHealer
-                    1 -> ticket.roundsRogue
-                    2 -> ticket.roundsMage
-                    3 -> ticket.roundsKnight
-                    else -> 0
-                }
-            )
-        }
-
-        val maxRounds = roundsList.maxOrNull() ?: 0
-
-        return roleAmounts.indices.filter { i ->
-            if (i >= originalRoleAmounts.size) {
-                false
-            } else {
-                val roundsInRole = roundsList[i]
-                roundsInRole < maxRounds && ticket.lastRole != i + 1 && lotteryHats[i].contains(ticket) && roleAmounts[i] > 0
+    private fun LogHatsForTicket(ticket: Ticket, lotteryHats: List<MutableList<Ticket>>) {
+        val hatIndices = mutableListOf<Int>()
+        for ((index, hat) in lotteryHats.withIndex()) {
+            if (ticket in hat) {
+                hatIndices.add(index)
             }
-        }.map { it + 1 }
+        }
+        Log.i("pickTeamRoles", "Ticket ${ticket.firstName} is in hats: $hatIndices")
     }
 
     private fun updateTicketStats(team: MutableList<Ticket>) {
@@ -2251,29 +2196,64 @@ class EventView : Fragment() {
     }
 
     private fun testFunction() {
-        var i = 20
-        while (i > 0) {
-            Log.i("pickTeamRoles", "Starting round ${21 - i}")
-            pickTeamRoles(redTeam)
-            updateTicketStats(redTeam)
-            redTeam.forEach { ticket ->
-                if (ticket.lastRole == ticket.currentRole) {
-                    Log.i(
-                        "rolesTwice",
-                        "${ticket.firstName} was role ${ticket.currentRole} twice in a row"
-                    )
+        val outerRounds = 20
+        var h = outerRounds
+        while (h > 0) {
+            val rounds = 10
+            var i = rounds
+            while (i > 0) {
+                Log.i("pickTeamRoles", "OuterRound $h. Starting round $i")
+                pickTeamRoles(redTeam)
+                updateTicketStats(redTeam)
+                redTeam.forEach { ticket ->
+                    if (ticket.lastRole == ticket.currentRole) {
+                        Log.i(
+                            "rolesTwice",
+                            "${ticket.firstName} was role ${ticket.currentRole} twice in a row"
+                        )
+                    }
+                    val roles =
+                        "H:${ticket.roundsHealer}, R:${ticket.roundsRogue}, M:${ticket.roundsMage}, K:${ticket.roundsKnight}, W:${ticket.roundsWarrior}"
+                    Log.i("testRoles", "${ticket.firstName} $roles")
                 }
-                val roles =
-                    "H:${ticket.roundsHealer}, R:${ticket.roundsRogue}, M:${ticket.roundsMage}, K:${ticket.roundsKnight}, W:${ticket.roundsWarrior}"
-                Log.i("testRoles", "${ticket.firstName} $roles")
+                i--
             }
-            i--
+            resetRoles()
+            h--
         }
     }
+
     private fun openKlippkortsLink() {
-        val url = "https://docs.google.com/spreadsheets/d/1PIfFF9iT4sxmK3O-rSVmMrUyKLagrbhoMCcDHAdbJF8/edit#gid=0"
+        val url =
+            "https://docs.google.com/spreadsheets/d/1PIfFF9iT4sxmK3O-rSVmMrUyKLagrbhoMCcDHAdbJF8/edit#gid=0"
         val intent = Intent(Intent.ACTION_VIEW)
         intent.data = Uri.parse(url)
         startActivity(intent)
+    }
+
+    private fun resetRoles() {
+        event.round = 0
+        event.clickWinner = ""
+        event.gameWinner = ""
+        event.blueGameWins = 0
+        event.redGameWins = 0
+        checkGameEnded()
+        allTickets.forEach {
+            it.roundsHealer = 0
+            it.roundsRogue = 0
+            it.roundsMage = 0
+            it.roundsKnight = 0
+            it.roundsWarrior = 0
+            it.roundsSpecialRole = 0
+            it.guaranteedRole = 0
+//            it.benched = 0
+            it.currentRole = 0
+            it.lastRole = 0
+        }
+        binding.blueWinsValue.text = event.blueGameWins.toString()
+        binding.redWinsValue.text = event.redGameWins.toString()
+        binding.roundText.text = event.round.toString()
+        updateTicketLists()
+        DBF.updateTicketArray(allTickets)
     }
 }
