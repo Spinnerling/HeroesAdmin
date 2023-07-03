@@ -19,7 +19,7 @@ data class Event(
     var expClickWinValue: Int = 5,
     var expGameWinValue: Int = 10,
     var expTeamChangeValue: Int = 5,
-    var expRecruitValue: Int = 10,
+    var expRecruitValue: Int = 20,
     var blueGameWins: Int = 0,
     var redGameWins: Int = 0,
     var round: Int = 0,

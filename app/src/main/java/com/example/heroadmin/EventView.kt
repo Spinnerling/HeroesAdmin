@@ -221,12 +221,18 @@ class EventView : Fragment() {
 
         binding.levelUpButton.setOnClickListener {
             if (selectedTicket.playerId != null && selectedTicket.playerId != "") {
-                findNavController().navigate(
-                    EventViewDirections.actionEventViewToLevelUpFragment(
-                        selectedTicket.playerId!!,
-                        event.eventId
+                if(selectedTicket.playerId == "null") {
+                    callNotification("Matcha om spelaren via spelarens INFO-knapp först!")
+                }
+                else {
+                    Log.i("test", "Kom in med ${selectedTicket.firstName} playerId: ${selectedTicket.playerId}")
+                    findNavController().navigate(
+                        EventViewDirections.actionEventViewToLevelUpFragment(
+                            selectedTicket.playerId!!,
+                            event.eventId
+                        )
                     )
-                )
+                }
             }
         }
 
