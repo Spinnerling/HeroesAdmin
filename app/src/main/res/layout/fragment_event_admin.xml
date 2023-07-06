@@ -434,6 +434,16 @@
                 android:textColor="#FFFFFF"
                 app:strokeColor="#000000"
                 app:strokeWidth="2dp" />
+            <Button
+                android:id="@+id/eventAdminWin1TieButton"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="2"
+                android:backgroundTint="@color/purple_deep"
+                android:text="Tie"
+                android:textColor="#FFFFFF"
+                app:strokeColor="#000000"
+                app:strokeWidth="2dp" />
         </LinearLayout>
 
         <LinearLayout
@@ -479,6 +489,17 @@
                 android:layout_weight="2"
                 android:backgroundTint="@color/winning_blue"
                 android:text="Blue Team"
+                android:textColor="#FFFFFF"
+                app:strokeColor="#000000"
+                app:strokeWidth="2dp" />
+
+            <Button
+                android:id="@+id/eventAdminWin2TieButton"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="2"
+                android:backgroundTint="@color/secondary_purple"
+                android:text="Tie"
                 android:textColor="#FFFFFF"
                 app:strokeColor="#000000"
                 app:strokeWidth="2dp" />

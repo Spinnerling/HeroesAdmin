@@ -74,6 +74,8 @@ dependencies {
     // Phone number formatting
     implementation 'com.googlecode.libphonenumber:libphonenumber:8.12.36'
 
+    // Networking for auto-update
+    implementation 'com.squareup.okhttp3:okhttp:4.9.0'
 }
 
 //repositories {

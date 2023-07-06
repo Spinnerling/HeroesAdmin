@@ -75,6 +75,11 @@ class EventAdminFrag : Fragment() {
             updateWinnerButtonColors()
         }
 
+        binding.eventAdminWin1TieButton.setOnClickListener {
+            currClickWinner = "Tie"
+            updateWinnerButtonColors()
+        }
+
         binding.eventAdminWin2NoWinner.setOnClickListener {
             currGameWinner = ""
             updateWinnerButtonColors()
@@ -87,6 +92,11 @@ class EventAdminFrag : Fragment() {
 
         binding.eventAdminWin2BlueButton.setOnClickListener {
             currGameWinner = "Blue"
+            updateWinnerButtonColors()
+        }
+
+        binding.eventAdminWin2TieButton.setOnClickListener {
+            currGameWinner = "Tie"
             updateWinnerButtonColors()
         }
 
@@ -223,47 +233,55 @@ class EventAdminFrag : Fragment() {
         val redWinnerColor = ContextCompat.getColor(requireContext(), R.color.winning_red)
         val blueUnselectedColor = ContextCompat.getColor(requireContext(), R.color.light_blue)
         val blueWinnerColor = ContextCompat.getColor(requireContext(), R.color.winning_blue)
+        val tieActiveColor = ContextCompat.getColor(requireContext(), R.color.purple_deep)
+        val tieUnselectedColor = ContextCompat.getColor(requireContext(), R.color.purple_200)
 
-        // Adjust elevation and transparency for noWinner button (set 1)
         binding.eventAdminWin1NoWinner.apply {
             setBackgroundColor(if (currClickWinner == "") noWinnerColor else noWinnerUnselectedColor)
             elevation = if (currClickWinner == "") 10f else 0f
             alpha = if (currClickWinner == "") 1f else 0.7f
         }
 
-        // Adjust elevation and transparency for red button (set 1)
         binding.eventAdminWin1RedButton.apply {
             setBackgroundColor(if (currClickWinner == "Red") redWinnerColor else redUnselectedColor)
             elevation = if (currClickWinner == "Red") 10f else 0f
             alpha = if (currClickWinner == "Red") 1f else 0.7f
         }
 
-        // Adjust elevation and transparency for blue button (set 1)
         binding.eventAdminWin1BlueButton.apply {
             setBackgroundColor(if (currClickWinner == "Blue") blueWinnerColor else blueUnselectedColor)
             elevation = if (currClickWinner == "Blue") 10f else 0f
             alpha = if (currClickWinner == "Blue") 1f else 0.7f
         }
 
-        // Adjust elevation and transparency for noWinner button (set 2)
+        binding.eventAdminWin1TieButton.apply {
+            setBackgroundColor(if (currClickWinner == "Tie") tieActiveColor else tieUnselectedColor)
+            elevation = if (currClickWinner == "Tie") 10f else 0f
+            alpha = if (currClickWinner == "Tie") 1f else 0.7f
+        }
+
         binding.eventAdminWin2NoWinner.apply {
             setBackgroundColor(if (currGameWinner == "") noWinnerColor else noWinnerUnselectedColor)
             elevation = if (currGameWinner == "") 10f else 0f
             alpha = if (currGameWinner == "") 1f else 0.7f
         }
 
-        // Adjust elevation and transparency for red button (set 2)
         binding.eventAdminWin2RedButton.apply {
             setBackgroundColor(if (currGameWinner == "Red") redWinnerColor else redUnselectedColor)
             elevation = if (currGameWinner == "Red") 10f else 0f
             alpha = if (currGameWinner == "Red") 1f else 0.7f
         }
 
-        // Adjust elevation and transparency for blue button (set 2)
         binding.eventAdminWin2BlueButton.apply {
             setBackgroundColor(if (currGameWinner == "Blue") blueWinnerColor else blueUnselectedColor)
             elevation = if (currGameWinner == "Blue") 10f else 0f
             alpha = if (currGameWinner == "Blue") 1f else 0.7f
+        }
+
+        binding.eventAdminWin2TieButton.apply {
+            setBackgroundColor(if (currGameWinner == "Tie") tieActiveColor else tieUnselectedColor)
+            elevation = if (currGameWinner == "Tie") 10f else 0f
+            alpha = if (currGameWinner == "Tie") 1f else 0.7f
         }
 
 //        DBF.updateEventStatus(event)

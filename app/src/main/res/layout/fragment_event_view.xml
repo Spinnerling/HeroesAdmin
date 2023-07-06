@@ -16,88 +16,93 @@
         android:padding="10dp"
         tools:context=".EventView">
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="10dp"
-        android:orientation="horizontal"
-        android:id="@+id/ev_noConnection"
-        android:gravity="center"
-        android:background="@color/black"
-        android:visibility="gone">
-
-        <TextView
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:id="@+id/ev_noConnection"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Connection Problems"
-            android:textColor="#FFFF00"
-            android:textSize="14dp"
-            android:textStyle="bold"
-            android:layout_marginTop="2dp"
-            android:layout_marginBottom="2dp"/>
-    </LinearLayout>
+            android:layout_marginBottom="10dp"
+            android:background="@color/black"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:visibility="gone">
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="10dp"
-        android:orientation="horizontal"
-        android:id="@+id/devModeLayout">
-        <Button
-            android:id="@+id/fullReset"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_marginRight="10dp"
-            android:layout_weight="1"
-            android:backgroundTint="#FFFFFF"
-            android:text="Full Reset"
-            android:textColor="#000000"
-            app:strokeColor="#000000"
-            app:strokeWidth="2dp" />
-        <Button
-            android:id="@+id/checkinAll"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_marginRight="10dp"
-            android:layout_weight="1"
-            android:backgroundTint="#FFFFFF"
-            android:text="Checkin all"
-            android:textColor="#000000"
-            app:strokeColor="#000000"
-            app:strokeWidth="2dp" />
-        <Button
-            android:id="@+id/resetToCheckin"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_marginRight="10dp"
-            android:layout_weight="1"
-            android:backgroundTint="#FFFFFF"
-            android:text="Reset to checkin"
-            android:textColor="#000000"
-            app:strokeColor="#000000"
-            app:strokeWidth="2dp" />
-        <Button
-            android:id="@+id/resetRoles"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_marginRight="10dp"
-            android:layout_weight="1"
-            android:backgroundTint="#FFFFFF"
-            android:text="Reset Roles"
-            android:textColor="#000000"
-            app:strokeColor="#000000"
-            app:strokeWidth="2dp" />
-        <Button
-            android:id="@+id/roll20"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:backgroundTint="#FFFFFF"
-            android:text="Roll 20x"
-            android:textColor="#000000"
-            app:strokeColor="#000000"
-            app:strokeWidth="2dp" />
-    </LinearLayout>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:layout_marginBottom="2dp"
+                android:text="Connection Problems"
+                android:textColor="#FFFF00"
+                android:textSize="14dp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/devModeLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/fullReset"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginRight="10dp"
+                android:layout_weight="1"
+                android:backgroundTint="#FFFFFF"
+                android:text="Full Reset"
+                android:textColor="#000000"
+                app:strokeColor="#000000"
+                app:strokeWidth="2dp" />
+
+            <Button
+                android:id="@+id/checkinAll"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginRight="10dp"
+                android:layout_weight="1"
+                android:backgroundTint="#FFFFFF"
+                android:text="Checkin all"
+                android:textColor="#000000"
+                app:strokeColor="#000000"
+                app:strokeWidth="2dp" />
+
+            <Button
+                android:id="@+id/resetToCheckin"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginRight="10dp"
+                android:layout_weight="1"
+                android:backgroundTint="#FFFFFF"
+                android:text="Reset to checkin"
+                android:textColor="#000000"
+                app:strokeColor="#000000"
+                app:strokeWidth="2dp" />
+
+            <Button
+                android:id="@+id/resetRoles"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginRight="10dp"
+                android:layout_weight="1"
+                android:backgroundTint="#FFFFFF"
+                android:text="Reset Roles"
+                android:textColor="#000000"
+                app:strokeColor="#000000"
+                app:strokeWidth="2dp" />
+
+            <Button
+                android:id="@+id/roll20"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:backgroundTint="#FFFFFF"
+                android:text="Roll 20x"
+                android:textColor="#000000"
+                app:strokeColor="#000000"
+                app:strokeWidth="2dp" />
+        </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -459,12 +464,12 @@
                                 android:layout_weight="8"
                                 android:backgroundTint="#FFFFFF"
                                 android:contentDescription="empty"
+                                android:text="Matchning"
                                 android:textAlignment="viewStart"
                                 android:textColor="#000000"
                                 android:textSize="12sp"
                                 app:strokeColor="#000000"
-                                app:strokeWidth="1dp"
-                                android:text="Matchning"/>
+                                app:strokeWidth="1dp" />
                         </LinearLayout>
 
                         <androidx.recyclerview.widget.RecyclerView
@@ -817,10 +822,10 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="Game Ended"
+                android:textAlignment="center"
                 android:textSize="24dp"
                 android:textStyle="bold"
-                android:visibility="gone"
-                android:textAlignment="center"/>
+                android:visibility="gone" />
 
             <RelativeLayout
                 android:layout_width="0dp"
@@ -872,6 +877,68 @@
                         android:text="+" />
                 </LinearLayout>
             </RelativeLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/bottom_panel_setWinner"
+            android:layout_width="match_parent"
+            android:layout_height="120dp"
+            android:background="@color/background_green_light"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:visibility="gone">
+
+            <Space
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_margin="10dp" />
+
+            <Button
+                android:id="@+id/gameWinBlue"
+                android:layout_width="0dp"
+                android:layout_height="100dp"
+                android:layout_margin="10dp"
+                android:layout_weight="1.5"
+                android:backgroundTint="@color/light_blue"
+                android:text="Blue\nwin"
+                app:strokeColor="#000000"
+                app:strokeWidth="2dp" />
+
+            <Button
+                android:id="@+id/gameWinTie"
+                android:layout_width="0dp"
+                android:layout_height="100dp"
+                android:layout_margin="10dp"
+                android:layout_weight="1.5"
+                android:backgroundTint="@color/purple_200"
+                android:text="Tie"
+                app:strokeColor="#000000"
+                app:strokeWidth="2dp" />
+
+            <Button
+                android:id="@+id/gameWinRed"
+                android:layout_width="0dp"
+                android:layout_height="100dp"
+                android:layout_margin="10dp"
+                android:layout_weight="1.5"
+                android:backgroundTint="@color/light_pink"
+                android:text="Red\nwin"
+                app:strokeColor="#000000"
+                app:strokeWidth="2dp" />
+
+            <Button
+                android:id="@+id/gameWinAccept"
+                android:layout_width="0dp"
+                android:layout_height="100dp"
+                android:layout_margin="10dp"
+                android:layout_weight="1"
+                android:text="Accept"
+                android:visibility="visible"
+                app:strokeColor="#000000"
+                app:strokeWidth="2dp"
+                />
+
         </LinearLayout>
 
 

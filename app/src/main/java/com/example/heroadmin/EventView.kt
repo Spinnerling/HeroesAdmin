@@ -93,6 +93,18 @@ class EventView : Fragment() {
     private val json = Json { ignoreUnknownKeys = true; coerceInputValues = true }
     public var allTicketsMatched = false
     var devMode: Boolean = false
+    private var winnerPicked = false
+    private var gameWinner = ""
+
+    // Colors (set in OnResume)
+    private var noWinnerUnselectedColor = 0
+    private var noWinnerColor = 0
+    private var redUnselectedColor = 0
+    private var redWinnerColor = 0
+    private var blueUnselectedColor = 0
+    private var blueWinnerColor = 0
+    private var tieActiveColor = 0
+    private var tieUnselectedColor = 0
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -221,47 +233,37 @@ class EventView : Fragment() {
 
         binding.levelUpButton.setOnClickListener {
             if (selectedTicket.playerId != null && selectedTicket.playerId != "") {
-                if(selectedTicket.playerId == "null") {
+                if (selectedTicket.playerId == "null") {
                     callNotification("Matcha om spelaren via spelarens INFO-knapp först!")
-                }
-                else {
-                    Log.i("test", "Kom in med ${selectedTicket.firstName} playerId: ${selectedTicket.playerId}")
-                    findNavController().navigate(
-                        EventViewDirections.actionEventViewToLevelUpFragment(
-                            selectedTicket.playerId!!,
-                            event.eventId
-                        )
-                    )
+                } else {
+                    if (event.round > 0 && (event.gameWinner == "" || event.clickWinner == "")){
+                        callChoice("Game has not ended. Do you want to set winners before levelling up?", "Set Winners", "Level Up", ::openWinnerPopup, ::goToLevelUp)
+                    }
+                    else {
+                        goToLevelUp()
+                    }
                 }
             }
         }
 
         binding.blueWinsPlus.setOnClickListener {
             event.blueGameWins = event.blueGameWins + 1
-            binding.blueWinsValue.text = event.blueGameWins.toString()
-            DBF.updateData(event)
-            eventDatabase.update(event)
+            updateGameWins()
         }
         binding.blueWinsMinus.setOnClickListener {
             if (event.blueGameWins > 0) {
                 event.blueGameWins = event.blueGameWins - 1
-                binding.blueWinsValue.text = event.blueGameWins.toString()
-                DBF.updateData(event)
-                eventDatabase.update(event)
+                updateGameWins()
             }
         }
         binding.redWinsPlus.setOnClickListener {
             event.redGameWins = event.redGameWins + 1
-            binding.redWinsValue.text = event.redGameWins.toString()
-            DBF.updateData(event)
-            eventDatabase.update(event)
+            updateGameWins()
         }
         binding.redWinsMinus.setOnClickListener {
             if (event.redGameWins > 0) {
                 event.redGameWins = event.redGameWins - 1
-                binding.redWinsValue.text = event.redGameWins.toString()
-                DBF.updateData(event)
-                eventDatabase.update(event)
+                updateGameWins()
             }
         }
 
@@ -286,6 +288,8 @@ class EventView : Fragment() {
                 randomizeRoles()
                 dismissKeyboard()
                 deselectPlayer()
+                winnerPicked = false
+                binding.gameWinAccept.isEnabled = false
             }
         }
 
@@ -451,8 +455,7 @@ class EventView : Fragment() {
                 it.currentRole = 0
                 it.lastRole = 0
             }
-            binding.blueWinsValue.text = event.blueGameWins.toString()
-            binding.redWinsValue.text = event.redGameWins.toString()
+            updateGameWins()
             binding.roundText.text = event.round.toString()
             initializeTicketGroups()
             updateTicketLists()
@@ -480,8 +483,7 @@ class EventView : Fragment() {
                 it.currentRole = 0
                 it.lastRole = 0
             }
-            binding.blueWinsValue.text = event.blueGameWins.toString()
-            binding.redWinsValue.text = event.redGameWins.toString()
+            updateGameWins()
             binding.roundText.text = event.round.toString()
             initializeTicketGroups()
             updateTicketLists()
@@ -498,6 +500,31 @@ class EventView : Fragment() {
             }
             updateTicketLists()
         }
+
+        binding.gameWinRed.setOnClickListener {
+            gameWinner = "Red"
+            updateGameWinButtons()
+        }
+        binding.gameWinBlue.setOnClickListener {
+            gameWinner = "Blue"
+            updateGameWinButtons()
+        }
+        binding.gameWinTie.setOnClickListener {
+            gameWinner = "Tie"
+            updateGameWinButtons()
+        }
+        binding.gameWinAccept.setOnClickListener {
+            setGameWinner()
+        }
+
+        noWinnerUnselectedColor = ContextCompat.getColor(requireContext(), R.color.grey)
+        noWinnerColor = ContextCompat.getColor(requireContext(), R.color.white)
+        redUnselectedColor = ContextCompat.getColor(requireContext(), R.color.light_pink)
+        redWinnerColor = ContextCompat.getColor(requireContext(), R.color.winning_red)
+        blueUnselectedColor = ContextCompat.getColor(requireContext(), R.color.light_blue)
+        blueWinnerColor = ContextCompat.getColor(requireContext(), R.color.winning_blue)
+        tieActiveColor = ContextCompat.getColor(requireContext(), R.color.purple_deep)
+        tieUnselectedColor = ContextCompat.getColor(requireContext(), R.color.purple_200)
     }
 
     private fun loadingPopup() {
@@ -814,7 +841,7 @@ class EventView : Fragment() {
             return
         }
         if (bottomPanelPlayer.visibility == View.VISIBLE) {
-            bottomPanel.visibility = View.VISIBLE
+            if (winnerPicked) bottomPanel.visibility = View.VISIBLE else binding.bottomPanelSetWinner.visibility = View.VISIBLE
             bottomPanelPlayer.visibility = View.GONE
         }
         if (bottomPanelNewRound.visibility == View.VISIBLE) {
@@ -1334,6 +1361,7 @@ class EventView : Fragment() {
             }
         } else {
             binding.bottomPanel.visibility = View.GONE
+            binding.bottomPanelSetWinner.visibility = View.GONE
             binding.bottomPanelPlayer.visibility = View.VISIBLE
             binding.playerNameText.text = selectedTicket.fullName
 
@@ -1346,7 +1374,7 @@ class EventView : Fragment() {
             if (selectedTicket.playerId == null || selectedTicket.playerId == "") {
                 binding.levelUpButton.visibility = View.GONE
                 binding.playerExpText.visibility = View.VISIBLE
-                binding.playerExpText.text = "No playerId found"
+                binding.playerExpText.text = "No playerId found\nMatch via INFO button!"
             } else if (!currActivity.connectionProblems) {
                 binding.levelUpButton.visibility = View.VISIBLE
                 binding.playerExpText.visibility = View.GONE
@@ -1524,97 +1552,140 @@ class EventView : Fragment() {
     }
 
 
-    fun openWinnerPopup() {
+    private fun openWinnerPopup() {
         val dialogView = LayoutInflater.from(context).inflate(R.layout.set_winner_popup, null)
 
         val builder = AlertDialog.Builder(context)
             .setView(dialogView)
 
         val alertDialog = builder.show()
+        var currClickWinner = ""
+        var currGameWinner = ""
 
-        val clickWinButton = dialogView.findViewById<Button>(R.id.sw_clickWinnerButton)
-        val gameWinButton = dialogView.findViewById<Button>(R.id.sw_gameWinnerButton)
-        var clickWinRed = event.clickWinner == "Red"
-        var gameWinRed = event.gameWinner == "Red"
+        val clickNoWinner = dialogView.findViewById<Button>(R.id.sw_Win1NoWinner)
+        val clickRedWinner = dialogView.findViewById<Button>(R.id.sw_Win1RedButton)
+        val clickBlueWinner = dialogView.findViewById<Button>(R.id.sw_Win1BlueButton)
+        val clickTieWinner = dialogView.findViewById<Button>(R.id.sw_Win1TieButton)
+
+        val gameNoWinner = dialogView.findViewById<Button>(R.id.sw_Win2NoWinner)
+        val gameRedWinner = dialogView.findViewById<Button>(R.id.sw_Win2RedButton)
+        val gameBlueWinner = dialogView.findViewById<Button>(R.id.sw_Win2BlueButton)
+        val gameTieWinner = dialogView.findViewById<Button>(R.id.sw_Win2TieButton)
+
+        fun updateWinnerButtonColors() {
+
+            clickNoWinner.apply {
+                setBackgroundColor(if (currClickWinner == "") noWinnerColor else noWinnerUnselectedColor)
+                elevation = if (currClickWinner == "") 10f else 0f
+                alpha = if (currClickWinner == "") 1f else 0.7f
+            }
+
+            clickRedWinner.apply {
+                setBackgroundColor(if (currClickWinner == "Red") redWinnerColor else redUnselectedColor)
+                elevation = if (currClickWinner == "Red") 10f else 0f
+                alpha = if (currClickWinner == "Red") 1f else 0.7f
+            }
+
+            clickBlueWinner.apply {
+                setBackgroundColor(if (currClickWinner == "Blue") blueWinnerColor else blueUnselectedColor)
+                elevation = if (currClickWinner == "Blue") 10f else 0f
+                alpha = if (currClickWinner == "Blue") 1f else 0.7f
+            }
+
+            clickTieWinner.apply {
+                setBackgroundColor(if (currClickWinner == "Tie") tieActiveColor else tieUnselectedColor)
+                elevation = if (currClickWinner == "Tie") 10f else 0f
+                alpha = if (currClickWinner == "Tie") 1f else 0.7f
+            }
+
+            gameNoWinner.apply {
+                setBackgroundColor(if (currGameWinner == "") noWinnerColor else noWinnerUnselectedColor)
+                elevation = if (currGameWinner == "") 10f else 0f
+                alpha = if (currGameWinner == "") 1f else 0.7f
+            }
+
+            gameRedWinner.apply {
+                setBackgroundColor(if (currGameWinner == "Red") redWinnerColor else redUnselectedColor)
+                elevation = if (currGameWinner == "Red") 10f else 0f
+                alpha = if (currGameWinner == "Red") 1f else 0.7f
+            }
+
+            gameBlueWinner.apply {
+                setBackgroundColor(if (currGameWinner == "Blue") blueWinnerColor else blueUnselectedColor)
+                elevation = if (currGameWinner == "Blue") 10f else 0f
+                alpha = if (currGameWinner == "Blue") 1f else 0.7f
+            }
+
+            gameTieWinner.apply {
+                setBackgroundColor(if (currGameWinner == "Tie") tieActiveColor else tieUnselectedColor)
+                elevation = if (currGameWinner == "Tie") 10f else 0f
+                alpha = if (currGameWinner == "Tie") 1f else 0.7f
+            }
+        }
+
+        clickNoWinner.setOnClickListener {
+            currClickWinner = ""
+            updateWinnerButtonColors()
+        }
+
+        clickRedWinner.setOnClickListener {
+            currClickWinner = "Red"
+            updateWinnerButtonColors()
+        }
+
+        clickBlueWinner.setOnClickListener {
+            currClickWinner = "Blue"
+            updateWinnerButtonColors()
+        }
+
+        clickTieWinner.setOnClickListener {
+            currClickWinner = "Tie"
+            updateWinnerButtonColors()
+        }
+
+        gameNoWinner.setOnClickListener {
+            currGameWinner = ""
+            updateWinnerButtonColors()
+        }
+
+        gameRedWinner.setOnClickListener {
+            currGameWinner = "Red"
+            updateWinnerButtonColors()
+        }
+
+        gameBlueWinner.setOnClickListener {
+            currGameWinner = "Blue"
+            updateWinnerButtonColors()
+        }
+
+        gameTieWinner.setOnClickListener {
+            currGameWinner = "Tie"
+            updateWinnerButtonColors()
+        }
+
         var clickWinModified = false
         var gameWinModified = false
 
         // Set initial button colors
         if (event.clickWinner != "") {
             clickWinModified = true
-            if (clickWinRed) {
-                clickWinButton.setBackgroundColor(
-                    ContextCompat.getColor(
-                        requireContext(),
-                        R.color.teamRedColor
-                    )
-                )
-            } else {
-                clickWinButton.setBackgroundColor(
-                    ContextCompat.getColor(
-                        requireContext(),
-                        R.color.teamBlueColor
-                    )
-                )
-            }
+            currClickWinner = event.clickWinner
         }
         if (event.gameWinner != "") {
             gameWinModified = true
-            if (gameWinRed) {
-                gameWinButton.setBackgroundColor(
-                    ContextCompat.getColor(
-                        requireContext(),
-                        R.color.teamRedColor
-                    )
-                )
-            } else {
-                gameWinButton.setBackgroundColor(
-                    ContextCompat.getColor(
-                        requireContext(),
-                        R.color.teamBlueColor
-                    )
-                )
-            }
+            currGameWinner = event.clickWinner
         }
 
-        clickWinButton.setOnClickListener {
-            clickWinModified = true
-            clickWinRed = !clickWinRed // Toggle the value
-            if (clickWinRed) {
-                clickWinButton.setBackgroundColor(
-                    ContextCompat.getColor(
-                        requireContext(),
-                        R.color.teamRedColor
-                    )
-                )
-            } else {
-                clickWinButton.setBackgroundColor(
-                    ContextCompat.getColor(
-                        requireContext(),
-                        R.color.teamBlueColor
-                    )
-                )
-            }
+        // Check for game winner
+        currGameWinner = if (event.redGameWins > event.blueGameWins){
+            "Red"
+        }else if (event.blueGameWins > event.redGameWins){
+            "Blue"
+        }else {
+            "Tie"
         }
-        gameWinButton.setOnClickListener {
-            gameWinModified = true
-            gameWinRed = !gameWinRed // Toggle the value
-            if (gameWinRed) {
-                gameWinButton.setBackgroundColor(
-                    ContextCompat.getColor(
-                        requireContext(),
-                        R.color.teamRedColor
-                    )
-                )
-            } else {
-                gameWinButton.setBackgroundColor(
-                    ContextCompat.getColor(
-                        requireContext(),
-                        R.color.teamBlueColor
-                    )
-                )
-            }
-        }
+
+        updateWinnerButtonColors()
 
         dialogView.findViewById<Button>(R.id.sw_cancelButton).setOnClickListener {
             Toast.makeText(context, "Cancelled", Toast.LENGTH_SHORT).show()
@@ -1622,8 +1693,8 @@ class EventView : Fragment() {
         }
         dialogView.findViewById<Button>(R.id.sw_saveButton).setOnClickListener {
             Toast.makeText(context, "Saved", Toast.LENGTH_SHORT).show()
-            event.clickWinner = if (clickWinModified) if (clickWinRed) "Red" else "Blue" else ""
-            event.gameWinner = if (gameWinModified) if (gameWinRed) "Red" else "Blue" else ""
+            event.clickWinner = if (clickWinModified) currClickWinner else ""
+            event.gameWinner = if (gameWinModified) currGameWinner else ""
             DBF.updateData(event)
             eventDatabase.update(event)
             alertDialog.dismiss()
@@ -2031,7 +2102,7 @@ class EventView : Fragment() {
         DBF.updateTicketArray(allTickets)
         teamSorting = 2
         updateTicketLists()
-        bottomPanel.visibility = View.VISIBLE
+        binding.bottomPanelSetWinner.visibility = View.VISIBLE
         bottomPanelNewRound.visibility = View.GONE
         return true
     }
@@ -2100,8 +2171,38 @@ class EventView : Fragment() {
 
         val textHolder: TextView = dialogView.findViewById(R.id.notePopupText)
         textHolder.text = message
+        val noteAButton = dialogView.findViewById<Button>(R.id.noteAButton)
+        val noteBButton = dialogView.findViewById<Button>(R.id.noteBButton)
+        noteBButton.visibility = View.GONE
 
-        dialogView.findViewById<Button>(R.id.notePopupAcceptButton).setOnClickListener {
+        noteAButton.setOnClickListener {
+            notification.dismiss()
+        }
+    }
+
+    private fun callChoice(message: String, buttonAText: String, buttonBText: String, aFunction: () -> Unit, bFunction: () -> Unit) {
+        val dialogView = LayoutInflater.from(context).inflate(R.layout.note_popup, null)
+
+        val builder = AlertDialog.Builder(context).setView(dialogView)
+
+        val notification = builder.show()
+
+        val textHolder: TextView = dialogView.findViewById(R.id.notePopupText)
+        val noteAButton = dialogView.findViewById<Button>(R.id.noteAButton)
+        val noteBButton = dialogView.findViewById<Button>(R.id.noteBButton)
+
+        textHolder.text = message
+        noteAButton.text = buttonAText
+        noteBButton.text = buttonBText
+        noteBButton.visibility = View.VISIBLE
+
+        noteAButton.setOnClickListener {
+            aFunction()
+            notification.dismiss()
+        }
+
+        noteBButton.setOnClickListener {
+            bFunction()
             notification.dismiss()
         }
     }
@@ -2256,10 +2357,68 @@ class EventView : Fragment() {
             it.currentRole = 0
             it.lastRole = 0
         }
-        binding.blueWinsValue.text = event.blueGameWins.toString()
-        binding.redWinsValue.text = event.redGameWins.toString()
+        updateGameWins()
         binding.roundText.text = event.round.toString()
         updateTicketLists()
         DBF.updateTicketArray(allTickets)
+    }
+
+    private fun updateGameWinButtons() {
+        binding.gameWinBlue.apply {
+            setBackgroundColor(if (gameWinner == "Blue") blueWinnerColor else blueUnselectedColor)
+            elevation = if (gameWinner == "Blue") 10f else 0f
+            alpha = if (gameWinner == "Blue") 1f else 0.7f
+        }
+        binding.gameWinRed.apply {
+            setBackgroundColor(if (gameWinner == "Red") redWinnerColor else redUnselectedColor)
+            elevation = if (gameWinner == "Red") 10f else 0f
+            alpha = if (gameWinner == "Red") 1f else 0.7f
+        }
+        binding.gameWinTie.apply {
+            setBackgroundColor(if (gameWinner == "Tie") tieActiveColor else tieUnselectedColor)
+            elevation = if (gameWinner == "Tie") 10f else 0f
+            alpha = if (gameWinner == "Tie") 1f else 0.7f
+        }
+        binding.gameWinAccept.isEnabled = true
+    }
+
+    private fun setGameWinner() {
+        if (gameWinner == "") return
+        winnerPicked = true
+        binding.bottomPanelSetWinner.visibility = View.GONE
+        binding.bottomPanel.visibility = View.VISIBLE
+        if (gameWinner == "Red") {
+            event.redGameWins += 1
+
+        } else if (gameWinner == "Blue"){
+            event.blueGameWins += 1
+        } else if (gameWinner == "Tie"){
+            event.redGameWins += 1
+            event.blueGameWins += 1
+        }
+        gameWinner = ""
+        binding.gameWinAccept.isEnabled = false
+        updateGameWins()
+        updateGameWinButtons()
+    }
+
+    private fun updateGameWins() {
+        binding.redWinsValue.text = event.redGameWins.toString()
+        binding.blueWinsValue.text = event.blueGameWins.toString()
+        DBF.updateData(event)
+        eventDatabase.update(event)
+    }
+
+    fun goToLevelUp(){
+        Log.i(
+            "test",
+            "Kom in med ${selectedTicket.firstName} playerId: ${selectedTicket.playerId}"
+        )
+        findNavController().navigate(
+            EventViewDirections.actionEventViewToLevelUpFragment(
+                selectedTicket.playerId!!,
+                event.eventId
+            )
+        )
     }
 }

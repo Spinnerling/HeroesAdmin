@@ -13,7 +13,6 @@ import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
 import android.widget.Button
 import android.widget.TextView
-import android.widget.Toast
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
@@ -22,7 +21,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.heroadmin.databinding.FragmentEventListBinding
 import org.json.JSONObject
 import kotlinx.serialization.json.Json
-import org.json.JSONArray
 
 class EventList : Fragment() {
     // Initialize the binding object
@@ -182,7 +180,7 @@ class EventList : Fragment() {
         val textHolder: TextView = dialogView.findViewById(R.id.notePopupText)
         textHolder.text = message
 
-        dialogView.findViewById<Button>(R.id.notePopupAcceptButton).setOnClickListener {
+        dialogView.findViewById<Button>(R.id.noteAButton).setOnClickListener {
             notification.dismiss()
         }
     }
