@@ -1,19 +1,24 @@
 package com.example.heroadmin
 
+import android.content.SharedPreferences
 import android.util.Log
 import kotlinx.serialization.KSerializer
+import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import java.util.Locale
-import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.atomic.AtomicInteger
 
 class LocalDatabase<T, ID>(
     private val serializer: KSerializer<T>,
-    private val getId: (T) -> ID
+    private val getId: (T) -> ID,
+    private val preferences: SharedPreferences,
+    private val preferencesKey: String  // Add a preferencesKey parameter
 ) {
     private val database = mutableMapOf<ID, T>()
+
+    fun initialize() {
+        loadFromPreferences()
+    }
 
     fun getById(id: ID): T? {
         val item = database[id]
@@ -41,6 +46,7 @@ class LocalDatabase<T, ID>(
         val id = getId(item)
         if (id !in database) {
             database[id] = item
+            saveToPreferences()
         } else {
             //update(item)
             Log.i("check", "Item with ID $id already in database.")
@@ -51,6 +57,7 @@ class LocalDatabase<T, ID>(
         val id = getId(item)
         if (id in database) {
             database[id] = item
+            saveToPreferences()
         } else {
             insert(item)
             Log.i("check", "Item with ID $id does not exist in database. Inserting instead.")
@@ -99,5 +106,34 @@ class LocalDatabase<T, ID>(
         for (id in database.keys) {
             Log.i(tag, "Item ID: $id")
         }
+    }
+
+    // Lasting data, across processes
+    private fun loadFromPreferences() {
+        val json = preferences.getString(preferencesKey, null) ?: return
+        val listSerializer = ListSerializer(serializer)
+        val items = Json.decodeFromString(listSerializer, json)
+        database.clear()
+        items.forEach { item ->
+            val id = getId(item)
+            database[id] = item
+        }
+    }
+
+    private fun saveToPreferences() {
+        val items = database.values.toList()
+        val listSerializer = ListSerializer(serializer)
+        val json = Json.encodeToString(listSerializer, items)
+        preferences.edit().putString(preferencesKey, json).apply()  // Use preferencesKey here
+    }
+
+    fun clearDatabase() {
+        database.clear()
+        saveToPreferences()
+    }
+
+    fun clearCache() {
+        clearDatabase()
+        preferences.edit().clear().apply()
     }
 }

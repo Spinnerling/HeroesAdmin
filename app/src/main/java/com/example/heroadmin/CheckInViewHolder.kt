@@ -16,6 +16,7 @@ class CheckInViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
     var infoButton: Button = itemView.findViewById(R.id.checkin_infoButton)
     var teamButton: Button = itemView.findViewById(R.id.checkin_teamButton)
+    var unteamButton: Button = itemView.findViewById(R.id.checkin_unteamButton)
     var checkInButton: Button = itemView.findViewById(R.id.checkin_checkinButton)
     var hideNoteButton: Button = itemView.findViewById(R.id.checkin_HideNoteButton)
     var editNoteButton: Button = itemView.findViewById(R.id.checkin_editNoteButton)

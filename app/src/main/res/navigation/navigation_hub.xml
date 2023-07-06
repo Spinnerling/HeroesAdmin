@@ -43,6 +43,9 @@
         <argument
             android:name="passedEventId"
             app:argType="string" />
+        <argument
+            android:name="passedTicketId"
+            app:argType="string" />
     </fragment>
     <fragment
         android:id="@+id/eventAdminFrag"

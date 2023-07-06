@@ -1,5 +1,6 @@
 package com.example.heroadmin
 
+import android.content.Context
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
@@ -13,14 +14,6 @@ class MainActivity : AppCompatActivity() {
     lateinit var event: Event
     var devMode: Boolean = false
     var connectionProblems = false
-    val ticketDatabase: LocalDatabase<Ticket, String>
-        get() = LocalDatabaseSingleton.ticketDatabase
-
-    val playerDatabase: LocalDatabase<Player, String>
-        get() = LocalDatabaseSingleton.playerDatabase
-
-    val eventDatabase: LocalDatabase<Event, String>
-        get() = LocalDatabaseSingleton.eventDatabase
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,4 +24,5 @@ class MainActivity : AppCompatActivity() {
         } catch (e: NullPointerException) {
         }
     }
+
 }

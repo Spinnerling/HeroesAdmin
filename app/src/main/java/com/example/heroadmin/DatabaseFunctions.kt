@@ -246,6 +246,7 @@ class DatabaseFunctions(val context: Context) {
                 eventList.add(event)
                 Log.d("DatabaseFunctions", "Added $i event: " + event.title)
                 i++
+                LocalDatabaseSingleton.eventDatabase.insert(event)
             }
         } else {
             Log.e("DatabaseFunctions", "No 'data' key found in the JSON response")

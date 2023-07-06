@@ -45,7 +45,7 @@ class CheckInRecyclerAdapter(private var ticketArray: MutableList<Ticket>, priva
             holder.groupName.text = "Group: ${ticket.group}"
         }
         else {
-            holder.groupName.text = "Ungrouped"
+            holder.groupName.text = "No Group"
         }
 
         if (ticket.note == "" || ticket.note == null){
@@ -72,6 +72,12 @@ class CheckInRecyclerAdapter(private var ticketArray: MutableList<Ticket>, priva
 
         holder.checkInButton.setOnClickListener{
             eventView.checkInTicket(ticket)
+        }
+
+        holder.unteamButton.setOnClickListener{
+            ticket.teamColor = null
+            DBF?.updateData(ticket)
+            eventView.updateTicketLists()
         }
 
         holder.teamButton.setOnClickListener{

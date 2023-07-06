@@ -37,7 +37,7 @@ class EventList : Fragment() {
     private var displayPastEvents: Boolean = false
     private val SHARED_PREFS = "sharedPrefs"
     private val VENUE_KEY = "venue"
-    val eventDatabase = LocalDatabaseSingleton.eventDatabase
+    val eventDatabase get() = LocalDatabaseSingleton.eventDatabase
 
     private lateinit var sharedPreferences: SharedPreferences
 
@@ -94,7 +94,8 @@ class EventList : Fragment() {
             { eventsJson -> getEvents(eventsJson) },
             {
                 binding.eventStatusText.text = "Kunde ej koppla upp till databasen"
-            }
+                getEventsLocally()
+            }, 3
         )
     }
 
@@ -165,24 +166,57 @@ class EventList : Fragment() {
         checkList()
     }
 
+    private fun getEventsLocally() {
+        eventArray = eventDatabase.getAll()
 
-    private fun noEventConnection() {
-        callNotification("Could not access database")
-    }
+        Log.i("checkList", "eventArray size: ${eventArray.size}")
+        eventListList.clear()
 
-    private fun callNotification(message: String) {
-        val dialogView = LayoutInflater.from(context).inflate(R.layout.note_popup, null)
-
-        val builder = AlertDialog.Builder(context).setView(dialogView)
-
-        val notification = builder.show()
-
-        val textHolder: TextView = dialogView.findViewById(R.id.notePopupText)
-        textHolder.text = message
-
-        dialogView.findViewById<Button>(R.id.noteAButton).setOnClickListener {
-            notification.dismiss()
+        // Create an empty event list for each venue, put into ListList
+        for (venue in venues) {
+            val eventList: MutableList<Event> = mutableListOf()
+            eventListList.add(eventList)
         }
+
+        if (eventListList.size != venues.size) {
+            Log.e("checkList", "Did not create all the lists")
+        }
+
+        // Divvy up all the events into correct event list
+        for (event in eventArray) {
+            Log.i("checkList", "Venues: ${event.venue}, Event: ${event.title}")
+            // Fix venue name
+            when (event.venue) {
+                "917" -> event.venue = "Visby"
+                "10691" -> event.venue = "Stockholm"
+                "23307" -> event.venue = "Göteborg"
+                "24643" -> event.venue = "Göteborg"
+                "23314" -> event.venue = "Örebro"
+                "23312" -> event.venue = "Malmö"
+                "23310" -> event.venue = "Uppsala"
+            }
+
+            for (i in venues.indices) {
+                // If event's venue is correct for the list, add event to the list
+                if (event.venue == venues[i]) {
+                    eventListList[i].add(event)
+                    Log.i("checkList", "Adding event ${event.title} to list for venue: ${venues[i]}")
+                }
+            }
+        }
+
+        // Call setEventAdapter() with the loaded venue
+        val loadedVenue = sharedPreferences.getString(VENUE_KEY, null)
+        loadedVenue?.let {
+            Log.i("checkList", "Loaded venue: $it")
+            setEventAdapter(it)
+        }
+        Log.i(
+            "checkList",
+            "getEventsLocally run. Venues: ${venues.size}, eventListList: ${venues.size}"
+        )
+
+        checkList()
     }
 
     private fun setEventAdapter(venue: String) {

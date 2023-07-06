@@ -1,11 +1,14 @@
 package com.example.heroadmin
 
+import android.app.AlertDialog
 import android.graphics.PorterDuff
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
+import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -21,9 +24,11 @@ import kotlinx.coroutines.launch
 class LevelUpFragment : Fragment() {
     private lateinit var binding: FragmentLevelUpBinding
     private lateinit var player: Player
+    private lateinit var ticket: Ticket
     private lateinit var v: View
     private lateinit var DBF: DatabaseFunctions
     private lateinit var currPlayerId: String
+    private lateinit var currTicketId: String
     private var currSection = 0
     private lateinit var buttonList: Array<ImageButton>
     private lateinit var warriorButtonList: Array<ImageButton>
@@ -53,6 +58,7 @@ class LevelUpFragment : Fragment() {
         DBF.setLevelUpView(this)
         args = LevelUpFragmentArgs.fromBundle(requireArguments())
         currPlayerId = args.passedPlayerId
+        currTicketId = args.passedTicketId
         currEventId = args.passedEventId
 
         specialSection = binding.specialClassList
@@ -115,6 +121,35 @@ class LevelUpFragment : Fragment() {
             )
         }
 
+        binding.levelUpApplyButton.setOnClickListener {
+            val dialogView = LayoutInflater.from(context).inflate(R.layout.award_exp, null)
+
+            val builder = AlertDialog.Builder(context).setView(dialogView)
+
+            val notification = builder.show()
+
+            val nameTextHolder: TextView = dialogView.findViewById(R.id.ae_playerNameText)
+            val expTextHolder: EditText = dialogView.findViewById(R.id.ae_expAmount)
+            val cancelButton = dialogView.findViewById<Button>(R.id.ae_cancelButton)
+            val acceptButton = dialogView.findViewById<Button>(R.id.ae_acceptButton)
+
+            nameTextHolder.text = player.fullName
+            expTextHolder.setText(ticket.expPersonal.toString())
+
+            cancelButton.setOnClickListener {
+                notification.dismiss()
+            }
+
+            acceptButton.setOnClickListener {
+                notification.dismiss()
+                var amount = expTextHolder.text.toString()
+                if (amount == "") amount = "0"
+                ticket.expPersonal = amount.toInt()
+                DBF.updateData(ticket)
+                updatePlayer()
+            }
+        }
+
         updatePlayer()
 
         return binding.root
@@ -123,6 +158,15 @@ class LevelUpFragment : Fragment() {
     private fun updatePlayer() {
         lifecycleScope.launch {
             try {
+                Log.i("LevelUp", "Passed Ticket Id: ${args.passedTicketId}, currTicketId: $currTicketId")
+                ticket = LocalDatabaseSingleton.ticketDatabase.getById(currTicketId)!!
+                if (ticket == null) {
+                    Log.i("LevelUp", "Ticket is null")
+                }
+                else {
+                    Log.i("LevelUp", "Ticket exists")
+                    Log.i("LevelUp", "Ticket Exp: ${ticket.expPersonal}")
+                }
                 player = DBF.getPlayer(currPlayerId)!!
                 player.updateUsedExp()
                 binding.levelUpPlayerNameText.text = player.fullName

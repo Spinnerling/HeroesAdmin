@@ -15,7 +15,7 @@ data class Event(
     var description: String = "",
     var clickWinner: String = "",
     var gameWinner: String = "",
-    var expAttendanceValue: Int = 20,
+    var expAttendanceValue: Int = 25,
     var expClickWinValue: Int = 5,
     var expGameWinValue: Int = 10,
     var expTeamChangeValue: Int = 5,

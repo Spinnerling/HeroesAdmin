@@ -236,10 +236,15 @@ class EventView : Fragment() {
                 if (selectedTicket.playerId == "null") {
                     callNotification("Matcha om spelaren via spelarens INFO-knapp först!")
                 } else {
-                    if (event.round > 0 && (event.gameWinner == "" || event.clickWinner == "")){
-                        callChoice("Game has not ended. Do you want to set winners before levelling up?", "Set Winners", "Level Up", ::openWinnerPopup, ::goToLevelUp)
-                    }
-                    else {
+                    if (event.round > 0 && (event.gameWinner == "" || event.clickWinner == "")) {
+                        callChoice(
+                            "Game has not ended. Do you want to set winners before levelling up?",
+                            "Set Winners",
+                            "Level Up",
+                            ::openWinnerPopup,
+                            ::goToLevelUp
+                        )
+                    } else {
                         goToLevelUp()
                     }
                 }
@@ -592,7 +597,7 @@ class EventView : Fragment() {
                 withContext(Dispatchers.Main) {
 
 
-                    // Process tickets without playerId or suggestions
+                    // Process tickets
                     processTickets(tickets)
                     Log.i(
                         "playerLink",
@@ -841,7 +846,8 @@ class EventView : Fragment() {
             return
         }
         if (bottomPanelPlayer.visibility == View.VISIBLE) {
-            if (winnerPicked) bottomPanel.visibility = View.VISIBLE else binding.bottomPanelSetWinner.visibility = View.VISIBLE
+            if (winnerPicked) bottomPanel.visibility =
+                View.VISIBLE else binding.bottomPanelSetWinner.visibility = View.VISIBLE
             bottomPanelPlayer.visibility = View.GONE
         }
         if (bottomPanelNewRound.visibility == View.VISIBLE) {
@@ -1677,11 +1683,11 @@ class EventView : Fragment() {
         }
 
         // Check for game winner
-        currGameWinner = if (event.redGameWins > event.blueGameWins){
+        currGameWinner = if (event.redGameWins > event.blueGameWins) {
             "Red"
-        }else if (event.blueGameWins > event.redGameWins){
+        } else if (event.blueGameWins > event.redGameWins) {
             "Blue"
-        }else {
+        } else {
             "Tie"
         }
 
@@ -2180,7 +2186,13 @@ class EventView : Fragment() {
         }
     }
 
-    private fun callChoice(message: String, buttonAText: String, buttonBText: String, aFunction: () -> Unit, bFunction: () -> Unit) {
+    private fun callChoice(
+        message: String,
+        buttonAText: String,
+        buttonBText: String,
+        aFunction: () -> Unit,
+        bFunction: () -> Unit
+    ) {
         val dialogView = LayoutInflater.from(context).inflate(R.layout.note_popup, null)
 
         val builder = AlertDialog.Builder(context).setView(dialogView)
@@ -2283,6 +2295,7 @@ class EventView : Fragment() {
             binding.evNoConnection.visibility = View.GONE
             binding.levelUpButton.visibility = View.VISIBLE
             binding.playerExpText.visibility = View.GONE
+            resetLocalDatabase()
         }
     }
 
@@ -2299,6 +2312,35 @@ class EventView : Fragment() {
             //for check internet over Bluetooth
             actNw.hasTransport(NetworkCapabilities.TRANSPORT_BLUETOOTH) -> true
             else -> false
+        }
+    }
+
+    private fun resetLocalDatabase() {
+        Log.i("Connection", "Resetting Local Database")
+        // Save players in this Event
+        val players: MutableList<Player> = mutableListOf()
+        for (ticket in allTickets) {
+            if (ticket.playerId == null || ticket.playerId == "" || ticket.playerId == "null") continue
+            val player = playerDatabase.getById(ticket.playerId!!)
+            if (player != null) {
+                players.add(player)
+            }
+        }
+
+        // Clear databases
+        ticketDatabase.clearCache()
+        playerDatabase.clearCache()
+        eventDatabase.clearCache()
+
+        // Add this event's content to local database
+        eventDatabase.insert(event)
+
+        for (player in players) {
+            playerDatabase.insert(player)
+        }
+
+        for (ticket in allTickets) {
+            ticketDatabase.insert(ticket)
         }
     }
 
@@ -2390,9 +2432,9 @@ class EventView : Fragment() {
         if (gameWinner == "Red") {
             event.redGameWins += 1
 
-        } else if (gameWinner == "Blue"){
+        } else if (gameWinner == "Blue") {
             event.blueGameWins += 1
-        } else if (gameWinner == "Tie"){
+        } else if (gameWinner == "Tie") {
             event.redGameWins += 1
             event.blueGameWins += 1
         }
@@ -2409,7 +2451,7 @@ class EventView : Fragment() {
         eventDatabase.update(event)
     }
 
-    fun goToLevelUp(){
+    fun goToLevelUp() {
         Log.i(
             "test",
             "Kom in med ${selectedTicket.firstName} playerId: ${selectedTicket.playerId}"
@@ -2417,7 +2459,8 @@ class EventView : Fragment() {
         findNavController().navigate(
             EventViewDirections.actionEventViewToLevelUpFragment(
                 selectedTicket.playerId!!,
-                event.eventId
+                event.eventId,
+                selectedTicket.ticketId
             )
         )
     }
