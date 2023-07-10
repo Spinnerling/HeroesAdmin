@@ -937,6 +937,7 @@
                 android:visibility="visible"
                 app:strokeColor="#000000"
                 app:strokeWidth="2dp"
+                android:enabled="false"
                 />
 
         </LinearLayout>

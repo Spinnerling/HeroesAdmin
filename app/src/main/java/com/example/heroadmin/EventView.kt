@@ -71,6 +71,7 @@ class EventView : Fragment() {
     private lateinit var bottomPanel: LinearLayout
     private lateinit var bottomPanelPlayer: LinearLayout
     private lateinit var bottomPanelNewRound: LinearLayout
+    private lateinit var bottomPanelSetWinner: LinearLayout
     private lateinit var playerRoleButtonPanel: LinearLayout
     private lateinit var loadingDialogue: AlertDialog
     private var healerAmount: Int = 0
@@ -79,7 +80,7 @@ class EventView : Fragment() {
     private var knightAmount: Int = 0
     private var specialAAmount: Int = 0
     private var specialBAmount: Int = 0
-    private var firstPlayerSelected: Boolean = false
+    private var hasTeamItemSelected: Boolean = false
     private var assignSorting = 3
     private var checkInSorting = 0
     private var teamSorting = 0
@@ -93,7 +94,7 @@ class EventView : Fragment() {
     private val json = Json { ignoreUnknownKeys = true; coerceInputValues = true }
     public var allTicketsMatched = false
     var devMode: Boolean = false
-    private var winnerPicked = false
+    private var winnerPanel = false
     private var gameWinner = ""
 
     // Colors (set in OnResume)
@@ -128,16 +129,17 @@ class EventView : Fragment() {
     override fun onResume() {
         super.onResume()
         devMode = currActivity.devMode
-
         // Find elements
         bottomPanel = binding.bottomPanel
         bottomPanelNewRound = binding.bottomPanelNewRound
         bottomPanelPlayer = binding.bottomPanelPlayer
+        bottomPanelSetWinner = binding.bottomPanelSetWinner
         playerRoleButtonPanel = binding.playerRoleButtonPanel
 
         loadingPopup()
         getEvent()
         checkConnection()
+        updateBottomPanel(0)
 
         binding.scrollingPanel.setOnTouchListener { _, _ ->
             pressLayoutFunction()
@@ -205,21 +207,18 @@ class EventView : Fragment() {
         }
 
         binding.playerCloseButton.setOnClickListener {
-            deselectPlayer()
+            deselectTeamItem(true)
         }
 
         binding.newRoundButton.setOnClickListener {
-            deselectPlayer()
-            bottomPanel.visibility = View.GONE
-            bottomPanelNewRound.visibility = View.VISIBLE
+            deselectTeamItem(true)
+            updateBottomPanel(1)
             checkTeamSizes()
         }
 
         binding.cancelNewRoundButton.setOnClickListener {
-            deselectPlayer()
-            bottomPanel.visibility = View.VISIBLE
-            bottomPanelNewRound.visibility = View.GONE
-            playerRoleButtonPanel.visibility = View.INVISIBLE
+            deselectTeamItem(true)
+            updateBottomPanel(0)
             dismissKeyboard()
         }
 
@@ -292,9 +291,10 @@ class EventView : Fragment() {
             } else {
                 randomizeRoles()
                 dismissKeyboard()
-                deselectPlayer()
-                winnerPicked = false
+                winnerPanel = true
+                deselectTeamItem( true)
                 binding.gameWinAccept.isEnabled = false
+                updateBottomPanel(0)
             }
         }
 
@@ -519,7 +519,7 @@ class EventView : Fragment() {
             updateGameWinButtons()
         }
         binding.gameWinAccept.setOnClickListener {
-            setGameWinner()
+            setRoundWinner()
         }
 
         noWinnerUnselectedColor = ContextCompat.getColor(requireContext(), R.color.grey)
@@ -841,19 +841,13 @@ class EventView : Fragment() {
         }
     }
 
-    private fun deselectPlayer() {
-        if (!firstPlayerSelected) {
+    private fun deselectTeamItem(updatePanel: Boolean) {
+        if (!hasTeamItemSelected) {
             return
         }
-        if (bottomPanelPlayer.visibility == View.VISIBLE) {
-            if (winnerPicked) bottomPanel.visibility =
-                View.VISIBLE else binding.bottomPanelSetWinner.visibility = View.VISIBLE
-            bottomPanelPlayer.visibility = View.GONE
-        }
-        if (bottomPanelNewRound.visibility == View.VISIBLE) {
-            playerRoleButtonPanel.visibility = View.INVISIBLE
-        }
         selectedTicketTVH.deselect()
+        hasTeamItemSelected = false
+        if (updatePanel) updateBottomPanel(0)
     }
 
     fun updateTicketLists() {
@@ -1317,13 +1311,13 @@ class EventView : Fragment() {
 
     private fun setTeamAdapters() {
         redTeamAdapter =
-            TeamRecyclerAdapter(redTeam, { position -> onTeamItemClick(position) }, this)
+            TeamRecyclerAdapter(redTeam, this)
         blueTeamAdapter =
-            TeamRecyclerAdapter(blueTeam, { position -> onTeamItemClick(position) }, this)
+            TeamRecyclerAdapter(blueTeam, this)
         redBenchAdapter =
-            TeamRecyclerAdapter(redBench, { position -> onTeamItemClick(position) }, this)
+            TeamRecyclerAdapter(redBench, this)
         blueBenchAdapter =
-            TeamRecyclerAdapter(blueBench, { position -> onTeamItemClick(position) }, this)
+            TeamRecyclerAdapter(blueBench, this)
 
         val layoutManagerR = LinearLayoutManager(v.context)
         val layoutManagerRB = LinearLayoutManager(v.context)
@@ -1350,53 +1344,6 @@ class EventView : Fragment() {
         ticketListBB.layoutManager = layoutManagerBB
         ticketListBB.itemAnimator = DefaultItemAnimator()
         ticketListBB.adapter = blueBenchAdapter
-    }
-
-    private fun onTeamItemClick(position: Int) {
-        if (!firstPlayerSelected) {
-            deselectPlayer()
-        }
-        //selectedPlayer = selectedTicket.ticketId?.let { DBF.getPlayer(it) }!!
-
-        if (bottomPanelNewRound.visibility == View.VISIBLE) {
-            playerRoleButtonPanel.visibility = View.VISIBLE
-            if (selectedTicket.teamColor == "Blue") {
-                context?.resources?.let { binding.switchTeamButton2.setBackgroundColor(it.getColor(R.color.teamBlueColor)) }
-            } else {
-                context?.resources?.let { binding.switchTeamButton2.setBackgroundColor(it.getColor(R.color.teamRedColor)) }
-            }
-        } else {
-            binding.bottomPanel.visibility = View.GONE
-            binding.bottomPanelSetWinner.visibility = View.GONE
-            binding.bottomPanelPlayer.visibility = View.VISIBLE
-            binding.playerNameText.text = selectedTicket.fullName
-
-            if (selectedTicket.teamColor == "Blue") {
-                context?.resources?.let { binding.switchTeamButton.setBackgroundColor(it.getColor(R.color.teamBlueColor)) }
-            } else {
-                context?.resources?.let { binding.switchTeamButton.setBackgroundColor(it.getColor(R.color.teamRedColor)) }
-            }
-
-            if (selectedTicket.playerId == null || selectedTicket.playerId == "") {
-                binding.levelUpButton.visibility = View.GONE
-                binding.playerExpText.visibility = View.VISIBLE
-                binding.playerExpText.text = "No playerId found\nMatch via INFO button!"
-            } else if (!currActivity.connectionProblems) {
-                binding.levelUpButton.visibility = View.VISIBLE
-                binding.playerExpText.visibility = View.GONE
-            }
-
-            val roleInText = DBF.getRoleByNumber(selectedTicket.currentRole ?: 0)
-            binding.ticketRoleText.text = roleInText
-
-            if (selectedTicket.benched == 0) {
-                binding.playerOnOffSwitch.isChecked = true
-                binding.playerOnOffSwitch2.isChecked = true
-            } else if (selectedTicket.benched == 1) {
-                binding.playerOnOffSwitch.isChecked = false
-                binding.playerOnOffSwitch2.isChecked = false
-            }
-        }
     }
 
     fun checkInTicket(ticket: Ticket) {
@@ -1531,7 +1478,7 @@ class EventView : Fragment() {
 
     private fun ResetTicket() {
         val ticket = selectedTicket
-        deselectPlayer()
+        deselectTeamItem(true)
         val player = ticket.playerId?.let { playerDatabase.getById(it) }
         if (player != null) {
             player.healerLevel = 0
@@ -1669,26 +1616,25 @@ class EventView : Fragment() {
             updateWinnerButtonColors()
         }
 
-        var clickWinModified = false
-        var gameWinModified = false
-
-        // Set initial button colors
+        // Check for already established winners
         if (event.clickWinner != "") {
-            clickWinModified = true
             currClickWinner = event.clickWinner
         }
         if (event.gameWinner != "") {
-            gameWinModified = true
-            currGameWinner = event.clickWinner
+            currGameWinner = event.gameWinner
         }
 
-        // Check for game winner
-        currGameWinner = if (event.redGameWins > event.blueGameWins) {
-            "Red"
-        } else if (event.blueGameWins > event.redGameWins) {
-            "Blue"
+        // Auto-check for a game winner
+        currGameWinner = if (event.redGameWins != 0 && event.blueGameWins != 0){
+            if (event.redGameWins > event.blueGameWins) {
+                "Red"
+            } else if (event.blueGameWins > event.redGameWins) {
+                "Blue"
+            } else {
+                "Tie"
+            }
         } else {
-            "Tie"
+            ""
         }
 
         updateWinnerButtonColors()
@@ -1699,8 +1645,8 @@ class EventView : Fragment() {
         }
         dialogView.findViewById<Button>(R.id.sw_saveButton).setOnClickListener {
             Toast.makeText(context, "Saved", Toast.LENGTH_SHORT).show()
-            event.clickWinner = if (clickWinModified) currClickWinner else ""
-            event.gameWinner = if (gameWinModified) currGameWinner else ""
+            event.clickWinner = currClickWinner
+            event.gameWinner = currGameWinner
             DBF.updateData(event)
             eventDatabase.update(event)
             alertDialog.dismiss()
@@ -1732,10 +1678,10 @@ class EventView : Fragment() {
     }
 
     fun selectTicket(ticket: Ticket) {
-        if (firstPlayerSelected) {
-            deselectPlayer()
+        if (hasTeamItemSelected) {
+            deselectTeamItem(false)
         }
-        firstPlayerSelected = true
+        hasTeamItemSelected = true
         ticket.selected = true
         selectedTicket = ticket
         if (selectedTicket.benched == 0) {
@@ -1755,7 +1701,7 @@ class EventView : Fragment() {
             selectedTicket.switchedTeams += 1
         }
         updateTicketLists()
-        deselectPlayer()
+        deselectTeamItem(true)
         selectedTicketTVH.select()
         autoSetRoleAmounts()
 
@@ -2108,19 +2054,8 @@ class EventView : Fragment() {
         DBF.updateTicketArray(allTickets)
         teamSorting = 2
         updateTicketLists()
-        binding.bottomPanelSetWinner.visibility = View.VISIBLE
-        bottomPanelNewRound.visibility = View.GONE
+        updateBottomPanel(0)
         return true
-    }
-
-    private fun LogHatsForTicket(ticket: Ticket, lotteryHats: List<MutableList<Ticket>>) {
-        val hatIndices = mutableListOf<Int>()
-        for ((index, hat) in lotteryHats.withIndex()) {
-            if (ticket in hat) {
-                hatIndices.add(index)
-            }
-        }
-        Log.i("pickTeamRoles", "Ticket ${ticket.firstName} is in hats: $hatIndices")
     }
 
     private fun updateTicketStats(team: MutableList<Ticket>) {
@@ -2226,14 +2161,68 @@ class EventView : Fragment() {
             selectedTicket.benched = 0
         }
 
+        //Check if someone in ticket's team is warrior
+        var someoneIsWarrior = false
+        val team = if (selectedTicket.teamColor == "Red") redTeam else blueTeam
+        for (ticket in team) {
+            if (ticket.currentRole == 7) {
+                someoneIsWarrior = true
+                break
+            }
+        }
+        if (!winnerPanel && event.round > 0 && someoneIsWarrior && selectedTicket.currentRole != 7) {
+            callChoice(
+                "Do you want to randomize the role to someone else?",
+                "No",
+                "Yes",
+                {},
+                { randomizeRoleToTeam() })
+        }
+
         DBF.updateTicketArray(allTickets)
         updateTicketLists()
         autoSetRoleAmounts()
     }
 
-    fun pressLayoutFunction() {
+    private fun randomizeRoleToTeam() {
+        val team = if (selectedTicket.teamColor == "Red") redTeam else blueTeam
+
+        // Get a list of warriors
+        val warriors: MutableList<Ticket> = mutableListOf()
+        for (ticket in team) {
+            if (ticket.currentRole == 7) {
+                warriors.add(ticket)
+            }
+        }
+
+        // Pick the one who's been a special role the least amount of times
+        warriors.sortedBy { it.roundsSpecialRole }
+        val chosenWarrior = warriors[0]
+
+        // Notify game master who gets the role
+        val role = when (selectedTicket.currentRole) {
+            1 -> "Helare"
+            2 -> "Odåga"
+            3 -> "Magiker"
+            4 -> "Riddare"
+            5 -> "SpecialA"
+            6 -> "SpecialB"
+            else -> "Okänd"
+        }
+
+        callNotification("${chosenWarrior.fullName}\nNew Role:\n$role")
+
+        // Set both benched ticket and new ticket as their new roles
+        chosenWarrior.currentRole = selectedTicket.currentRole
+        selectedTicket.currentRole = 7
+
+        // Update lists
+        updateTicketLists()
+    }
+
+    private fun pressLayoutFunction() {
         dismissKeyboard()
-        deselectPlayer()
+        deselectTeamItem(true)
     }
 
     private fun checkGameEnded() {
@@ -2424,19 +2413,23 @@ class EventView : Fragment() {
         binding.gameWinAccept.isEnabled = true
     }
 
-    private fun setGameWinner() {
+    private fun setRoundWinner() {
         if (gameWinner == "") return
-        winnerPicked = true
-        binding.bottomPanelSetWinner.visibility = View.GONE
-        binding.bottomPanel.visibility = View.VISIBLE
-        if (gameWinner == "Red") {
-            event.redGameWins += 1
+        winnerPanel = false
+        updateBottomPanel(0)
+        when (gameWinner) {
+            "Red" -> {
+                event.redGameWins += 1
+            }
 
-        } else if (gameWinner == "Blue") {
-            event.blueGameWins += 1
-        } else if (gameWinner == "Tie") {
-            event.redGameWins += 1
-            event.blueGameWins += 1
+            "Blue" -> {
+                event.blueGameWins += 1
+            }
+
+            "Tie" -> {
+                event.redGameWins += 1
+                event.blueGameWins += 1
+            }
         }
         gameWinner = ""
         binding.gameWinAccept.isEnabled = false
@@ -2463,5 +2456,88 @@ class EventView : Fragment() {
                 selectedTicket.ticketId
             )
         )
+    }
+
+    fun updateBottomPanel(setState: Int) {
+        // State 0 = BottomPanel
+        // State 1 = New Round
+        // State 2 = Team Item Click
+        when (setState) {
+            1 -> {
+                bottomPanel.visibility = View.GONE
+                bottomPanelNewRound.visibility = View.VISIBLE
+                playerRoleButtonPanel.visibility = View.INVISIBLE
+            }
+
+            2 -> {
+                bottomPanel.visibility = View.GONE
+                if (bottomPanelNewRound.visibility == View.VISIBLE) {
+                    playerRoleButtonPanel.visibility = View.VISIBLE
+                    // Set team button color
+                    val color =
+                        if (selectedTicket.teamColor == "Blue") R.color.teamRedColor else R.color.teamBlueColor
+                    context?.resources?.let {
+                        binding.switchTeamButton2.setBackgroundColor(
+                            it.getColor(color)
+                        )
+                    }
+                } else {
+                    bottomPanelSetWinner.visibility = View.GONE
+                    bottomPanelPlayer.visibility = View.VISIBLE
+                    binding.playerNameText.text = selectedTicket.fullName
+
+                    if (selectedTicket.teamColor == "Blue") {
+                        context?.resources?.let {
+                            binding.switchTeamButton.setBackgroundColor(
+                                it.getColor(
+                                    R.color.teamBlueColor
+                                )
+                            )
+                        }
+                    } else {
+                        context?.resources?.let {
+                            binding.switchTeamButton.setBackgroundColor(
+                                it.getColor(
+                                    R.color.teamRedColor
+                                )
+                            )
+                        }
+                    }
+
+                    if (selectedTicket.playerId == null || selectedTicket.playerId == "") {
+                        binding.levelUpButton.visibility = View.GONE
+                        binding.playerExpText.visibility = View.VISIBLE
+                        binding.playerExpText.text = "No playerId found\nMatch via INFO button!"
+                    } else if (!currActivity.connectionProblems) {
+                        binding.levelUpButton.visibility = View.VISIBLE
+                        binding.playerExpText.visibility = View.GONE
+                    }
+
+                    val roleInText = DBF.getRoleByNumber(selectedTicket.currentRole ?: 0)
+                    binding.ticketRoleText.text = roleInText
+
+                    if (selectedTicket.benched == 0) {
+                        binding.playerOnOffSwitch.isChecked = true
+                        binding.playerOnOffSwitch2.isChecked = true
+                    } else if (selectedTicket.benched == 1) {
+                        binding.playerOnOffSwitch.isChecked = false
+                        binding.playerOnOffSwitch2.isChecked = false
+                    }
+                }
+            }
+
+            else -> {
+                if (winnerPanel) {
+                    bottomPanel.visibility = View.GONE
+                    bottomPanelSetWinner.visibility = View.VISIBLE
+                } else {
+                    bottomPanel.visibility = View.VISIBLE
+                    bottomPanelSetWinner.visibility = View.GONE
+                }
+                bottomPanelNewRound.visibility = View.GONE
+                bottomPanelPlayer.visibility = View.GONE
+                playerRoleButtonPanel.visibility = View.INVISIBLE
+            }
+        }
     }
 }

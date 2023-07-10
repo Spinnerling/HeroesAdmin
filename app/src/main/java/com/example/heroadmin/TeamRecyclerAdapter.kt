@@ -8,7 +8,6 @@ import com.example.heroadmin.LocalDatabaseSingleton.playerDatabase
 
 class TeamRecyclerAdapter(
     private val ticketArray: MutableList<Ticket>,
-    private val onItemClicked: (position: Int) -> Unit,
     private val eventView: EventView
 ) : RecyclerView.Adapter<TeamViewHolder>() {
     override fun getItemCount(): Int {
@@ -20,7 +19,7 @@ class TeamRecyclerAdapter(
         val inflater = LayoutInflater.from(context)
         val view = inflater.inflate(R.layout.team_listitem, parent, false)
 
-        return TeamViewHolder(view, onItemClicked, eventView)
+        return TeamViewHolder(view, eventView)
     }
 
     override fun onBindViewHolder(holder: TeamViewHolder, position: Int) {
