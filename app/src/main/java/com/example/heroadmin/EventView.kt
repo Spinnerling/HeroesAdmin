@@ -235,15 +235,27 @@ class EventView : Fragment() {
                 if (selectedTicket.playerId == "null") {
                     callNotification("Matcha om spelaren via spelarens INFO-knapp först!")
                 } else {
-                    if (event.round > 0 && (event.gameWinner == "" || event.clickWinner == "")) {
-                        callChoice(
-                            "Game has not ended. Do you want to set winners before levelling up?",
-                            "Set Winners",
-                            "Level Up",
-                            ::openWinnerPopup,
-                            ::goToLevelUp
-                        )
-                    } else {
+                    if (event.round > 0 && event.status != "Avslutat") {
+                        if (event.gameWinner == ""){
+                            callChoice(
+                                "No Game Winner set. Do you want to set winners before levelling up?",
+                                "Set Winners",
+                                "Level Up",
+                                ::openWinnerPopup,
+                                ::goToLevelUp
+                            )
+                        }
+                        else if (event.clickWinner == ""){
+                            callChoice(
+                                "No Click Winner set. Do you want to set winners before levelling up?",
+                                "Set Winners",
+                                "Level Up",
+                                ::openWinnerPopup,
+                                ::goToLevelUp
+                            )
+                        }
+                    }
+                    else {
                         goToLevelUp()
                     }
                 }
@@ -882,6 +894,25 @@ class EventView : Fragment() {
             }
         }
 
+        // Check if assignList tickets should be auto-grouped and auto-set into a team
+        val ticketsToBeRemoved = mutableListOf<Ticket>()
+
+        for (aTicket in assignList){
+            val teamLists = redTeam + blueTeam
+            val emailToFind = aTicket.bookerEmail
+            val matchingTicket = teamLists.firstOrNull { it.bookerEmail.equals(emailToFind, ignoreCase = true) }
+
+            if (matchingTicket != null) {
+                aTicket.teamColor = matchingTicket.teamColor
+                val chosenList = if (aTicket.teamColor == "Red") redTeam else blueTeam
+                chosenList.add(aTicket)
+                ticketsToBeRemoved.add(aTicket)
+            }
+        }
+
+        assignList.removeAll(ticketsToBeRemoved)
+
+
         // Check if autoAssign button should be visible
         val allTicketsHavePlayerId = assignList.all { it.playerId != null && it.playerId != "" }
 
@@ -1355,6 +1386,8 @@ class EventView : Fragment() {
         val alertDialog = builder.show()
         val name: TextView = dialogView.findViewById(R.id.checkInPopupNameText)
         name.text = ticket.fullName
+        val recruitsEditText: EditText = dialogView.findViewById(R.id.cp_recruitsAmount)
+        recruitsEditText.setText(ticket.recruits.toString())
 
         val acceptButton = dialogView.findViewById<Button>(R.id.checkinAcceptButton)
 
@@ -1385,14 +1418,16 @@ class EventView : Fragment() {
         }
 
         dialogView.findViewById<Button>(R.id.checkinAcceptButton).setOnClickListener {
-            // Update locally
+            // Update ticket
+            ticket.recruits = recruitsEditText.text.toString().toInt()
             ticket.checkedIn = 1
-            updateTicketLists()
-            autoSetRoleAmounts()
 
             // Update database
             DBF.updateTicketArray(allTickets)
-            ticketDatabase.update(ticket)
+
+            // Update lists and UI
+            updateTicketLists()
+            autoSetRoleAmounts()
             updateEventStatus()
 
             alertDialog.dismiss()

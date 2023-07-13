@@ -38,7 +38,7 @@
         android:textColor="#FFFFFF" />
 
     <EditText
-        android:id="@+id/checkInPopupEditText2"
+        android:id="@+id/cp_recruitsAmount"
         android:layout_width="150dp"
         android:layout_height="wrap_content"
         android:hint="Amount"
