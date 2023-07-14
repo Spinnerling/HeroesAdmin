@@ -81,22 +81,14 @@ class CheckInRecyclerAdapter(private var ticketArray: MutableList<Ticket>, priva
         }
 
         holder.teamButton.setOnClickListener{
-            if (ticket.teamColor == "Blue"){
+            val isBlue = ticket.teamColor == "Blue"
+
                 if (ticket.group == "" || ticket.group == null){
-                    DBF?.setTicketTeamColor(ticket, false)
+                    DBF?.setTicketTeamColor(ticket, isBlue)
                 }
                 else {
-                    eventView.setGroupColor(ticket.group!!, false, true)
+                    eventView.setGroupColor(ticket.group!!, isBlue, true)
                 }
-            }
-            else {
-                if (ticket.group == "" || ticket.group == null){
-                    DBF?.setTicketTeamColor(ticket, true)
-                }
-                else {
-                    eventView.setGroupColor(ticket.group!!, true, true)
-                }
-            }
 
             eventView.updateTicketLists()
         }

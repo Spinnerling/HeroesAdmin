@@ -236,29 +236,25 @@ class EventView : Fragment() {
                     callNotification("Matcha om spelaren via spelarens INFO-knapp först!")
                 } else {
                     if (event.round > 0 && event.status != "Avslutat") {
-                        if (event.gameWinner == ""){
-                            callChoice(
-                                "No Game Winner set. Do you want to set winners before levelling up?",
-                                "Set Winners",
-                                "Level Up",
-                                ::openWinnerPopup,
-                                ::goToLevelUp
-                            )
-                        }
-                        else if (event.clickWinner == ""){
-                            callChoice(
-                                "No Click Winner set. Do you want to set winners before levelling up?",
-                                "Set Winners",
-                                "Level Up",
-                                ::openWinnerPopup,
-                                ::goToLevelUp
-                            )
-                        }
-                    }
-                    else {
+                        val message =
+                            if (event.gameWinner == "") "No Game Winner set. Do you want to set winners before levelling up?"
+                            else if (event.clickWinner == "") "No Click Winner set. Do you want to set winners before levelling up?"
+                            else "Error!? Big wtf! You should probably set winners."
+
+                        callChoice(
+                            message,
+                            "Set Winners",
+                            "Level Up",
+                            ::openWinnerPopup,
+                            ::goToLevelUp
+                        )
+                    } else {
                         goToLevelUp()
                     }
                 }
+            }
+            else {
+                callNotification("Re-Match player first via INFO button, please.\nIf none")
             }
         }
 
@@ -304,7 +300,7 @@ class EventView : Fragment() {
                 randomizeRoles()
                 dismissKeyboard()
                 winnerPanel = true
-                deselectTeamItem( true)
+                deselectTeamItem(true)
                 binding.gameWinAccept.isEnabled = false
                 updateBottomPanel(0)
             }
@@ -550,6 +546,15 @@ class EventView : Fragment() {
         val builder =
             AlertDialog.Builder(context, android.R.style.Theme_DeviceDefault_NoActionBar_Fullscreen)
                 .setView(dialogView)
+        val cancelButton: Button = dialogView.findViewById(R.id.loading_cancelButton)
+
+        cancelButton.setOnClickListener {
+            findNavController().navigate(
+                EventViewDirections.actionEventViewToEventAdminFrag(
+                    currEventId
+                )
+            )
+        }
 
         loadingDialogue = builder.show()
     }
@@ -694,17 +699,6 @@ class EventView : Fragment() {
         // Update the shared 'allTickets' list
         allTickets.clear()
         allTickets.addAll(tickets)
-    }
-
-
-    fun logLargeString(tag: String, content: String) {
-        val maxLogSize = 1000
-        for (i in 0..content.length / maxLogSize) {
-            val start = i * maxLogSize
-            var end = (i + 1) * maxLogSize
-            end = if (end > content.length) content.length else end
-            Log.i(tag, content.substring(start, end))
-        }
     }
 
     fun manualPlayerLink(ticket: Ticket) {
@@ -897,10 +891,11 @@ class EventView : Fragment() {
         // Check if assignList tickets should be auto-grouped and auto-set into a team
         val ticketsToBeRemoved = mutableListOf<Ticket>()
 
-        for (aTicket in assignList){
+        for (aTicket in assignList) {
             val teamLists = redTeam + blueTeam
             val emailToFind = aTicket.bookerEmail
-            val matchingTicket = teamLists.firstOrNull { it.bookerEmail.equals(emailToFind, ignoreCase = true) }
+            val matchingTicket =
+                teamLists.firstOrNull { it.bookerEmail.equals(emailToFind, ignoreCase = true) }
 
             if (matchingTicket != null) {
                 aTicket.teamColor = matchingTicket.teamColor
@@ -1659,18 +1654,18 @@ class EventView : Fragment() {
             currGameWinner = event.gameWinner
         }
 
-        // Auto-check for a game winner
-        currGameWinner = if (event.redGameWins != 0 && event.blueGameWins != 0){
-            if (event.redGameWins > event.blueGameWins) {
-                "Red"
-            } else if (event.blueGameWins > event.redGameWins) {
-                "Blue"
-            } else {
-                "Tie"
-            }
-        } else {
-            ""
-        }
+//        // Auto-check for a game winner
+//        currGameWinner = if (event.redGameWins != 0 || event.blueGameWins != 0){
+//            if (event.redGameWins > event.blueGameWins) {
+//                "Red"
+//            } else if (event.blueGameWins > event.redGameWins) {
+//                "Blue"
+//            } else {
+//                "Tie"
+//            }
+//        } else {
+//            ""
+//        }
 
         updateWinnerButtonColors()
 
