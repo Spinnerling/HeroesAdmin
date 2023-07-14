@@ -1536,12 +1536,13 @@ class EventView : Fragment() {
 
 
     private fun openWinnerPopup() {
+        // Show popup
         val dialogView = LayoutInflater.from(context).inflate(R.layout.set_winner_popup, null)
-
         val builder = AlertDialog.Builder(context)
             .setView(dialogView)
-
         val alertDialog = builder.show()
+
+        // Set variables
         var currClickWinner = ""
         var currGameWinner = ""
 
@@ -1647,10 +1648,10 @@ class EventView : Fragment() {
         }
 
         // Check for already established winners
-        if (event.clickWinner != "") {
+        if (!event.clickWinner.isNullOrEmpty()) {
             currClickWinner = event.clickWinner
         }
-        if (event.gameWinner != "") {
+        if (!event.gameWinner.isNullOrEmpty()) {
             currGameWinner = event.gameWinner
         }
 
@@ -2287,7 +2288,7 @@ class EventView : Fragment() {
         }
 
         event.status = when {
-            event.clickWinner != "" || event.gameWinner != "" -> "Avslutat"
+            event.clickWinner != "" && event.gameWinner != "" -> "Avslutat"
             event.round > 0 -> "Spel påbörjat"
             ticketCheckIn -> "Checkar in"
             ticketTeamDivision -> "Lagindelning"
