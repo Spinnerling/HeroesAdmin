@@ -121,6 +121,13 @@ class DatabaseFunctions(val context: Context) {
                 return headers
             }
         }
+
+        stringRequest.retryPolicy = DefaultRetryPolicy(
+            15000, // 15 seconds - change to the suitable value.
+            DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+            DefaultRetryPolicy.DEFAULT_BACKOFF_MULT
+        )
+
         requestQueue.cache.clear()
         requestQueue.add(stringRequest)
     }
@@ -173,7 +180,7 @@ class DatabaseFunctions(val context: Context) {
             }
         }
         postRequest.retryPolicy = DefaultRetryPolicy(
-            DefaultRetryPolicy.DEFAULT_TIMEOUT_MS * 2,
+            15000,
             DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
             DefaultRetryPolicy.DEFAULT_BACKOFF_MULT
         )
