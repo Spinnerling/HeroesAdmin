@@ -1,6 +1,5 @@
 package com.example.heroadmin
 
-import android.app.AlertDialog
 import android.content.Context
 import android.content.SharedPreferences
 import android.os.Bundle
@@ -11,8 +10,6 @@ import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
-import android.widget.Button
-import android.widget.TextView
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
@@ -52,6 +49,10 @@ class EventList : Fragment() {
         dropdownMenu.setAdapter(venuesArrayAdapter)
         currActivity = (activity as MainActivity)
         Log.i("startup", "set CurrActivity")
+
+        // Load version number
+        loadVersionNumber()
+
         // Load the saved venue, if any
         loadVenue()
 
@@ -265,12 +266,16 @@ class EventList : Fragment() {
         }
     }
 
-
-
     private fun onEventItemClick(position: Int) {
         val event = eventAdapter.list[position]
         (activity as MainActivity).event = event
         findNavController().navigate(EventListDirections.actionEventListToEventAdminFrag(event.eventId))
+    }
+
+    private fun loadVersionNumber() {
+        val currContext = requireContext()
+        val versionName = currContext.packageManager.getPackageInfo(currContext.packageName, 0).versionName
+        binding.versionNum.text = "App Version: $versionName"
     }
 
     override fun onCreateView(

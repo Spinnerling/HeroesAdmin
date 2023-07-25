@@ -123,7 +123,7 @@ class DatabaseFunctions(val context: Context) {
         }
 
         stringRequest.retryPolicy = DefaultRetryPolicy(
-            15000, // 15 seconds - change to the suitable value.
+            20000,
             DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
             DefaultRetryPolicy.DEFAULT_BACKOFF_MULT
         )
@@ -180,9 +180,9 @@ class DatabaseFunctions(val context: Context) {
             }
         }
         postRequest.retryPolicy = DefaultRetryPolicy(
-            15000,
-            DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
-            DefaultRetryPolicy.DEFAULT_BACKOFF_MULT
+            20000,
+            3,
+            2f
         )
 
         // Set the cache to false
