@@ -252,8 +252,7 @@ class EventView : Fragment() {
                         goToLevelUp()
                     }
                 }
-            }
-            else {
+            } else {
                 callNotification("Re-Match player first via INFO button, please.\nIf none")
             }
         }
@@ -415,7 +414,7 @@ class EventView : Fragment() {
             openKlippkortsLink()
         }
         binding.roll20.setOnClickListener {
-            testFunction()
+            roll20rounds()
         }
 
         binding.assignTeamAutoAssignButton.setOnClickListener {
@@ -950,20 +949,29 @@ class EventView : Fragment() {
     }
 
     private fun initializeTicketGroups() {
-        Log.i(
-            "initializeTicketGroups",
-            "Starting initialization. Ticket amount: ${assignList.size}"
-        )
+        Log.i("initializeTicketGroups", "Starting initialization. Ticket amount: ${assignList.size}")
+
+        // Determine the maximum existing group number from allTickets
+        val maxExistingGroupNumber = allTickets.maxOfOrNull { it.group?.toIntOrNull() ?: 0 } ?: 0
         val emailToGroupMap = mutableMapOf<String, Int>()
-        val usedGroupNumbers = mutableSetOf<Int>()
+
+        // Initialize emailToGroupMap with existing groups from allTickets
+        for (ticket in allTickets) {
+            val bookerEmail = ticket.bookerEmail
+            val groupNumber = ticket.group?.toIntOrNull()
+            if (bookerEmail != null && groupNumber != null) {
+                emailToGroupMap[bookerEmail] = groupNumber
+            }
+        }
+
+        val usedGroupNumbers = (1..maxExistingGroupNumber).toSet().toMutableSet() // Include existing group numbers
         val groupToSizeMap = mutableMapOf<Int, Int>()
+        var newGroupNumber = maxExistingGroupNumber + 1 // Start from the next in line
 
         // First pass: Assign group numbers and calculate group sizes.
         for (ticket in assignList) {
-
             val bookerEmail = ticket.bookerEmail ?: continue
             val groupNumber = emailToGroupMap[bookerEmail] ?: run {
-                var newGroupNumber = 1
                 while (usedGroupNumbers.contains(newGroupNumber)) {
                     newGroupNumber++
                 }
@@ -1020,6 +1028,7 @@ class EventView : Fragment() {
         for (ticket in assignList) {
             if (ticket.group != "SELF" && ticket.group != "" && ticket.group != null) {
                 ticket.group = reassignedGroupMap[ticket.group] ?: ticket.group
+                checkForGroupTeam(ticket)
             }
         }
 
@@ -1029,6 +1038,17 @@ class EventView : Fragment() {
         assignSorting = if (allTicketsMatched) 3 else 2
 
         updateTicketLists()
+    }
+
+    private fun checkForGroupTeam(ticket: Ticket) {
+        if (!ticket.group.isNullOrEmpty() && ticket.group != "SELF" && ticket.teamColor.isNullOrEmpty()) {
+            allTickets.forEach { matchTicket ->
+                if (ticket.group == matchTicket.group && !matchTicket.teamColor.isNullOrEmpty()) {
+                    ticket.teamColor = matchTicket.teamColor
+                    return
+                }
+            }
+        }
     }
 
     private fun checkForDoubles() {
@@ -1166,7 +1186,12 @@ class EventView : Fragment() {
         ticket.playerId = newPlayerId
         playerDatabase.insert(newPlayer)
         val playerString = DBF.createJsonString(newPlayer)
-        DBF.apiCallPost("https://www.talltales.nu/API/api/create-player.php", {}, {}, playerString)
+        DBF.apiCallPost(
+            "https://www.talltales.nu/API/api/create-player.php",
+            {},
+            {},
+            playerString
+        )
         return newPlayer
     }
 
@@ -1396,7 +1421,8 @@ class EventView : Fragment() {
         val klippkortCheckBox: CheckBox = dialogView.findViewById(R.id.checkInKlippkortCheck)
         if (ticket.klippkort == 1 && ticket.checkedIn == 0) {
             klippkortCheckBox.visibility = View.VISIBLE
-            dialogView.findViewById<TextView>(R.id.checkInKlippkortTitle).visibility = View.VISIBLE
+            dialogView.findViewById<TextView>(R.id.checkInKlippkortTitle).visibility =
+                View.VISIBLE
             acceptButton.isEnabled = false
         } else {
             klippkortCheckBox.visibility = View.GONE
@@ -1697,9 +1723,12 @@ class EventView : Fragment() {
         val max = 3
 
         val healerAmount = min(smallerTeamSize / 4, max)
-        val mageAmount = min((smallerTeamSize / 4) + (if (smallerTeamSize % 4 > 1) 1 else 0), max)
-        val rogueAmount = min((smallerTeamSize / 4) + (if (smallerTeamSize % 4 > 0) 1 else 0), max)
-        val knightAmount = min((smallerTeamSize / 4) + (if (smallerTeamSize % 4 > 2) 1 else 0), max)
+        val mageAmount =
+            min((smallerTeamSize / 4) + (if (smallerTeamSize % 4 > 1) 1 else 0), max)
+        val rogueAmount =
+            min((smallerTeamSize / 4) + (if (smallerTeamSize % 4 > 0) 1 else 0), max)
+        val knightAmount =
+            min((smallerTeamSize / 4) + (if (smallerTeamSize % 4 > 2) 1 else 0), max)
 
         // Set the TextView values
         binding.healerAmountValue.setText(healerAmount.toString())
@@ -1901,7 +1930,10 @@ class EventView : Fragment() {
                 ticket.currentRole = role
                 originalRoleAmounts[role - 1]--
                 guarantees++
-            } else Log.e("pickTeamRoles", "Could not assign guaranteed role to ${ticket.firstName}")
+            } else Log.e(
+                "pickTeamRoles",
+                "Could not assign guaranteed role to ${ticket.firstName}"
+            )
         }
 
         // Step 2: Prioritize Players
@@ -1918,7 +1950,8 @@ class EventView : Fragment() {
         Log.i("testRoles", "Prioritized tickets: $remainingTicketNames")
 
         // Step 3: Create Lottery Hats
-        val originalLotteryHats = MutableList(originalRoleAmounts.size) { mutableListOf<Ticket>() }
+        val originalLotteryHats =
+            MutableList(originalRoleAmounts.size) { mutableListOf<Ticket>() }
 
         for (ticket in prioritizedTickets) {
             var hatAmounts = 0 // Store amount of hats ticket is put in
@@ -2364,7 +2397,7 @@ class EventView : Fragment() {
         }
     }
 
-    private fun testFunction() {
+    private fun roll20rounds() {
         val outerRounds = 20
         var h = outerRounds
         while (h > 0) {
