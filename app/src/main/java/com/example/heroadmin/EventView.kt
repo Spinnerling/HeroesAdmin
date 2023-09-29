@@ -6,8 +6,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.res.ColorStateList
 import android.graphics.Color
-import android.net.ConnectivityManager
-import android.net.NetworkCapabilities
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -36,7 +34,6 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import org.json.JSONObject
-import java.util.UUID
 import kotlin.coroutines.resume
 import kotlin.math.abs
 import kotlin.math.min
@@ -74,12 +71,6 @@ class EventView : Fragment() {
     private lateinit var bottomPanelSetWinner: LinearLayout
     private lateinit var playerRoleButtonPanel: LinearLayout
     private lateinit var loadingDialogue: AlertDialog
-    private var healerAmount: Int = 0
-    private var rogueAmount: Int = 0
-    private var mageAmount: Int = 0
-    private var knightAmount: Int = 0
-    private var specialAAmount: Int = 0
-    private var specialBAmount: Int = 0
     private var hasTeamItemSelected: Boolean = false
     private var assignSorting = 3
     private var checkInSorting = 0
@@ -92,7 +83,7 @@ class EventView : Fragment() {
     private var blueTiniesAmount = 0
     private var autoRoleAmounts = true
     private val json = Json { ignoreUnknownKeys = true; coerceInputValues = true }
-    public var allTicketsMatched = false
+    var allTicketsMatched = false
     var devMode: Boolean = false
     private var winnerPanel = false
     private var gameWinner = ""
@@ -231,29 +222,53 @@ class EventView : Fragment() {
         }
 
         binding.levelUpButton.setOnClickListener {
+            // Check if selected ticket's playerId is set
             if (selectedTicket.playerId != null && selectedTicket.playerId != "") {
                 if (selectedTicket.playerId == "null") {
-                    callNotification("Matcha om spelaren via spelarens INFO-knapp först!")
+                    callNotification(
+                        "Matcha om spelaren via spelarens INFO-knapp först!",
+                        requireContext()
+                    )
                 } else {
+                    // Check if game has started, but is not ended
                     if (event.round > 0 && event.status != "Avslutat") {
-                        val message =
-                            if (event.gameWinner == "") "No Game Winner set. Do you want to set winners before levelling up?"
-                            else if (event.clickWinner == "") "No Click Winner set. Do you want to set winners before levelling up?"
-                            else "Error!? Big wtf! You should probably set winners."
+                        val s = when (event.status) {
+                            "Avslutat" -> "A"
+                            "Spel påbörjat" -> "S"
+                            "Checkar in" -> "C"
+                            "Lagindelning" -> "L"
+                            "Ej påbörjat" -> "E"
+                            else -> "X"
+                        }
+                        var p = 0
+                        if (bottomPanel.visibility == View.VISIBLE) p = 1
+                        else if (bottomPanelPlayer.visibility == View.VISIBLE) p = 2
+                        else if (bottomPanelNewRound.visibility == View.VISIBLE) p = 3
+                        else if (bottomPanelSetWinner.visibility == View.VISIBLE) p = 4
+
+                        val f = selectedTicket.firstName
+                        val l = selectedTicket.lastName[0]
+
+                        val message = "Event ej avslutat. Vill du sätta vinnare innan du levlar?" +
+                                "\nRapportera i #magisk-bok-fix följande kod: ${event.round}$s$p$f$l"
 
                         callChoice(
                             message,
                             "Set Winners",
                             "Level Up",
                             ::openWinnerPopup,
-                            ::goToLevelUp
+                            ::goToLevelUp,
+                            requireContext()
                         )
                     } else {
                         goToLevelUp()
                     }
                 }
             } else {
-                callNotification("Re-Match player first via INFO button, please.\nIf none")
+                callNotification(
+                    "Re-Match player first via INFO button, please.\nIf no better, report player's name to the office.",
+                    requireContext()
+                )
             }
         }
 
@@ -294,7 +309,10 @@ class EventView : Fragment() {
             val a = binding.specialAAmountValue.text.toString().toInt()
             val b = binding.specialBAmountValue.text.toString().toInt()
             if ((h + r + m + k + a + b) > blueTeam.size || (h + r + m + k + a + b) > redTeam.size) {
-                callNotification("There are more roles than players!\nEdit your role amounts.")
+                callNotification(
+                    "There are more roles than players!\nEdit your role amounts.",
+                    requireContext()
+                )
             } else {
                 randomizeRoles()
                 dismissKeyboard()
@@ -638,7 +656,7 @@ class EventView : Fragment() {
         val tickets = ticketDatabase.getByIds(event.ticketIDs).filterNotNull()
         if (tickets.isNotEmpty()) {
             // Process tickets without playerId or suggestions
-            processTickets(tickets as List<Ticket>)
+            processTickets(tickets)
 
             checkForDoubles()
             updateTicketLists()
@@ -684,7 +702,7 @@ class EventView : Fragment() {
                 Log.i("processTickets", "${ticket.firstName} has player")
             } else if (ticket.suggestions.isNullOrEmpty()) {
                 // Creates new player
-                createNewPlayer(ticket)
+                DBF.createNewPlayer(ticket)
                 Log.i("processTickets", "Created new player for ${ticket.firstName}")
             } else {
                 Log.i("processTickets", "${ticket.firstName} has suggestions")
@@ -804,7 +822,7 @@ class EventView : Fragment() {
 
         // Set click listeners for the buttons
         newPlayerButton.setOnClickListener {
-            createNewPlayer(ticket)
+            DBF.createNewPlayer(ticket)
             ticketDatabase.update(ticket)
             DBF.updateTicketArray(allTickets)
             updateTicketLists()
@@ -949,7 +967,10 @@ class EventView : Fragment() {
     }
 
     private fun initializeTicketGroups() {
-        Log.i("initializeTicketGroups", "Starting initialization. Ticket amount: ${assignList.size}")
+        Log.i(
+            "initializeTicketGroups",
+            "Starting initialization. Ticket amount: ${assignList.size}"
+        )
 
         // Determine the maximum existing group number from allTickets
         val maxExistingGroupNumber = allTickets.maxOfOrNull { it.group?.toIntOrNull() ?: 0 } ?: 0
@@ -964,7 +985,8 @@ class EventView : Fragment() {
             }
         }
 
-        val usedGroupNumbers = (1..maxExistingGroupNumber).toSet().toMutableSet() // Include existing group numbers
+        val usedGroupNumbers =
+            (1..maxExistingGroupNumber).toSet().toMutableSet() // Include existing group numbers
         val groupToSizeMap = mutableMapOf<Int, Int>()
         var newGroupNumber = maxExistingGroupNumber + 1 // Start from the next in line
 
@@ -1137,7 +1159,7 @@ class EventView : Fragment() {
 
                 // Check if Ticket is connected to a Player
                 if (ticket.playerId == "") {
-                    createNewPlayer(ticket)
+                    DBF.createNewPlayer(ticket)
                 }
             }
         }
@@ -1149,50 +1171,6 @@ class EventView : Fragment() {
 
         updateTeamPower()
         updateEventStatus()
-    }
-
-    private fun createNewPlayer(ticket: Ticket): Player {
-        val newPlayerId = UUID.randomUUID().toString()
-
-        val newPlayer = Player(
-            playerId = newPlayerId,
-            firstName = ticket.firstName ?: "",
-            lastName = ticket.lastName ?: "",
-            age = ticket.age ?: 0,
-            exp2021 = 0,
-            exp2022 = 0,
-            exp2023 = 0,
-            healerLevel = 1,
-            rogueLevel = 1,
-            mageLevel = 1,
-            knightLevel = 1,
-            healerUltimateA = false,
-            healerUltimateB = false,
-            rogueUltimateA = false,
-            rogueUltimateB = false,
-            mageUltimateA = false,
-            mageUltimateB = false,
-            knightUltimateA = false,
-            knightUltimateB = false,
-            warriorHealer = false,
-            warriorRogue = false,
-            warriorMage = false,
-            warriorKnight = false,
-            bookerNames = mutableListOf(ticket.bookerName!!),
-            bookerEmails = mutableListOf(ticket.bookerEmail!!),
-            bookerPhones = mutableListOf(ticket.bookerPhone!!),
-            bookerAddresses = mutableListOf(ticket.bookerAddress!!),
-        )
-        ticket.playerId = newPlayerId
-        playerDatabase.insert(newPlayer)
-        val playerString = DBF.createJsonString(newPlayer)
-        DBF.apiCallPost(
-            "https://www.talltales.nu/API/api/create-player.php",
-            {},
-            {},
-            playerString
-        )
-        return newPlayer
     }
 
     private fun autoAssignLoop() {
@@ -1501,66 +1479,6 @@ class EventView : Fragment() {
         }
     }
 
-    private fun openAwardExp() {
-        val ticket = selectedTicket
-        val dialogView = LayoutInflater.from(context).inflate(R.layout.award_exp, null)
-
-        val builder = AlertDialog.Builder(context)
-            .setView(dialogView)
-
-        val alertDialog = builder.show()
-        val name: TextView = dialogView.findViewById(R.id.ae_playerNameText)
-        name.text = ticket.fullName
-        val expAmount: EditText = dialogView.findViewById(R.id.ae_expAmount)
-        expAmount.requestFocus()
-
-        dialogView.findViewById<Button>(R.id.ae_acceptButton).setOnClickListener {
-            val number = expAmount.text.toString()
-            if (number != "") {
-                ticket.expPersonal = ticket.expPersonal?.plus(number.toInt())
-
-                // Update database
-                DBF.updateTicketArray(allTickets)
-                ticketDatabase.update(selectedTicket)
-
-                alertDialog.dismiss()
-            }
-        }
-        dialogView.findViewById<Button>(R.id.ae_cancelButton).setOnClickListener {
-            Toast.makeText(context, "Cancelled", Toast.LENGTH_SHORT).show()
-            alertDialog.dismiss()
-        }
-    }
-
-    private fun ResetTicket() {
-        val ticket = selectedTicket
-        deselectTeamItem(true)
-        val player = ticket.playerId?.let { playerDatabase.getById(it) }
-        if (player != null) {
-            player.healerLevel = 0
-            player.healerUltimateA = false
-            player.healerUltimateB = false
-            player.rogueLevel = 0
-            player.rogueUltimateA = false
-            player.rogueUltimateB = false
-            player.mageLevel = 0
-            player.mageUltimateA = false
-            player.mageUltimateB = false
-            player.knightLevel = 0
-            player.knightUltimateA = false
-            player.knightUltimateB = false
-            player.warriorHealer = false
-            player.warriorRogue = false
-            player.warriorMage = false
-            player.warriorKnight = false
-        }
-        ticket.checkedIn = 0
-        ticket.teamColor = null
-        DBF.updateTicketArray(allTickets)
-        updateTicketLists()
-    }
-
-
     private fun openWinnerPopup() {
         // Show popup
         val dialogView = LayoutInflater.from(context).inflate(R.layout.set_winner_popup, null)
@@ -1674,10 +1592,10 @@ class EventView : Fragment() {
         }
 
         // Check for already established winners
-        if (!event.clickWinner.isNullOrEmpty()) {
+        if (event.clickWinner.isNotEmpty()) {
             currClickWinner = event.clickWinner
         }
-        if (!event.gameWinner.isNullOrEmpty()) {
+        if (event.gameWinner.isNotEmpty()) {
             currGameWinner = event.gameWinner
         }
 
@@ -1706,8 +1624,8 @@ class EventView : Fragment() {
             event.gameWinner = currGameWinner
             DBF.updateData(event)
             eventDatabase.update(event)
-            alertDialog.dismiss()
             checkGameEnded()
+            alertDialog.dismiss()
         }
     }
 
@@ -1987,12 +1905,12 @@ class EventView : Fragment() {
                     originalLotteryHats[i].add(ticket) // Add ticket to hat
                     hatAmounts++ // Increment amount of hats ticket is in
                     Log.i(
-                        "${ticket.firstName}",
+                        ticket.firstName,
                         "${ticket.firstName} was entered to hat $i \nroundsInRole: $roundsInRole should be less than maxRounds: $maxRounds,  lastRole: ${ticket.lastRole}"
                     )
                 } else {
                     Log.i(
-                        "${ticket.firstName}",
+                        ticket.firstName,
                         "${ticket.firstName} skipped hat $i \nroundsInRole: $roundsInRole should be less than maxRounds: $maxRounds,  lastRole: ${ticket.lastRole}"
                     )
                 }
@@ -2009,8 +1927,6 @@ class EventView : Fragment() {
         // Check if any hat is empty
         if (originalLotteryHats.any { it.isEmpty() }) {
             Log.e("pickTeamRoles", "At least one hat is empty.")
-        } else {
-            val roleSizes = originalLotteryHats.map { it.size }
         }
 
         // Step 4: Assign Roles
@@ -2038,10 +1954,6 @@ class EventView : Fragment() {
 
             // Sort the tickets based on the counts in ascending order
             val sortedTickets = prioritizedTickets.sortedBy { hatCounts[it] }
-
-            // Log the order of sortedTickets
-            val sortedTicketNames =
-                sortedTickets.joinToString(", ") { it.firstName + " (hats: " + hatCounts[it] + ")" }
 
             // Assign roles to players based on the sorted tickets
             for (ticket in sortedTickets.indices) {
@@ -2162,60 +2074,12 @@ class EventView : Fragment() {
             largestTeam = "blue"
         }
         if (diff > 2) {
-            callNotification("There is a significant size difference to the teams.\nConsider moving someone from $largestTeam team.")
+            callNotification(
+                "There is a significant size difference to the teams.\nConsider moving someone from $largestTeam team.",
+                requireContext()
+            )
         }
         updateEventStatus()
-    }
-
-    private fun callNotification(message: String) {
-        val dialogView = LayoutInflater.from(context).inflate(R.layout.note_popup, null)
-
-        val builder = AlertDialog.Builder(context).setView(dialogView)
-
-        val notification = builder.show()
-
-        val textHolder: TextView = dialogView.findViewById(R.id.notePopupText)
-        textHolder.text = message
-        val noteAButton = dialogView.findViewById<Button>(R.id.noteAButton)
-        val noteBButton = dialogView.findViewById<Button>(R.id.noteBButton)
-        noteBButton.visibility = View.GONE
-
-        noteAButton.setOnClickListener {
-            notification.dismiss()
-        }
-    }
-
-    private fun callChoice(
-        message: String,
-        buttonAText: String,
-        buttonBText: String,
-        aFunction: () -> Unit,
-        bFunction: () -> Unit
-    ) {
-        val dialogView = LayoutInflater.from(context).inflate(R.layout.note_popup, null)
-
-        val builder = AlertDialog.Builder(context).setView(dialogView)
-
-        val notification = builder.show()
-
-        val textHolder: TextView = dialogView.findViewById(R.id.notePopupText)
-        val noteAButton = dialogView.findViewById<Button>(R.id.noteAButton)
-        val noteBButton = dialogView.findViewById<Button>(R.id.noteBButton)
-
-        textHolder.text = message
-        noteAButton.text = buttonAText
-        noteBButton.text = buttonBText
-        noteBButton.visibility = View.VISIBLE
-
-        noteAButton.setOnClickListener {
-            aFunction()
-            notification.dismiss()
-        }
-
-        noteBButton.setOnClickListener {
-            bFunction()
-            notification.dismiss()
-        }
     }
 
     private fun benchTicket() {
@@ -2234,13 +2098,20 @@ class EventView : Fragment() {
                 break
             }
         }
-        if (!winnerPanel && event.round > 0 && someoneIsWarrior && selectedTicket.currentRole != 7) {
+        if (winnerPanel && event.round > 0 && someoneIsWarrior && selectedTicket.currentRole != 7) {
             callChoice(
                 "Do you want to randomize the role to someone else?",
                 "No",
                 "Yes",
                 {},
-                { randomizeRoleToTeam() })
+                { randomizeRoleToTeam() },
+                requireContext()
+            )
+        } else {
+            Log.i(
+                "bench",
+                "winner panel: $winnerPanel, round: ${event.round}, any warriors: $someoneIsWarrior, current role: ${selectedTicket.currentRole}"
+            )
         }
 
         DBF.updateTicketArray(allTickets)
@@ -2274,7 +2145,7 @@ class EventView : Fragment() {
             else -> "Okänd"
         }
 
-        callNotification("${chosenWarrior.fullName}\nNew Role:\n$role")
+        callNotification("${chosenWarrior.fullName}\nNew Role:\n$role", requireContext())
 
         // Set both benched ticket and new ticket as their new roles
         chosenWarrior.currentRole = selectedTicket.currentRole
@@ -2339,7 +2210,7 @@ class EventView : Fragment() {
     }
 
     fun checkConnection() {
-        if (currActivity.connectionProblems || !isInternetAvailable()) {
+        if (currActivity.connectionProblems || !isInternetAvailable(requireContext())) {
             binding.evNoConnection.visibility = View.VISIBLE
             binding.levelUpButton.visibility = View.GONE
             binding.playerExpText.text = "Connection Problems\nCan't level up"
@@ -2349,22 +2220,6 @@ class EventView : Fragment() {
             binding.levelUpButton.visibility = View.VISIBLE
             binding.playerExpText.visibility = View.GONE
             resetLocalDatabase()
-        }
-    }
-
-    private fun isInternetAvailable(): Boolean {
-        val connectivityManager =
-            context?.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val network = connectivityManager.activeNetwork ?: return false
-        val actNw = connectivityManager.getNetworkCapabilities(network) ?: return false
-        return when {
-            actNw.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> true
-            actNw.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> true
-            //for other device how are able to connect with Ethernet
-            actNw.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> true
-            //for check internet over Bluetooth
-            actNw.hasTransport(NetworkCapabilities.TRANSPORT_BLUETOOTH) -> true
-            else -> false
         }
     }
 
@@ -2577,7 +2432,7 @@ class EventView : Fragment() {
                         binding.playerExpText.visibility = View.GONE
                     }
 
-                    val roleInText = DBF.getRoleByNumber(selectedTicket.currentRole ?: 0)
+                    val roleInText = getRoleByNumber(selectedTicket.currentRole ?: 0)
                     binding.ticketRoleText.text = roleInText
 
                     if (selectedTicket.benched == 0) {

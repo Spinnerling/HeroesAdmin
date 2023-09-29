@@ -22,6 +22,7 @@ import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 import kotlinx.serialization.json.decodeFromJsonElement
 import java.io.UnsupportedEncodingException
+import java.util.UUID
 
 
 class DatabaseFunctions(val context: Context) {
@@ -63,7 +64,7 @@ class DatabaseFunctions(val context: Context) {
                     }, 3000) // retry after 3 seconds
                 } else {
                     errorFunction()
-                    lostConnection()
+                    lostConnection("ApiCallGet")
                     Log.i("apiCallGet", "Error! Failed call to api: $url. Error: $error")
                 }
             }
@@ -74,6 +75,12 @@ class DatabaseFunctions(val context: Context) {
                 return headers
             }
         }
+        stringRequest.retryPolicy = DefaultRetryPolicy(
+            40000,
+            DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+            DefaultRetryPolicy.DEFAULT_BACKOFF_MULT
+        )
+
         requestQueue.cache.clear()
         requestQueue.add(stringRequest)
     }
@@ -111,7 +118,7 @@ class DatabaseFunctions(val context: Context) {
                         Log.e("apiCallGet", "Error in errorFunction: ", e)
                     }
                     Log.i("apiCallGet", "Error! Failed call to api: $url. Error: $error")
-                    lostConnection()
+                    lostConnection("ApiCallGetArray")
                 }
             }
         ) {
@@ -123,7 +130,7 @@ class DatabaseFunctions(val context: Context) {
         }
 
         stringRequest.retryPolicy = DefaultRetryPolicy(
-            20000,
+            40000,
             DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
             DefaultRetryPolicy.DEFAULT_BACKOFF_MULT
         )
@@ -133,9 +140,9 @@ class DatabaseFunctions(val context: Context) {
     }
 
     fun apiCallPost(url: String,
-                   responseFunction: (eventsJson: JSONObject) -> Unit,
-                   errorFunction: () -> Unit,
-                   jsonString: String) {
+                    responseFunction: (eventsJson: JSONObject) -> Unit,
+                    errorFunction: () -> Unit,
+                    jsonString: String) {
         val mySingleton = MySingleton.getInstance(context)
         Log.i("apiCallPost", "apiCallPost: $jsonString")
 
@@ -152,12 +159,12 @@ class DatabaseFunctions(val context: Context) {
                 if (error is NoConnectionError) {
                     // Handle no connection error
                     Log.i("apiCallPost", "Post error: No internet connection")
-                    lostConnection()
+                    lostConnection("ApiCallPost - Connection Problems")
                 } else {
                     // Handle other error types
                     Log.i("apiCallPost", "Post error: $error")
                     errorFunction()
-                    lostConnection()
+                    lostConnection("ApiCallPost - Unknown Error, see tag apiCallPost")
                 }
             }
         ) {
@@ -203,7 +210,7 @@ class DatabaseFunctions(val context: Context) {
             },
             Response.ErrorListener { error ->
                 Log.e("apiCallPut", "Error in request: ${error.message}", error)
-                lostConnection()
+                lostConnection("apiCallPut")
             }
         ) {
             override fun getBodyContentType(): String {
@@ -223,9 +230,9 @@ class DatabaseFunctions(val context: Context) {
         }
 
         putRequest.retryPolicy = DefaultRetryPolicy(
-            DefaultRetryPolicy.DEFAULT_TIMEOUT_MS * 2,
-            DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
-            DefaultRetryPolicy.DEFAULT_BACKOFF_MULT
+            10000,
+            3,
+            2f
         )
 
         // Set the cache to false
@@ -311,51 +318,12 @@ class DatabaseFunctions(val context: Context) {
         return playerDatabase.getById(playerId)!!
     }
 
-    fun getRoleByNumber(number: Int): String {
-        var role = ""
-
-        when (number) {
-            0 -> {
-                role = "Undecided"
-            }
-            1 -> {
-                role = "Helare"
-            }
-            2 -> {
-                role = "Odåga"
-
-            }
-            3 -> {
-                role = "Magiker"
-            }
-            4 -> {
-                role = "Riddare"
-            }
-            5 -> {
-                role = "Special A"
-            }
-            6 -> {
-                role = "Special B"
-            }
-            7 -> {
-                role = "Krigare"
-            }
-        }
-
-        return role
-    }
-
     fun setTicketTeamColor(ticket: Ticket, setBlue: Boolean) {
         ticket.teamColor = if (setBlue) "Blue" else "Red"
 
         // Update database
         updateData(ticket)
         ticketDatabase.update(ticket)
-    }
-
-    inline fun <reified T> createJsonString(data: T): String {
-        val json = Json { encodeDefaults = true }
-        return json.encodeToString(data)
     }
 
     inline fun <reified T : Any> updateData(data: T) {
@@ -392,8 +360,8 @@ class DatabaseFunctions(val context: Context) {
         })
     }
 
-    fun lostConnection() {
-        Log.i("Connection", "Lost Connection!")
+    fun lostConnection(source: String) {
+        Log.i("Connection", "Lost Connection! Source: $source")
         currActivity?.connectionProblems = true
         if (eventView != null){
             eventView?.checkConnection()
@@ -463,4 +431,43 @@ class DatabaseFunctions(val context: Context) {
 //        updateData(currEvent)
 //        Log.i("status", "Event Status: ${currEvent.status}")
 //    }
+
+    fun createNewPlayer(ticket: Ticket): Player {
+        val newPlayerId = UUID.randomUUID().toString()
+
+        val newPlayer = Player(
+            playerId = newPlayerId,
+            firstName = ticket.firstName ?: "",
+            lastName = ticket.lastName ?: "",
+            age = ticket.age ?: 0,
+            exp2021 = 0,
+            exp2022 = 0,
+            exp2023 = 0,
+            healerLevel = 1,
+            rogueLevel = 1,
+            mageLevel = 1,
+            knightLevel = 1,
+            healerUltimateA = false,
+            healerUltimateB = false,
+            rogueUltimateA = false,
+            rogueUltimateB = false,
+            mageUltimateA = false,
+            mageUltimateB = false,
+            knightUltimateA = false,
+            knightUltimateB = false,
+            warriorHealer = false,
+            warriorRogue = false,
+            warriorMage = false,
+            warriorKnight = false,
+            bookerNames = mutableListOf(ticket.bookerName!!),
+            bookerEmails = mutableListOf(ticket.bookerEmail!!),
+            bookerPhones = mutableListOf(ticket.bookerPhone!!),
+            bookerAddresses = mutableListOf(ticket.bookerAddress!!),
+        )
+        ticket.playerId = newPlayerId
+        playerDatabase.insert(newPlayer)
+        val playerString = createJsonString(newPlayer)
+        apiCallPost("https://www.talltales.nu/API/api/create-player.php", {}, {}, playerString)
+        return newPlayer
+    }
 }

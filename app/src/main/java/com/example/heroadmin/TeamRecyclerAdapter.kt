@@ -30,7 +30,7 @@ class TeamRecyclerAdapter(
         val name = ticket.fullName
         holder.nameText.text = name
         val role = ticket.currentRole
-        val roleInText = DBF.getRoleByNumber(role ?: 0)
+        val roleInText = getRoleByNumber(role ?: 0)
 //        val player: Player? = ticket.playerId?.let { playerDatabase.getById(it) }
 //
 //        if (player != null) {

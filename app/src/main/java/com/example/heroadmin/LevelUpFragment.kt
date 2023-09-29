@@ -448,6 +448,7 @@ class LevelUpFragment : Fragment() {
     }
 
     fun lostConnection() {
+        Log.i("connection", "Lost connection!")
         findNavController().navigate(
             LevelUpFragmentDirections.actionLevelUpFragmentToEventView(
                 currEventId

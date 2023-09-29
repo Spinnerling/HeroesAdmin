@@ -54,50 +54,9 @@ class EventAdminFrag : Fragment() {
         binding.eventAdminEditValues.setOnClickListener {
             if (binding.eventAdminAttendanceValue.visibility == View.VISIBLE) {
                 changeExpValues()
-            }
-            else {
+            } else {
                 saveExpValues()
             }
-        }
-
-        binding.eventAdminWin1NoWinner.setOnClickListener {
-            currClickWinner = ""
-            updateWinnerButtonColors()
-        }
-
-        binding.eventAdminWin1RedButton.setOnClickListener {
-            currClickWinner = "Red"
-            updateWinnerButtonColors()
-        }
-
-        binding.eventAdminWin1BlueButton.setOnClickListener {
-            currClickWinner = "Blue"
-            updateWinnerButtonColors()
-        }
-
-        binding.eventAdminWin1TieButton.setOnClickListener {
-            currClickWinner = "Tie"
-            updateWinnerButtonColors()
-        }
-
-        binding.eventAdminWin2NoWinner.setOnClickListener {
-            currGameWinner = ""
-            updateWinnerButtonColors()
-        }
-
-        binding.eventAdminWin2RedButton.setOnClickListener {
-            currGameWinner = "Red"
-            updateWinnerButtonColors()
-        }
-
-        binding.eventAdminWin2BlueButton.setOnClickListener {
-            currGameWinner = "Blue"
-            updateWinnerButtonColors()
-        }
-
-        binding.eventAdminWin2TieButton.setOnClickListener {
-            currGameWinner = "Tie"
-            updateWinnerButtonColors()
         }
 
         binding.eventAdminToEventListButton.setOnClickListener {
@@ -106,7 +65,11 @@ class EventAdminFrag : Fragment() {
         }
 
         binding.eventAdminToEventViewButton.setOnClickListener {
-            findNavController().navigate(EventAdminFragDirections.actionEventAdminFragToEventView(event.eventId))
+            findNavController().navigate(
+                EventAdminFragDirections.actionEventAdminFragToEventView(
+                    event.eventId
+                )
+            )
             saveInfo()
         }
     }
@@ -135,9 +98,8 @@ class EventAdminFrag : Fragment() {
         binding.eventAdminTeamChangeValue.text = event.expTeamChangeValue?.toString() ?: "5"
         binding.eventAdminEditTeamChange.setText(event.expTeamChangeValue?.toString() ?: "5")
 
-        currClickWinner = event.clickWinner.toString()
-        currGameWinner = event.gameWinner.toString()
-        updateWinnerButtonColors()
+        currClickWinner = event.clickWinner
+        currGameWinner = event.gameWinner
     }
 
     private fun updateVenue() {
@@ -156,17 +118,19 @@ class EventAdminFrag : Fragment() {
         CoroutineScope(Dispatchers.IO).launch {
             event.apply {
                 reportText = binding.eventAdminReportText.text.toString()
-                expAttendanceValue = binding.eventAdminAttendanceValue.text.toString().toIntOrNull() ?: 0
-                expRecruitValue = binding.eventAdminRecruitmentValue.text.toString().toIntOrNull() ?: 0
+                expAttendanceValue =
+                    binding.eventAdminAttendanceValue.text.toString().toIntOrNull() ?: 0
+                expRecruitValue =
+                    binding.eventAdminRecruitmentValue.text.toString().toIntOrNull() ?: 0
                 expClickWinValue = binding.eventAdminWin1Value.text.toString().toIntOrNull() ?: 0
                 expGameWinValue = binding.eventAdminWin2Value.text.toString().toIntOrNull() ?: 0
-                expTeamChangeValue = binding.eventAdminTeamChangeValue.text.toString().toIntOrNull() ?: 0
+                expTeamChangeValue =
+                    binding.eventAdminTeamChangeValue.text.toString().toIntOrNull() ?: 0
                 clickWinner = currClickWinner
                 gameWinner = currGameWinner
             }
 
             DBF.updateData(event)
-//            DBF.updateEventStatus(event)
         }
     }
 
@@ -187,8 +151,18 @@ class EventAdminFrag : Fragment() {
         binding.eventAdminEditTeamChange.visibility = View.VISIBLE
 
         binding.eventAdminEditValues.text = "Spara"
-        binding.eventAdminEditValues.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.buttonGreen))
-        binding.eventAdminEditValues.setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
+        binding.eventAdminEditValues.setBackgroundColor(
+            ContextCompat.getColor(
+                requireContext(),
+                R.color.buttonGreen
+            )
+        )
+        binding.eventAdminEditValues.setTextColor(
+            ContextCompat.getColor(
+                requireContext(),
+                R.color.white
+            )
+        )
         binding.layout3.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.white))
     }
 
@@ -209,9 +183,24 @@ class EventAdminFrag : Fragment() {
         binding.eventAdminEditTeamChange.visibility = View.GONE
 
         binding.eventAdminEditValues.text = "Ändra"
-        binding.eventAdminEditValues.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.white))
-        binding.eventAdminEditValues.setTextColor(ContextCompat.getColor(requireContext(), R.color.primary_green))
-        binding.layout3.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.background_green_medium))
+        binding.eventAdminEditValues.setBackgroundColor(
+            ContextCompat.getColor(
+                requireContext(),
+                R.color.white
+            )
+        )
+        binding.eventAdminEditValues.setTextColor(
+            ContextCompat.getColor(
+                requireContext(),
+                R.color.primary_green
+            )
+        )
+        binding.layout3.setBackgroundColor(
+            ContextCompat.getColor(
+                requireContext(),
+                R.color.background_green_medium
+            )
+        )
 
         event.apply {
             expAttendanceValue = binding.eventAdminEditAttendance.text.toString().toIntOrNull() ?: 0
@@ -227,64 +216,35 @@ class EventAdminFrag : Fragment() {
     }
 
     private fun updateWinnerButtonColors() {
-        val noWinnerUnselectedColor = ContextCompat.getColor(requireContext(), R.color.grey)
         val noWinnerColor = ContextCompat.getColor(requireContext(), R.color.white)
-        val redUnselectedColor = ContextCompat.getColor(requireContext(), R.color.light_pink)
-        val redWinnerColor = ContextCompat.getColor(requireContext(), R.color.winning_red)
-        val blueUnselectedColor = ContextCompat.getColor(requireContext(), R.color.light_blue)
-        val blueWinnerColor = ContextCompat.getColor(requireContext(), R.color.winning_blue)
-        val tieActiveColor = ContextCompat.getColor(requireContext(), R.color.purple_deep)
-        val tieUnselectedColor = ContextCompat.getColor(requireContext(), R.color.purple_200)
+        val redColor = ContextCompat.getColor(requireContext(), R.color.winning_red)
+        val blueColor = ContextCompat.getColor(requireContext(), R.color.winning_blue)
+        val tieColor = ContextCompat.getColor(requireContext(), R.color.purple_deep)
 
-        binding.eventAdminWin1NoWinner.apply {
-            setBackgroundColor(if (currClickWinner == "") noWinnerColor else noWinnerUnselectedColor)
-            elevation = if (currClickWinner == "") 10f else 0f
-            alpha = if (currClickWinner == "") 1f else 0.7f
+        fun getColor(winner: String): Int {
+            return when (winner) {
+                "Red" -> redColor
+                "Blue" -> blueColor
+                "Tie" -> tieColor
+                else -> noWinnerColor
+            }
         }
 
-        binding.eventAdminWin1RedButton.apply {
-            setBackgroundColor(if (currClickWinner == "Red") redWinnerColor else redUnselectedColor)
-            elevation = if (currClickWinner == "Red") 10f else 0f
-            alpha = if (currClickWinner == "Red") 1f else 0.7f
+        val clickColor = getColor(event.clickWinner)
+        val gameColor = getColor(event.gameWinner)
+
+        binding.eventAdminWin1.apply {
+            setBackgroundColor(clickColor)
+            elevation = 0f
+            alpha = 0.7f
         }
 
-        binding.eventAdminWin1BlueButton.apply {
-            setBackgroundColor(if (currClickWinner == "Blue") blueWinnerColor else blueUnselectedColor)
-            elevation = if (currClickWinner == "Blue") 10f else 0f
-            alpha = if (currClickWinner == "Blue") 1f else 0.7f
+        binding.eventAdminWin2.apply {
+            setBackgroundColor(gameColor)
+            elevation = 0f
+            alpha = 0.7f
         }
 
-        binding.eventAdminWin1TieButton.apply {
-            setBackgroundColor(if (currClickWinner == "Tie") tieActiveColor else tieUnselectedColor)
-            elevation = if (currClickWinner == "Tie") 10f else 0f
-            alpha = if (currClickWinner == "Tie") 1f else 0.7f
-        }
-
-        binding.eventAdminWin2NoWinner.apply {
-            setBackgroundColor(if (currGameWinner == "") noWinnerColor else noWinnerUnselectedColor)
-            elevation = if (currGameWinner == "") 10f else 0f
-            alpha = if (currGameWinner == "") 1f else 0.7f
-        }
-
-        binding.eventAdminWin2RedButton.apply {
-            setBackgroundColor(if (currGameWinner == "Red") redWinnerColor else redUnselectedColor)
-            elevation = if (currGameWinner == "Red") 10f else 0f
-            alpha = if (currGameWinner == "Red") 1f else 0.7f
-        }
-
-        binding.eventAdminWin2BlueButton.apply {
-            setBackgroundColor(if (currGameWinner == "Blue") blueWinnerColor else blueUnselectedColor)
-            elevation = if (currGameWinner == "Blue") 10f else 0f
-            alpha = if (currGameWinner == "Blue") 1f else 0.7f
-        }
-
-        binding.eventAdminWin2TieButton.apply {
-            setBackgroundColor(if (currGameWinner == "Tie") tieActiveColor else tieUnselectedColor)
-            elevation = if (currGameWinner == "Tie") 10f else 0f
-            alpha = if (currGameWinner == "Tie") 1f else 0.7f
-        }
-
-//        DBF.updateEventStatus(event)
     }
 
     private fun dismissKeyboard() {

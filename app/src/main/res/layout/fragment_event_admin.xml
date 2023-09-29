@@ -384,7 +384,7 @@
         android:layout_height="0dp"
         android:gravity="center"
         android:orientation="horizontal"
-        android:layout_weight="2"
+        android:layout_weight="1"
         android:padding="10dp">
 
         <LinearLayout
@@ -395,55 +395,18 @@
             android:gravity="center"
             android:layout_marginRight="20dp">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="0dp"
-                android:layout_weight="1"
-                android:text="KLICKVINNARE"
-                android:textColor="#000000"
-                android:textSize="24sp"
-                android:gravity="center"/>
             <Button
-                android:id="@+id/eventAdminWin1NoWinner"
+                android:id="@+id/eventAdminWin1"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="2"
                 android:backgroundTint="@color/white"
-                android:text="No Winner"
+                android:text="KLICKVINNARE"
                 android:textColor="@color/black"
                 app:strokeColor="#000000"
                 app:strokeWidth="2dp" />
 
-            <Button
-                android:id="@+id/eventAdminWin1RedButton"
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="2"
-                android:backgroundTint="@color/winning_red"
-                android:text="Red Team"
-                app:strokeColor="#000000"
-                app:strokeWidth="2dp" />
 
-            <Button
-                android:id="@+id/eventAdminWin1BlueButton"
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="2"
-                android:backgroundTint="@color/winning_blue"
-                android:text="Blue Team"
-                android:textColor="#FFFFFF"
-                app:strokeColor="#000000"
-                app:strokeWidth="2dp" />
-            <Button
-                android:id="@+id/eventAdminWin1TieButton"
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="2"
-                android:backgroundTint="@color/purple_deep"
-                android:text="Tie"
-                android:textColor="#FFFFFF"
-                app:strokeColor="#000000"
-                app:strokeWidth="2dp" />
         </LinearLayout>
 
         <LinearLayout
@@ -454,55 +417,17 @@
             android:gravity="center"
             android:layout_marginLeft="20dp">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="0dp"
-                android:layout_weight="1"
-                android:text="SPELVINNARE "
-                android:textColor="#000000"
-                android:textSize="24sp"
-                android:gravity="center"/>
             <Button
-                android:id="@+id/eventAdminWin2NoWinner"
+                android:id="@+id/eventAdminWin2"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="2"
                 android:backgroundTint="@color/white"
-                android:text="No Winner"
+                android:text="SPELVINNARE"
                 android:textColor="@color/black"
                 app:strokeColor="#000000"
                 app:strokeWidth="2dp" />
-            <Button
-                android:id="@+id/eventAdminWin2RedButton"
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="2"
-                android:backgroundTint="@color/winning_red"
-                android:text="Red Team"
-                app:strokeColor="#000000"
-                app:strokeWidth="2dp" />
 
-            <Button
-                android:id="@+id/eventAdminWin2BlueButton"
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="2"
-                android:backgroundTint="@color/winning_blue"
-                android:text="Blue Team"
-                android:textColor="#FFFFFF"
-                app:strokeColor="#000000"
-                app:strokeWidth="2dp" />
-
-            <Button
-                android:id="@+id/eventAdminWin2TieButton"
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="2"
-                android:backgroundTint="@color/secondary_purple"
-                android:text="Tie"
-                android:textColor="#FFFFFF"
-                app:strokeColor="#000000"
-                app:strokeWidth="2dp" />
         </LinearLayout>
     </LinearLayout>
 

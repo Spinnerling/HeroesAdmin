@@ -7,7 +7,7 @@ data class PlayerListItem (
     val playerID: String,
     val firstName : String,
     val lastName : String,
-    val age : Int,
+    val age : Int = 20,
     val bookerNames: List<String>? = listOf(),
     val bookerPhones: List<String>? = listOf(),
     val bookerEmails: List<String>? = listOf(),
