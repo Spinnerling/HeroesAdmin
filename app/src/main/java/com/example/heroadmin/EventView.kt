@@ -1464,12 +1464,6 @@ class EventView : Fragment() {
         bookerEmail.text = ticket.bookerEmail
         val rematchButton: Button = dialogView.findViewById<Button>(R.id.ti_rematchButton)
 
-        if (ticket.suggestions?.isEmpty() == false) {
-            rematchButton.visibility = View.INVISIBLE
-        } else {
-            rematchButton.visibility = View.VISIBLE
-        }
-
         // Close window
         dialogView.findViewById<Button>(R.id.ti_closeButton).setOnClickListener {
             playerInfoDialog.dismiss()
